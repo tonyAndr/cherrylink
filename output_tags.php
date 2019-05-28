@@ -34,9 +34,10 @@ function linkate_otf_title ($option_key, $result, $ext) {
 }
 
 function linkate_otf_title_seo ($option_key, $result, $ext) {
-    
-    $title = get_post_meta( $result->ID, "_yoast_wpseo_title", true);
-    if (!$title)
+
+    if (function_exists('wpseo_init'))
+        $title = linkate_decode_yoast_variables($result->ID);
+    if (function_exists( 'aioseop_init_class' ))
         $title = get_post_meta( $result->ID, "_aioseop_title", true);
     if (!$title)
         $title = $result->post_title;

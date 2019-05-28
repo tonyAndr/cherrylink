@@ -653,7 +653,8 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
                 $content = '';
 			$seotitle = '';
 			if (function_exists('wpseo_init')){
-		    	$seotitle = get_post_meta( $postID, "_yoast_wpseo_title", true);
+//		    	$seotitle = get_post_meta( $postID, "_yoast_wpseo_title", true);
+		    	$seotitle = linkate_decode_yoast_variables($postID);
 			}
 		    if (function_exists( 'aioseop_init_class' )){
 		        $seotitle = get_post_meta( $postID, "_aioseop_title", true);
@@ -788,6 +789,21 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 
 	return $termcount;
 }
+
+function linkate_decode_yoast_variables($post_id, $is_term = false) {
+
+//    $yoast_title = get_post_meta($post_id, '_yoast_wpseo_title', true);
+    $string =  WPSEO_Meta::get_value( 'title', $post_id );
+    if ($string !== '') {
+        $replacer = new WPSEO_Replace_Vars();
+
+        return $replacer->replace( $string, get_post($post_id) );
+    } else {
+        return '';
+    }
+
+}
+
 
 // ========================================================================================= //
 // ============================== CherryLink Scheme / Export  ============================== //
