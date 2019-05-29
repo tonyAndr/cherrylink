@@ -39,17 +39,12 @@ function link_cf_options_from_post($options, $args) {
 			}	
 			break;
 		case 'excluded_authors':
-		case 'included_authors':
+        case 'included_authors':
+        case 'show_customs':
+        case 'suggestions_donors':
 			if (isset($_POST[$arg]) && !empty($_POST[$arg])) {
 
 				$options[$arg] = is_array($_POST[$arg]) ? implode(',', $_POST[$arg]) : $_POST[$arg];
-			} else {
-				$options[$arg] = '';
-			}	
-			break;
-		case 'show_customs':
-			if (isset($_POST[$arg]) && !empty($_POST[$arg])) {
-				$options[$arg] =  is_array($_POST[$arg]) ? implode(',', $_POST[$arg]) : $_POST[$arg];
 			} else {
 				$options[$arg] = '';
 			}	
@@ -355,7 +350,7 @@ function link_cf_display_suggestions_switch_action($suggestions_switch_action) {
 	</tr>
 	<?php
 }
-function link_cf_display_suggestions_donors($suggestions_donors) {
+function link_cf_display_suggestions_donors_old($suggestions_donors, $suggestions_donors_content) {
 	?>
 	<tr valign="top">
 		<th scope="row"><label for="suggestions_donors"><?php _e('Доноры слов/фраз для подсказок', 'post_plugin_library') ?></label></th>
@@ -368,6 +363,66 @@ function link_cf_display_suggestions_donors($suggestions_donors) {
 		</select> 
 		</td>
 	</tr>
+    <tr valign="top">
+        <th scope="row"><label for="suggestions_donors_content"><?php _e('Добавить в подсказки слова из текста записи?', 'post_plugin_library') ?></label></th>
+        <td>
+            <select name="suggestions_donors_content" id="suggestions_donors_content">
+                <option <?php if($suggestions_donors_content == 'yes') { echo 'selected="selected"'; } ?> value="yes">Да</option>
+                <option <?php if($suggestions_donors_content == 'no') { echo 'selected="selected"'; } ?> value="no">Нет</option>
+            </select>
+        </td>
+        <td></td>
+    </tr>
+	<?php
+}
+function link_cf_display_suggestions_donors($suggestions_donors, $suggestions_donors_join) {
+	?>
+	<tr valign="top">
+		<th scope="row"><label for="suggestions_donors"><?php _e('Доноры слов/фраз для подсказок', 'post_plugin_library') ?></label></th>
+		<td>
+            <table class="linkateposts-inner-table">
+                <?php
+                $opts = array('h1', 'title', 'content');
+                    $turned_on = explode(',', $suggestions_donors);
+                    echo "\n\t<tr valign=\"top\"><td><strong>Источник</strong></td><td>Включить?</td></tr>";
+                    foreach ($opts as $opt) {
+
+                            if (false === in_array($opt, $turned_on)) {
+                                $ischecked = '';
+                            } else {
+                                $ischecked = 'checked';
+                            }
+                            echo "\n\t<tr valign=\"top\"><td>$opt</td><td><input type=\"checkbox\" name=\"suggestions_donors[]\" value=\"$opt\" $ischecked /></td></tr>";
+
+                    }
+
+                ?>
+            </table>
+		</td>
+	</tr>
+    <tr valign="top">
+        <th scope="row"><label for="suggestions_donors_join"><?php _e('Что делать с донорами?', 'post_plugin_library') ?></label></th>
+        <td>
+            <select name="suggestions_donors_join" id="suggestions_donors_join">
+                <option <?php if($suggestions_donors_join == 'join') { echo 'selected="selected"'; } ?> value="join">Дополнить друг друга (берем все слова = больше подсказок)</option>
+                <option <?php if($suggestions_donors_join == 'intersection') { echo 'selected="selected"'; } ?> value="intersection">Выбрать только общие слова (пересечение = меньше подсказок)</option>
+            </select>
+        </td>
+        <td><?php link_cf_prepare_tooltip("Пример:<br>
+У нас есть 3 поля, которые содержат слова:
+<ol>
+<li>Заголовок (Н1) - [ипотека, квартира, документы]</li>
+<li>Тайтл (СЕО) - [кредит, квартира, оформить]</li>
+<li>Контент (текст записи) - [кредит, ипотека, документы, квартира]</li>
+</ol>
+Если мы их объединим, то в подсказках будут слова:<br>
+<strong>[ипотека, квартира, документы, креди, оформить]</strong>
+<br><br>
+При пересечении (ищем общие слова):<br>
+<strong>[квартира] - только это слово встретилось во всех полях одновременно.</strong>
+<br><br>
+Если какое-либо из полей пустое (например у вас не задан сео тайтл), то это поле просто не учитывается."); ?></td>
+    </tr>
 	<?php
 }
 function link_cf_display_suggestions_join($suggestions_join) {

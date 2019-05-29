@@ -324,24 +324,24 @@ function linkate_sp_terms_by_freq_ankor($content) {
 
 
 // ONLY FOR TEST
-function linkate_sp_terms_by_freq_test($ID) {
-	if (!$ID) return '';
-	global $wpdb, $table_prefix;
-	$table_name = $table_prefix . 'linkate_posts';
-	$post = $wpdb->get_row("SELECT post_content, post_title, post_type FROM $wpdb->posts WHERE ID = $ID", ARRAY_A);
-
-	if ($post) {
-		$seotitle = '';
-		if (function_exists('wpseo_init')){
-	    	$seotitle = get_post_meta( $ID, "_yoast_wpseo_title", true);
-		}
-	    if (function_exists( 'aioseop_init_class' )){
-	        $seotitle = get_post_meta( $ID, "_aioseop_title", true);
-	    }
-
-	    return linkate_sp_prepare_suggestions($post['post_title'], $seotitle);
- 	}
-}
+//function linkate_sp_terms_by_freq_test($ID) {
+//	if (!$ID) return '';
+//	global $wpdb, $table_prefix;
+//	$table_name = $table_prefix . 'linkate_posts';
+//	$post = $wpdb->get_row("SELECT post_content, post_title, post_type FROM $wpdb->posts WHERE ID = $ID", ARRAY_A);
+//
+//	if ($post) {
+//		$seotitle = '';
+//		if (function_exists('wpseo_init')){
+//	    	$seotitle = get_post_meta( $ID, "_yoast_wpseo_title", true);
+//		}
+//	    if (function_exists( 'aioseop_init_class' )){
+//	        $seotitle = get_post_meta( $ID, "_aioseop_title", true);
+//	    }
+//
+//	    return linkate_sp_prepare_suggestions($post['post_title'], $seotitle);
+// 	}
+//}
 
 // Convert an UTF-8 encoded string to a single-byte string suitable for
 // functions such as levenshtein.
@@ -461,20 +461,21 @@ function linkate_sp_save_index_entry($postID) {
 		update_option('linkate-posts', $options);
 	}
 
-	$linkate_overusedwords = file(WP_PLUGIN_DIR.'/cherrylink/stopwords.txt', FILE_IGNORE_NEW_LINES);
 	$suggestions_donors = $options['suggestions_donors'];
+    $suggestions_donors_join = $options['suggestions_donors_join'];
 	$clean_suggestions_stoplist = $options['clean_suggestions_stoplist'];
 	$min_len = $options['term_length_limit'];
 
-	if(is_array($linkate_overusedwords)) {
-		if (!empty($options['custom_stopwords'])) {
-			$customwords = explode("\n", str_replace("\r", "", $options['custom_stopwords']));
-			$linkate_overusedwords = array_merge($linkate_overusedwords, $customwords);
-		}
-		$linkate_overusedwords = array_flip($linkate_overusedwords);
-	}
+    $words_table = $table_prefix."linkate_stopwords";
+    $black_words = $wpdb->get_col("SELECT stemm FROM $words_table WHERE is_white = 0 GROUP BY stemm");
+    $white_words = $wpdb->get_col("SELECT word FROM $words_table WHERE is_white = 1");
+    $black_words = array_filter($black_words);
+    $white_words = array_filter($white_words);
+    $linkate_overusedwords["black"] = array_flip($black_words);
+    $linkate_overusedwords["white"] = array_flip($white_words);
 
 	$content = linkate_sp_get_post_terms($post['post_content'], $min_len, $linkate_overusedwords, $stemmer);
+    $content = iconv("UTF-8", "UTF-8//IGNORE", $content); // convert broken symbols
 	// Seo title is more relevant, usually
 	// Extracting terms from the custom titles, if present
 	$seotitle = '';
@@ -495,7 +496,7 @@ function linkate_sp_save_index_entry($postID) {
 	}
 	
 	// Extract ancor terms
-	$suggestions = linkate_sp_prepare_suggestions($post['post_title'], $seotitle, $min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
+	$suggestions = linkate_sp_prepare_suggestions($post['post_title'], $seotitle, $min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer, $post['post_content'], $suggestions_donors_join);
 
 	//$title = linkate_sp_get_title_terms($post['post_title'], true, false, false);
 	$tags = linkate_sp_get_tag_terms($postID);
@@ -510,64 +511,114 @@ function linkate_sp_save_index_entry($postID) {
 	return $postID;
 }
 
-function linkate_sp_prepare_suggestions($title, $seotitle,$min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer) {
+function linkate_sp_prepare_suggestions($title, $seotitle, $min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer, $content, $suggestions_donors_join) {
 	$title = trim($title);
 	$seotitle = trim($seotitle);
-	
-	if (empty($seotitle) || $seotitle === $title || $suggestions_donors == 'h1') { // h1
-		$words = linkate_sp_get_suggestions_terms($title, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
-		return $words;
-	} 
-	if ($suggestions_donors == 'title') { // seo title
-		if (empty($seotitle) || $seotitle === $title) {
-			$words = linkate_sp_get_suggestions_terms($title, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
-			return $words;
-		} else {
-			$words = linkate_sp_get_suggestions_terms($seotitle, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
-			return $words;
-		}
-	}
+	$content = trim($content);
 
-	$seo_arr = explode(" ", linkate_sp_get_suggestions_terms($seotitle, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer));
-	$h1_arr = explode(" ", linkate_sp_get_suggestions_terms($title, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer));
+	if (empty($suggestions_donors))
+	    return '';
 
-	if ($suggestions_donors == 'intersection') {
-	
-	 	// THIS FINDS INTERSECTIONS
-	 	$res = array();
-	 	for ($i=0; $i < sizeof($seo_arr); $i++) { 
-	 		for ($j=0; $j < sizeof($h1_arr); $j++) { 
-	 			$dist = levenshtein_utf8($h1_arr[$j], $seo_arr[$i]);
-		 		if ($dist <= 2 && !in_array($seo_arr[$i], $res)) {
-				 	$res[] = $seo_arr[$i];
-			 	}
-	 		}
-	 	}
-	 	unset($seo_arr);
-	 	unset($h1_arr);
-	 	return implode(" ", $res);
-	}
-	if ($suggestions_donors == 'join') {
+	$suggestions_donors = explode(',', $suggestions_donors);
 
-	 	$res = $h1_arr;
+	// change old settings
+	if (!in_array('h1', $suggestions_donors) && !in_array('title', $suggestions_donors) && !in_array('content', $suggestions_donors)) {
+        $suggestions_donors = array('h1', 'title');
+    }
 
-	 	for ($i=0; $i < sizeof($seo_arr); $i++) { 
-	 		$skip = false;
-	 		for ($j=0; $j < sizeof($h1_arr); $j++) { 
-	 			$dist = levenshtein_utf8($h1_arr[$j], $seo_arr[$i]);
-		 		if ($dist <= 2 || in_array($seo_arr[$i], $res)) {
-				 	$skip = true;
-			 	}
-	 		}
-	 		if (!$skip) {
-	 			$res[] = $seo_arr[$i];
-	 		}
-	 	}
+    $seo_arr = array();
+    $h1_arr = array();
+	$content_arr = array();
 
-	 	unset($seo_arr);
-	 	unset($h1_arr);
-	 	return implode(" ", $res);
-	}
+	foreach ($suggestions_donors as $donor) {
+	    if ($donor === 'title') {
+            $seo_arr = explode(" ", linkate_sp_get_suggestions_terms($seotitle, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer));
+        }
+
+        if ($donor === 'h1') {
+            $h1_arr = explode(" ", linkate_sp_get_suggestions_terms($title, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer));
+        }
+
+        if ($donor === 'content') {
+            $content_arr = explode(" ", linkate_sp_get_suggestions_terms($content, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer));
+        }
+    }
+
+	$array[] = array_filter($seo_arr);
+	$array[] = array_filter($h1_arr);
+	$array[] = array_filter($content_arr);
+    $array = array_filter($array);
+    if (empty($array))
+        return '';
+
+    if ($suggestions_donors_join == 'intersection') {
+        $result = array_unique(array_intersect(...$array));
+        return  implode(' ', $result);
+    } else { //join
+        $result = array_unique(array_merge(...$array));
+        return  implode(' ', $result);
+    }
+
+
+
+
+
+
+
+//	if (empty($seotitle) || $seotitle === $title || $suggestions_donors == 'h1') { // h1
+//		$words = linkate_sp_get_suggestions_terms($title, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
+//		return trim($words . " " . $content_words);
+//	}
+//	if ($suggestions_donors == 'title') { // seo title
+////		if (empty($seotitle) || $seotitle === $title) {
+////			$words = linkate_sp_get_suggestions_terms($title, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
+////			return $words;
+////		} else {
+//			$words = linkate_sp_get_suggestions_terms($seotitle, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
+//			return trim($words . " " . $content_words);
+////		}
+//	}
+
+//	$seo_arr = explode(" ", linkate_sp_get_suggestions_terms($seotitle, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer));
+//	$h1_arr = explode(" ", linkate_sp_get_suggestions_terms($title, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer));
+
+//	if ($suggestions_donors_join == 'intersection') {
+//
+//	 	// THIS FINDS INTERSECTIONS
+//	 	$res = array();
+//	 	for ($i=0; $i < sizeof($seo_arr); $i++) {
+//	 		for ($j=0; $j < sizeof($h1_arr); $j++) {
+//	 			$dist = levenshtein_utf8($h1_arr[$j], $seo_arr[$i]);
+//		 		if ($dist <= 2 && !in_array($seo_arr[$i], $res)) {
+//				 	$res[] = $seo_arr[$i];
+//			 	}
+//	 		}
+//	 	}
+//	 	unset($seo_arr);
+//	 	unset($h1_arr);
+//	 	return trim(implode(" ", $res) . " " . $content_words);
+//	}
+//	if ($suggestions_donors_join == 'join') {
+//
+//	 	$res = $h1_arr;
+//
+//	 	for ($i=0; $i < sizeof($seo_arr); $i++) {
+//	 		$skip = false;
+//	 		for ($j=0; $j < sizeof($h1_arr); $j++) {
+//	 			$dist = levenshtein_utf8($h1_arr[$j], $seo_arr[$i]);
+//		 		if ($dist <= 2 || in_array($seo_arr[$i], $res)) {
+//				 	$skip = true;
+//			 	}
+//	 		}
+//	 		if (!$skip) {
+//	 			$res[] = $seo_arr[$i];
+//	 		}
+//	 	}
+//
+//	 	unset($seo_arr);
+//	 	unset($h1_arr);
+//	 	return trim(implode(" ", $res) . " " . $content_words);
+//	}
 
 }
 
@@ -592,18 +643,18 @@ function linkate_sp_save_index_entry_term($term_id, $tt_id, $taxonomy) {
 	//extract its terms
 	$options = get_option('linkate-posts');
 
-	$linkate_overusedwords = file(WP_PLUGIN_DIR.'/cherrylink/stopwords.txt', FILE_IGNORE_NEW_LINES);
 	$suggestions_donors = $options['suggestions_donors'];
+    $suggestions_donors_join = $options['suggestions_donors_join'];
 	$clean_suggestions_stoplist = $options['clean_suggestions_stoplist'];
 	$min_len = $options['term_length_limit'];
 
-	if(is_array($linkate_overusedwords)) {
-		if (!empty($options['custom_stopwords'])) {
-			$customwords = explode("\n", str_replace("\r", "", $options['custom_stopwords']));
-			$linkate_overusedwords = array_merge($linkate_overusedwords, $customwords);
-		}
-		$linkate_overusedwords = array_flip($linkate_overusedwords);
-	}
+    $words_table = $table_prefix."linkate_stopwords";
+    $black_words = $wpdb->get_col("SELECT stemm FROM $words_table WHERE is_white = 0 GROUP BY stemm");
+    $white_words = $wpdb->get_col("SELECT word FROM $words_table WHERE is_white = 1");
+    $black_words = array_filter($black_words);
+    $white_words = array_filter($white_words);
+    $linkate_overusedwords["black"] = array_flip($black_words);
+    $linkate_overusedwords["white"] = array_flip($white_words);
 
 	$descr = '';
 	$descr .= term_description($term_id); // standart 
@@ -644,7 +695,7 @@ function linkate_sp_save_index_entry_term($term_id, $tt_id, $taxonomy) {
 	}
 
 	// Extract ancor terms
-	$suggestions = linkate_sp_prepare_suggestions($term['name'], $seotitle,$min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
+	$suggestions = linkate_sp_prepare_suggestions($term['name'], $seotitle,$min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer, $descr, $suggestions_donors_join);
 	$tags = "";
 	//check to see if the field is set
 	$pid = $wpdb->get_var("SELECT pID FROM $table_name WHERE pID=$term_id AND is_term=1 limit 1");
@@ -737,6 +788,10 @@ function linkate_sp_get_suggestions_terms($text, $min_len, $linkate_overusedword
 	mb_regex_encoding('UTF-8');
 	mb_internal_encoding('UTF-8');
 	$wordlist = mb_split("\W+", linkate_sp_mb_clean_words($text));
+	$wordlist = array_count_values($wordlist);
+	arsort($wordlist);
+	$wordlist = array_slice($wordlist, 0, 20);
+	$wordlist = array_keys($wordlist);
 	$words = '';
 	$exists = array();
 	foreach ($wordlist as $word) {

@@ -234,7 +234,7 @@ function linkate_posts_index_options_subpage(){
 					<?php
 						link_cf_display_which_title($options['compare_seotitle']);
 						link_cf_display_clean_suggestions_stoplist($options['clean_suggestions_stoplist']);
-						link_cf_display_suggestions_donors($options['suggestions_donors']);
+						link_cf_display_suggestions_donors($options['suggestions_donors'], $options['suggestions_donors_join'] );
 						//link_cf_display_term_extraction($options['term_extraction']);
 					link_cf_display_num_term_length_limit($options['term_length_limit']);
 					?>
@@ -579,7 +579,7 @@ function linkate_ajax_call_reindex() {
 
 	$options = get_option('linkate-posts');
 	// Fill up the options with the values chosen...
-	$options = link_cf_options_from_post($options, array('term_extraction','term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors', 'compare_seotitle'));
+	$options = link_cf_options_from_post($options, array('term_extraction','term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors', 'suggestions_donors_join', 'compare_seotitle'));
 	
 	$customwords = array_unique(array_filter(explode("\n", str_replace("\r", "", mb_strtolower($options['custom_stopwords']))))); // remove empty lines // remove duplicates
 	$customwords = array_filter($customwords, function($v) {
@@ -612,6 +612,7 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 
 	$stemmer = new Stem\LinguaStemRu();
 	$suggestions_donors = $options['suggestions_donors'];
+	$suggestions_donors_join = $options['suggestions_donors_join'];
 	$clean_suggestions_stoplist = $options['clean_suggestions_stoplist'];
 	$min_len = $options['term_length_limit'];
 
@@ -669,7 +670,7 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 			}
 			
 			// Extract ancor terms
-			$suggestions = linkate_sp_prepare_suggestions($post['post_title'], $seotitle, $min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
+			$suggestions = linkate_sp_prepare_suggestions($post['post_title'], $seotitle, $min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer, $post['post_content'], $suggestions_donors_join);
 
 			$tags = linkate_sp_get_tag_terms($postID);
 			
@@ -747,7 +748,7 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 			}
 
 			// Extract ancor terms
-			$suggestions = linkate_sp_prepare_suggestions($term['name'], $seotitle, $min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer);
+			$suggestions = linkate_sp_prepare_suggestions($term['name'], $seotitle, $min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer, $descr, $suggestions_donors_join);
 
 
 			$tags = "";
@@ -1410,7 +1411,8 @@ function fill_options($options) {
 	if (!isset($options['anons_len'])) $options['anons_len'] = 200;
 	if (!isset($options['suggestions_click'])) $options['suggestions_click'] = 'select';
 	if (!isset($options['suggestions_join'])) $options['suggestions_join'] = 'all';
-	if (!isset($options['suggestions_donors'])) $options['suggestions_donors'] = 'intersection';
+	if (!isset($options['suggestions_donors'])) $options['suggestions_donors'] = 'h1,title';
+	if (!isset($options['suggestions_donors_join'])) $options['suggestions_donors_join'] = 'join';
 	if (!isset($options['suggestions_switch_action'])) $options['suggestions_switch_action'] = 'true';
 	if (!isset($options['ignore_relevance'])) $options['ignore_relevance'] = 'false'; // since 1.4.0
 	if (!isset($options['linkate_scheme_exists'])) $options['linkate_scheme_exists'] = false; // since 1.4.0

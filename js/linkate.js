@@ -344,6 +344,8 @@ jQuery(document).ready(function($){
             // do the work (search everything)
             let suggestions = $(e.target).parent().parent().find('div.linkate-link').attr('data-suggestions');
             //console.log(suggestions)
+            if (suggestions == '')
+                fcl_toggle_suggestions_tab(this, [], []);
 
             // item contains all the data about the article: titles, url, etc
             let item = fcl_getDataAttrs(e, false, true);
@@ -362,7 +364,6 @@ jQuery(document).ready(function($){
             let text_arr = finalString.trim().split(' ');
 
             // Filter short words
-            //let tinywords = ['ли', 'но', 'на', 'или', 'по', 'при', 'не', 'об', 'за', 'со','от', 'до', 'то', 'ни', 'да', 'он', 'она', 'оно', 'они','его','ее','нее','про','вне','ваш','вам', 'вы', 'вас', 'го','ти', 'их', 'из', 'них'];
             text_arr = text_arr.filter(function(w) {
                 return cl_whitelist.includes(w) || (w.length > cherrylink_options['term_length_limit'] && !cl_blacklist.includes(w));
             });
@@ -371,32 +372,6 @@ jQuery(document).ready(function($){
             for (var i = sug_arr.length - 1; i >= 0; i--) {
                 let count = 0;
                 let words = [];
-
-                // Levenshtein part
-                // let lev_koef = 1; // The longer word - the higher this value should be
-                // let len = sug_arr[i].length;
-                // if (len < 3) {
-                //     lev_koef = 1;
-                // } else if (len >= 3  && len < 7) {
-                //     lev_koef = 1;
-                // } else if (len >=7 && len < 11) {
-                //     lev_koef = 2;
-                // } else {
-                //     lev_koef = 3;
-                // }
-                //
-                // for (var j = text_arr.length - 1; j >= 0; j--) {
-                //     if (sug_arr[i] === text_arr[j]) {
-                //         count++;
-                //         if (!words.includes(text_arr[j]))
-                //             words.push(text_arr[j]);
-                //     } else if (fcl_levenshtein(sug_arr[i],text_arr[j], lev_koef) <= lev_koef) {
-                //         count++;
-                //         if (!words.includes(text_arr[j]))
-                //             words.push(text_arr[j]);
-                //     }
-                // }
-                // End levenshtein
 
                 // Stemmer part
                 for (var j = text_arr.length - 1; j >= 0; j--) {
@@ -488,7 +463,7 @@ jQuery(document).ready(function($){
                                         }
                                     } else {
                                         diff = pos_matrix[k][n].pos - (pos_matrix[i][j].pos + pos_matrix[i][j].len);
-                                        if (diff < 20) {
+                                        if (diff < 20 && diff > 0) {
                                             start = pos_matrix[i][j].pos;
                                             end = pos_matrix[k][n].pos + pos_matrix[k][n].len;
                                             add = true
@@ -747,7 +722,8 @@ jQuery(document).ready(function($){
         function fcl_toggle_suggestions_tab(div, single_words, multi_words) {
             let ankors_in_use = fcl_getAllAnkorsInUse(cl_editor_lastfocus_html_content);
             let insert_button = '<div class="suggestion-insert-anywhere" data-url="'+$(div).parent().parent().find('.linkate-link').attr('data-url')+'" title="Запасная кнопка, может пригодится, если вы выделили кусок текста вручную">&#9088; Вставить вокруг выделения</div>';
-            let panel_header = (single_words.length > 0 || multi_words.length > 0) ? 'Найдены предполагаемые анкоры для: <strong>' + $(div).parent().parent().find('.linkate-link').attr('data-titleseo') +'</strong>' + insert_button : '<strong>Ничего не найдено</strong>';
+            let reindex_link = window.location.href.replace(window.location.href.slice(window.location.href.indexOf('/wp-admin/') + 10),'options-general.php?page=linkate-posts&subpage=other');
+            let panel_header = (single_words.length > 0 || multi_words.length > 0) ? 'Найдены предполагаемые анкоры для: <strong>' + $(div).parent().parent().find('.linkate-link').attr('data-titleseo') +'</strong>' + insert_button : '<strong>Подсказки не найдены<br>Если вы видите эту надпись у всех ссылок, возможно вам нужно изменить <a href="'+reindex_link+'">настройки доноров подсказок</a>.</strong>';
             let panel = '<div class="suggestions-panel"><div class="suggestions-panel-content"><div class="suggestions-panel-header">'+panel_header+'</div>';
             if (ankors_in_use.length > 0) {
                 panel += '<div class="suggestions-panel-words"><div class="suggestions-panel-words-in-use-header"> > Использованные анкоры в статье</div><div class="suggestions-panel-words-in-use-text"><ul>';
@@ -795,7 +771,8 @@ jQuery(document).ready(function($){
             }
             panel += "<div class=\"suggestion-group\"><div class=\"suggestion-select-list\">"
             words_array.forEach(function(el, id, array) {
-                panel += "<div class=\"suggestion-select-option \" data-start=\""+el[0]+"\" data-end=\""+el[1]+"\" data-text=\""+el[2]+"\"><div class=\"suggestion-buttons\"><a title=\"Найти в тексте\" class=\"suggestion-find\"> </a><a class=\"suggestion-insert\" title=\"Вставить ссылку\">&#9088;</a></div><div class=\"suggestion-select-option-text"+fast_action_class+"\">"+el[2]+"</div>"+stop_btn+"</div>";
+                let relative_position = Math.round((el[0] / cl_editor_lastfocus_html_content.length) * 100);
+                panel += "<div class=\"suggestion-select-option \" data-start=\""+el[0]+"\" data-end=\""+el[1]+"\" data-text=\""+el[2]+"\"><div class=\"suggestion-buttons\"><a title=\"Найти в тексте\" class=\"suggestion-find\"> </a><a class=\"suggestion-insert\" title=\"Вставить ссылку\">&#9088;</a></div><div class=\"suggestion-select-option-text"+fast_action_class+"\">"+fcl_strip(el[2])+" <span style='font-size: smaller; color:lightgrey'>(" + relative_position + "%)</span> </div>"+stop_btn+"</div>";
             });
             panel += "</div></div>";
             return panel;
@@ -943,6 +920,8 @@ jQuery(document).ready(function($){
             let txt = cl_editor_lastfocus_html_content;
             let st = start, en = end;
             txt = txt.substring(st,en);
+            // add text pos percentage
+
             return [st, en, txt];
         }
 
