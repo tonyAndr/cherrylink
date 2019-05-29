@@ -950,15 +950,17 @@ function linkate_check_update(){
         require 'updater/plugin-update-checker.php';
     }
 
-    $update_file= 'http://seocherry.ru/plugin-updates/cherrylink/1600/cherrylink.json';
-
-    $update_checker= Puc_v4_Factory::buildUpdateChecker(
-        $update_file,
+    $update_checker = Puc_v4_Factory::buildUpdateChecker(
+        'https://github.com/tonyAndr/cherrylink',
         __FILE__,
         'cherrylink'
     );
-}
 
-add_action('admin_init', 'linkate_check_update');
+    $update_checker->setAuthentication('6d568422fc0119bba8ac68799afb87572e0f571e');
+    $update_checker->setBranch('master');
+    $update_checker->getVcsApi()->enableReleaseAssets();
+}
+linkate_check_update();
+//add_action('admin_init', 'linkate_check_update');
 add_action ('init', 'linkate_posts_init', 1);
 register_activation_hook(__FILE__, array('LinkatePosts', 'lp_activate'));
