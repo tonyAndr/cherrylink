@@ -59,8 +59,8 @@ jQuery(document).ready(function($){
 		                progress = response.slice(last_response_length); // Remove old output
 					var prog = JSON.parse(progress);
 
-		            $('#reindex_progress').attr('max', prog['total']);
-		            $('#reindex_progress').val(prog['current']);
+		            // $('#reindex_progress').attr('max', prog['total']);
+		            // $('#reindex_progress').val(prog['current']);
 		            output_progress_text(prog)
 		            // console.log(prog); // Update the progress bar
 		            last_response_length = response.length; // Track where the old data is (so they can be removed when new data is received)

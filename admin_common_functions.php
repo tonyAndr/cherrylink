@@ -41,7 +41,7 @@ function link_cf_options_from_post($options, $args) {
 		case 'excluded_authors':
         case 'included_authors':
         case 'show_customs':
-        case 'suggestions_donors':
+        case 'suggestions_donors_src':
 			if (isset($_POST[$arg]) && !empty($_POST[$arg])) {
 
 				$options[$arg] = is_array($_POST[$arg]) ? implode(',', $_POST[$arg]) : $_POST[$arg];
@@ -350,52 +350,25 @@ function link_cf_display_suggestions_switch_action($suggestions_switch_action) {
 	</tr>
 	<?php
 }
-function link_cf_display_suggestions_donors_old($suggestions_donors, $suggestions_donors_content) {
+
+function link_cf_display_suggestions_donors($suggestions_donors_src, $suggestions_donors_join) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="suggestions_donors"><?php _e('Доноры слов/фраз для подсказок', 'post_plugin_library') ?></label></th>
-		<td>
-		<select name="suggestions_donors" id="suggestions_donors">
-		<option <?php if($suggestions_donors == 'intersection') { echo 'selected="selected"'; } ?> value="intersection">Только общие слова между H1 и Title</option>
-		<option <?php if($suggestions_donors == 'h1') { echo 'selected="selected"'; } ?> value="h1">Все слова из Н1</option>
-		<option <?php if($suggestions_donors == 'title') { echo 'selected="selected"'; } ?> value="title">Все слова из Title</option>
-		<option <?php if($suggestions_donors == 'join') { echo 'selected="selected"'; } ?> value="join">Все слова из H1 и Title (дополнить друг друга)</option>
-		</select> 
-		</td>
-	</tr>
-    <tr valign="top">
-        <th scope="row"><label for="suggestions_donors_content"><?php _e('Добавить в подсказки слова из текста записи?', 'post_plugin_library') ?></label></th>
-        <td>
-            <select name="suggestions_donors_content" id="suggestions_donors_content">
-                <option <?php if($suggestions_donors_content == 'yes') { echo 'selected="selected"'; } ?> value="yes">Да</option>
-                <option <?php if($suggestions_donors_content == 'no') { echo 'selected="selected"'; } ?> value="no">Нет</option>
-            </select>
-        </td>
-        <td></td>
-    </tr>
-	<?php
-}
-function link_cf_display_suggestions_donors($suggestions_donors, $suggestions_donors_join) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="suggestions_donors"><?php _e('Доноры слов/фраз для подсказок', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="suggestions_donors_src"><?php _e('Доноры слов/фраз для подсказок', 'post_plugin_library') ?></label></th>
 		<td>
             <table class="linkateposts-inner-table">
                 <?php
-                $opts = array('h1', 'title', 'content');
-                    $turned_on = explode(',', $suggestions_donors);
+                $opts = array('title', 'content');
+                    $turned_on = explode(',', $suggestions_donors_src);
                     echo "\n\t<tr valign=\"top\"><td><strong>Источник</strong></td><td>Включить?</td></tr>";
                     foreach ($opts as $opt) {
-
                             if (false === in_array($opt, $turned_on)) {
                                 $ischecked = '';
                             } else {
                                 $ischecked = 'checked';
                             }
-                            echo "\n\t<tr valign=\"top\"><td>$opt</td><td><input type=\"checkbox\" name=\"suggestions_donors[]\" value=\"$opt\" $ischecked /></td></tr>";
-
+                            echo "\n\t<tr valign=\"top\"><td>$opt</td><td><input type=\"checkbox\" name=\"suggestions_donors_src[]\" value=\"$opt\" $ischecked /></td></tr>";
                     }
-
                 ?>
             </table>
 		</td>
@@ -812,6 +785,10 @@ function link_cf_display_sidebar() {
 function link_cf_display_authors($excluded_authors, $included_authors) {
 	global $wpdb;
 	?>
+    <tr valign="top">
+        <th scope="row"><?php _e('Пояснение к фильтрам авторов и рубрик:', 'post_plugin_library') ?></th>
+        <td>Не нужно ставить галочки во всех полях _Показать_, чтобы вывести всех авторов и рубики. Если ничего не выбрано, они будут выведены по умолчанию.<br><br>Если хотите вывести только выбранных авторов/категории, ставьте галочки напротив них - остальное показано не будет.<br><br>Если хотите скрыть какую-либо категорию, ставьте галочку в столбце _Скрыть_ напротив соотв. категории, при этом не нужно у остальных проставлять галочки в _Показать_.</td>
+    </tr>
 	<tr valign="top">
 		<th scope="row"><?php _e('Записи каких авторов выводить:', 'post_plugin_library') ?></th>
 		<td>
@@ -838,7 +815,7 @@ function link_cf_display_authors($excluded_authors, $included_authors) {
 				}	
 			?>
 			</table>
-		</td> 
+		</td>
 	</tr>
 	<?php
 }

@@ -232,9 +232,9 @@ function linkate_posts_index_options_subpage(){
 			    <hr>
 				<table class="optiontable form-table">
 					<?php
-						link_cf_display_which_title($options['compare_seotitle']);
+						//link_cf_display_which_title($options['compare_seotitle']);
 						link_cf_display_clean_suggestions_stoplist($options['clean_suggestions_stoplist']);
-						link_cf_display_suggestions_donors($options['suggestions_donors'], $options['suggestions_donors_join'] );
+						link_cf_display_suggestions_donors($options['suggestions_donors_src'], $options['suggestions_donors_join'] );
 						//link_cf_display_term_extraction($options['term_extraction']);
 					link_cf_display_num_term_length_limit($options['term_length_limit']);
 					?>
@@ -579,7 +579,7 @@ function linkate_ajax_call_reindex() {
 
 	$options = get_option('linkate-posts');
 	// Fill up the options with the values chosen...
-	$options = link_cf_options_from_post($options, array('term_extraction','term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors', 'suggestions_donors_join', 'compare_seotitle'));
+	$options = link_cf_options_from_post($options, array('term_extraction','term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors_src', 'suggestions_donors_join'));
 	
 	$customwords = array_unique(array_filter(explode("\n", str_replace("\r", "", mb_strtolower($options['custom_stopwords']))))); // remove empty lines // remove duplicates
 	$customwords = array_filter($customwords, function($v) {
@@ -611,7 +611,7 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
     require_once (WP_PLUGIN_DIR . "/cherrylink/ru_stemmer.php");
 
 	$stemmer = new Stem\LinguaStemRu();
-	$suggestions_donors = $options['suggestions_donors'];
+	$suggestions_donors_src = $options['suggestions_donors_src'];
 	$suggestions_donors_join = $options['suggestions_donors_join'];
 	$clean_suggestions_stoplist = $options['clean_suggestions_stoplist'];
 	$min_len = $options['term_length_limit'];
@@ -638,7 +638,7 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 	// remove time limit for this script to be able to use ajax progress call
 	if ($is_ajax_call) {
 		set_time_limit(0);
-		$amount_of_db_rows = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts");
+		$amount_of_db_rows = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item')");
 	}
 
 	while ($posts = $wpdb->get_results("SELECT `ID`, `post_title`, `post_content`, `post_type` FROM $wpdb->posts WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item') LIMIT $start, $batch", ARRAY_A)) {
@@ -648,13 +648,12 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 		foreach ($posts as $post) {
 			if ($post['post_type'] === 'revision') continue;
             $postID = $post['ID'];
-            $content = linkate_sp_get_post_terms($post['post_content'], $min_len, $linkate_overusedwords, $stemmer);
+            list($content, $content_sugg) = linkate_sp_get_post_terms($post['post_content'], $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
             $content = iconv("UTF-8", "UTF-8//IGNORE", $content); // convert broken symbols
             if (!$content)
                 $content = '';
 			$seotitle = '';
 			if (function_exists('wpseo_init')){
-//		    	$seotitle = get_post_meta( $postID, "_yoast_wpseo_title", true);
 		    	$seotitle = linkate_decode_yoast_variables($postID);
 			}
 		    if (function_exists( 'aioseop_init_class' )){
@@ -663,14 +662,16 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 		    // fix memory leak
 		    wp_cache_delete( $postID, 'post_meta' );
 
-			if ($options['compare_seotitle'] === 'checked' && !empty($seotitle)) { 
-				$title = linkate_sp_get_title_terms( $seotitle, $min_len, $linkate_overusedwords, $stemmer );
+			if (!empty($seotitle) && $seotitle !== $post['post_title']) {
+			    $title = $post['post_title'] . " " . $seotitle;
 			} else {
-				$title = linkate_sp_get_title_terms( $post['post_title'], $min_len, $linkate_overusedwords, $stemmer );
+			    $title = $post['post_title'];
 			}
+
+			list($title, $title_sugg) = linkate_sp_get_title_terms( $title, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist );
 			
 			// Extract ancor terms
-			$suggestions = linkate_sp_prepare_suggestions($post['post_title'], $seotitle, $min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer, $post['post_content'], $suggestions_donors_join);
+			$suggestions = linkate_sp_prepare_suggestions($title_sugg, $content_sugg, $suggestions_donors_src, $suggestions_donors_join);
 
 			$tags = linkate_sp_get_tag_terms($postID);
 			
@@ -701,11 +702,6 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 	}
 	unset($posts);
 
-	// put common words in to file
-    // to suggest new stopwords
-	//$common_words = implode(PHP_EOL, $common_words);
-	//file_put_contents(WP_PLUGIN_DIR.'/cherrylink/common_words.txt', $common_words);
-
 	if ($is_ajax_call) {
 		$amount_of_db_rows = $amount_of_db_rows + $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->terms");
 	}
@@ -727,29 +723,28 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 				$aio_title = $opt['title'];
 			}
 
-			$content = linkate_sp_get_post_terms($descr, $min_len, $linkate_overusedwords, $stemmer);
+			list($content, $content_sugg) = linkate_sp_get_post_terms($descr, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
 			//Seo title is more relevant, usually
 			//Extracting terms from the custom titles, if present
 			$seotitle = '';
-			if ($options['compare_seotitle'] === 'checked') { 
-				$yoast_opt = get_option('wpseo_taxonomy_meta');
-				if ($yoast_opt && $yoast_opt['category'] && function_exists('wpseo_init')) {
-					$seotitle = $yoast_opt['category'][$termID]['wpseo_title'];
-				}
-			    if (!$seotitle && $aio_title && function_exists('show_descr_top'))
-			        $seotitle = $aio_title;
-			    if (!$seotitle) {
-			        $title = linkate_sp_get_title_terms( $term['name'], $min_len, $linkate_overusedwords, $stemmer );
-			    } else {
-			        $title = linkate_sp_get_title_terms( $seotitle, $min_len, $linkate_overusedwords, $stemmer );
-			    }
-			} else {
-				$title = linkate_sp_get_title_terms( $term['name'], $min_len, $linkate_overusedwords, $stemmer );
-			}
+
+            $yoast_opt = get_option('wpseo_taxonomy_meta');
+            if ($yoast_opt && $yoast_opt['category'] && function_exists('wpseo_init')) {
+                $seotitle = $yoast_opt['category'][$termID]['wpseo_title'];
+            }
+            if (!$seotitle && $aio_title && function_exists('show_descr_top'))
+                $seotitle = $aio_title;
+
+            if (!empty($seotitle) && $seotitle !== $term['name']) {
+                $title = $term['name'] . " " . $seotitle;
+            } else {
+                $title = $term['name'];
+            }
+
+            list($title, $title_sugg) = linkate_sp_get_title_terms( $title, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist );
 
 			// Extract ancor terms
-			$suggestions = linkate_sp_prepare_suggestions($term['name'], $seotitle, $min_len, $suggestions_donors, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer, $descr, $suggestions_donors_join);
-
+			$suggestions = linkate_sp_prepare_suggestions($title_sugg, $content_sugg, $suggestions_donors_src, $suggestions_donors_join);
 
 			$tags = "";
 			$wpdb->query("INSERT INTO `$table_name` (pID, content, title, tags, is_term, suggestions) VALUES ($termID, \"$content\", \"$title\", \"$tags\", 1, \"$suggestions\")");
@@ -1411,9 +1406,9 @@ function fill_options($options) {
 	if (!isset($options['anons_len'])) $options['anons_len'] = 200;
 	if (!isset($options['suggestions_click'])) $options['suggestions_click'] = 'select';
 	if (!isset($options['suggestions_join'])) $options['suggestions_join'] = 'all';
-	if (!isset($options['suggestions_donors'])) $options['suggestions_donors'] = 'h1,title';
+	if (!isset($options['suggestions_donors_src'])) $options['suggestions_donors_src'] = 'title';
 	if (!isset($options['suggestions_donors_join'])) $options['suggestions_donors_join'] = 'join';
-	if (!isset($options['suggestions_switch_action'])) $options['suggestions_switch_action'] = 'true';
+	if (!isset($options['suggestions_switch_action'])) $options['suggestions_switch_action'] = 'false';
 	if (!isset($options['ignore_relevance'])) $options['ignore_relevance'] = 'false'; // since 1.4.0
 	if (!isset($options['linkate_scheme_exists'])) $options['linkate_scheme_exists'] = false; // since 1.4.0
 	if (!isset($options['linkate_scheme_time'])) $options['linkate_scheme_time'] = 0; // since 1.4.0
