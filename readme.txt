@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== CherryLink ===
 Tags: seo, links
 Requires at least: 4.6
 Tested up to: 5.2.1
