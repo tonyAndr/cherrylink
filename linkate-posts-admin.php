@@ -770,7 +770,7 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 		$existing_blacklist = array_flip(array_filter(linkate_get_blacklist(false)));
 //		$common_words = array_slice($common_words,0,20, true);
 		arsort($common_words);
-		$sw_count = 35;
+		$sw_count = 36;
 		foreach ($common_words as $k => $v) {
 		    if ($sw_count == 0) break;
 			if (!isset($existing_blacklist[$k])) $ajax_array['common_words'][] = array('word' => $k, 'count' => $v);

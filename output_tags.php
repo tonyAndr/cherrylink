@@ -679,40 +679,47 @@ function linkate_otf_image($option_key, $result, $ext) {
 }
 
 function linkate_otf_imagesrc($option_key, $result, $ext) {
-	$options = get_option('linkate-posts');
+	$options = get_option($option_key);
 	$url_option = $options['relative_links'];
+	$crb_image_size = $options['crb_image_size'];
+
+    // extract any image tags
+    $s = array();
+    $size = '';
+    $content = $result->post_content;
+    if ($ext) {
+        $s = explode(':', $ext);
+        if ($s[1] === 'post') {
+            $content = apply_filters('the_content', $content);
+        }
+        if ($s[2]) $size = $s[2];
+    }
 
 	$featured_src = linkate_get_featured_src($result->ID);
 	if ($featured_src) {
 		$featured_src = get_site_url() . "/wp-content/uploads/" . $featured_src;
 		$imgsrc = unparse_url($featured_src, $url_option);
 	} else {
-		// extract any image tags
-		$s = array();
-		$suffix = '';
-		$content = $result->post_content;
-		if ($ext) {
-			$s = explode(':', $ext);
-			if ($s[1] === 'post') {
-				$content = apply_filters('the_content', $content);
-			}
-			if ($s[2]) $suffix = $s[2];
-		}
 		$pattern = '/<img.+?src\s*=\s*[\'|\"](.*?)[\'|\"].+?>/i';
-		if (!preg_match_all($pattern, $content, $matches)) return '';
+		if (!preg_match_all($pattern, $content, $matches)) $imgsrc = false;
 		$i = isset($s[0]) ? $s[0] : false;
 		if (!$i) $i = 0;
 		$imgsrc = $matches[1][$i];
 		$imgsrc = unparse_url($imgsrc, $url_option);
-
-		if ($suffix) {
-			if ($suffix === '?m') $suffix = '-' . get_option('medium_size_w') . 'x' . get_option('medium_size_h');
-			if ($suffix === '?t') $suffix = '-' . get_option('thumbnail_size_w') . 'x' . get_option('thumbnail_size_h');
-			$pathinfo = pathinfo($imgsrc);
-			$extension = $pathinfo['extension'];
-			$imgsrc = str_replace(".$extension", "$suffix.$extension", $imgsrc);
-		}
 	}
+
+	if ($crb_image_size)
+	    $size = $crb_image_size;
+
+    if ($size) {
+        $att_id = attachment_url_to_postid($imgsrc);
+        $finalsrc = wp_get_attachment_image_url( $att_id, $size );
+        if ($finalsrc)
+            return $finalsrc;
+    }
+
+    if (!$imgsrc) // placeholder
+        $imgsrc = WP_PLUGIN_URL . '/cherrylink/img/imgsrc_placeholder.jpg';
 
 	return $imgsrc;
 }
