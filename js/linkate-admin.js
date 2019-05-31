@@ -1,5 +1,9 @@
 jQuery(document).ready(function($){
 
+	$(document).on("keydown", ":input:not(textarea)", function(event) {
+		return event.key != "Enter";
+	});
+
 	// todo - do smth with them later
 	// default templates
 	var link_alt_temp = "<div style=\"padding:10px;margin:10px;border-top:1px solid lightgrey;border-bottom:1px solid lightgrey;\"><span style=\"color:lightgrey;font-size:smaller;\">Читайте также</span><div style=\"position:relative;max-width: 660px;margin: 0 auto;padding: 0 20px 20px 20px;display:flex;flex-wrap: wrap;\"><div style=\"width: 35%; min-width: 180px; height: auto; box-sizing: border-box;padding-right: 5%;\"><img src=\"{imagesrc}\" style=\"width:100%;\"></div><div style=\"width: 60%; min-width: 180px; height: auto; box-sizing: border-box;\"><strong>{title}</strong><br>{anons}</div><a target=\"_blank\" href=\"{url}\"><span style=\"position:absolute;width:100%;height:100%;top:0;left: 0;z-index: 1;\">&nbsp;</span></a></div></div>";
@@ -298,6 +302,9 @@ jQuery(document).ready(function($){
 		})
 		$("#stopwords-defaults").click(function (event) {
 			event.preventDefault();
+			let conf = confirm("Это действие удалит все стоп-слова из таблицы и вернет стандартные. Хотите продолжить?");
+			if (!conf)
+				return false;
 			let ajax_data = {
 				action: 'fill_stopwords',
 				restore_ajax: 'yes'
@@ -314,6 +321,9 @@ jQuery(document).ready(function($){
 		})
 		$("#stopwords-remove-all").click(function (event) {
 			event.preventDefault();
+			let conf = confirm("Вы точно хотите удалить все стоп слова?");
+			if (!conf)
+				return false;
 			let ajax_data = {
 				action: 'linkate_delete_stopword',
 				all: 1

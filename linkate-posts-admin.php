@@ -246,8 +246,8 @@ function linkate_posts_index_options_subpage(){
                 <div style="display:flex;flex-flow: row;width: 100%;flex-wrap:nowrap;justify-content: space-between">
                     <div style="flex-grow: 1; flex-shrink: 0; flex-basis: 0">
                         <div class="table-controls" style="text-align: right; margin-bottom:10px;">
-                            <button id="stopwords-remove-all">Удалить все из таблицы</button>
-                            <button id="stopwords-defaults">Вернуть стандартные</button>
+                            <button id="stopwords-remove-all"  tabIndex="-1">Удалить все из таблицы</button>
+                            <button id="stopwords-defaults" tabIndex="-1">Вернуть стандартные</button>
                         </div>
                         <div id="example-table"></div>
                     </div>
@@ -770,7 +770,7 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 		$existing_blacklist = array_flip(array_filter(linkate_get_blacklist(false)));
 //		$common_words = array_slice($common_words,0,20, true);
 		arsort($common_words);
-		$sw_count = 20;
+		$sw_count = 35;
 		foreach ($common_words as $k => $v) {
 		    if ($sw_count == 0) break;
 			if (!isset($existing_blacklist[$k])) $ajax_array['common_words'][] = array('word' => $k, 'count' => $v);
@@ -786,19 +786,6 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 	return $termcount;
 }
 
-function linkate_decode_yoast_variables($post_id, $is_term = false) {
-
-//    $yoast_title = get_post_meta($post_id, '_yoast_wpseo_title', true);
-    $string =  WPSEO_Meta::get_value( 'title', $post_id );
-    if ($string !== '') {
-        $replacer = new WPSEO_Replace_Vars();
-
-        return $replacer->replace( $string, get_post($post_id) );
-    } else {
-        return '';
-    }
-
-}
 
 
 // ========================================================================================= //
@@ -983,6 +970,7 @@ function linkate_generate_csv_or_json_prettyfied() {
 }
 
 function linkate_queryresult_to_array($links, $source_type) {
+    $include_types = array();
 	$include_types = $_POST['export_types'];
 	$output_array = array();
 	//echo sizeof($links);
