@@ -130,6 +130,9 @@ function link_cf_options_from_post($options, $args) {
 		case 'crb_temp_after':
 		    $options[$arg] = link_cf_is_base64_encoded($_POST[$arg]) ? $_POST[$arg] : base64_encode(urlencode($_POST[$arg]));
             break;
+        case 'crb_css_override':
+            $options[$arg] = $_POST[$arg];
+            break;
         case 'export':
 //        	parse_str(base64_decode($_POST['export']),$options);
             $options = $_POST['export'];
