@@ -3,7 +3,7 @@ Tags: seo, links
 Requires at least: 4.6
 Tested up to: 5.2.1
 Stable tag: 1.6.7
-Requires PHP: 5.6.40
+Requires PHP: 5.6.38
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -70,6 +70,9 @@ CherryLink - плагин для ручной перелинковки стат�
 1. Скриншот панели перелинковки в редакторе screenshot1.jpg
 
 == ChangeLog ==
+
+= 1.6.12 =
+* Откатил минимальную версию PHP до 5.6.38
 
 = 1.6.11 =
 * Исправлены подсказки
