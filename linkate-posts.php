@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 1.6.12
+Version: 1.6.13
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -906,12 +906,12 @@ if ( is_admin()) {
 function linkate_posts_wp_admin_style() {
 	if (LinkatePosts::linkate_is_plugin_admin_page('settings')) {
 		wp_register_style( 'linkate-posts-admin', plugins_url('', __FILE__) . '/css/linkate-posts-admin.css', false, LinkatePosts::$version );
-		wp_register_style( 'linkate-posts-admin-table', "https://unpkg.com/tabulator-tables@4.2.3/dist/css/tabulator.min.css", false, LinkatePosts::$version );
+		wp_register_style( 'linkate-posts-admin-table', plugins_url('', __FILE__) . '/css/tabulator.min.css', false, LinkatePosts::$version );
 		wp_enqueue_style( 'linkate-posts-admin' );
 		wp_enqueue_style( 'linkate-posts-admin-table' );
 
 		wp_register_script( 'linkate-script-admin', plugins_url( '/js/linkate-admin.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
-		wp_register_script( 'linkate-script-admin-table', "https://unpkg.com/tabulator-tables@4.2.3/dist/js/tabulator.min.js", array( 'jquery' ), LinkatePosts::get_linkate_version() );
+		wp_register_script( 'linkate-script-admin-table', plugins_url( '/js/tabulator.min.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
 
 		$options = (array) get_option('linkate-posts');
 		$scheme_exists = array("state" => $options['linkate_scheme_exists'] ? true : false);
