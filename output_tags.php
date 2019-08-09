@@ -467,13 +467,13 @@ function linkate_otf_catnames($option_key, $result, $ext) {
 
 function linkate_otf_categorynames($option_key, $result, $ext) {
 	$cats = get_the_category($result->ID);
-	$value = ''; $n = 0;
+	$value = array(); //$n = 0;
 	foreach ($cats as $cat) {
-		if ($n > 0) $value .= $ext;
-		$value .= apply_filters('single_cat_title', $cat->cat_name);
-		++$n;
+		//if ($n > 0) $value[] = $ext;
+		$value[] = apply_filters('single_cat_title', $cat->cat_name);
+		//++$n;
 	}
-	return $value;
+	return implode(", ", $value);
 }
 
 function linkate_otf_custom($option_key, $result, $ext) {

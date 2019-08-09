@@ -1161,7 +1161,16 @@ jQuery(document).ready(function($){
             //     return true;
             // }
 
-            dont_show_cat = !el.classList.contains("link-term") && cat !== "0" && !cat.includes($(el).attr("data-category"));
+            let link_cats = $(el).attr("data-category").split(", ");
+            let cat_found = false;
+            link_cats.forEach(function(item, index) {
+                if (cat.includes(item)) {
+                    cat_found = true;
+                }
+            });
+
+
+            dont_show_cat = !el.classList.contains("link-term") && cat !== "0" && !cat_found;
 
             return hide || !contains || hide_not_exist || dont_show_cat;
         }
