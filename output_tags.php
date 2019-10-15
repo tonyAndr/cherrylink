@@ -109,16 +109,24 @@ function linkate_otf_timeedited($option_key, $result, $ext) {
 }
 
 function linkate_otf_anons($option_key, $result, $ext) {
+    $options = get_option($option_key);
 
-	$limit = 220;
+    if ($options['anons_len']) {
+        $limit = intval($options['anons_len']);
+    } else {
+        $limit = 220;
+    }
+
 	$value = trim($result->post_excerpt);
 	if ($value == '') $value = $result->post_content;
 	//$value = linkate_oth_trim_excerpt($value, $ext);
 	$excerpt = preg_replace(" (\[.*?\])",'',$value);
     $excerpt = strip_shortcodes($excerpt);
     $excerpt = strip_tags($excerpt);
-    $excerpt = substr($excerpt, 0, $limit);
-    $excerpt = substr($excerpt, 0, strripos($excerpt, " "));
+    $excerpt = mb_substr($excerpt, 0, $limit);
+    $next_space_pos = mb_strpos($excerpt, " ");
+    if ($next_space_pos)
+        $excerpt = mb_substr($excerpt, 0, $next_space_pos);
     $excerpt = trim(preg_replace( '/\s+/', ' ', $excerpt));
     $excerpt = $excerpt.'...';
     return $excerpt;

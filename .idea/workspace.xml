@@ -1,0 +1,834 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="49bc74b0-ff8e-4416-bf96-3d55c15d8a59" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/linkate-posts.php" beforeDir="false" afterPath="$PROJECT_DIR$/linkate-posts.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output_tags.php" beforeDir="false" afterPath="$PROJECT_DIR$/output_tags.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.txt" beforeDir="false" afterPath="$PROJECT_DIR$/readme.txt" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings" doNotAsk="true" synchronizationState="SYNCHRONIZE">
+    <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/linkate-admin.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="75">
+              <caret line="3" column="36" selection-start-line="3" selection-start-column="36" selection-end-line="3" selection-end-column="36" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/linkate-posts-admin.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="19525">
+              <caret line="783" column="17" selection-start-line="783" selection-start-column="7" selection-end-line="783" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/admin_common_functions.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="308">
+              <caret line="581" column="71" selection-start-line="581" selection-start-column="62" selection-end-line="581" selection-end-column="71" />
+              <folding>
+                <element signature="e#6#29#0#PHP" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/output_tags.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="431">
+              <caret line="125" column="46" lean-forward="true" selection-start-line="125" selection-start-column="46" selection-end-line="125" selection-end-column="46" />
+              <folding>
+                <element signature="e#142#150#1" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../yt-link-fixer-0.1.2/yt-link-fixer/vendor/symfony/polyfill-mbstring/bootstrap.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="226">
+              <caret line="37" column="13" selection-start-line="37" selection-start-column="13" selection-end-line="37" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="jar://$APPLICATION_HOME_DIR$/plugins/php/lib/php.jar!/stubs/mbstring/mbstring.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="210">
+              <caret line="503" column="9" selection-start-line="503" selection-start-column="9" selection-end-line="503" selection-end-column="9" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="jar://$APPLICATION_HOME_DIR$/plugins/php/lib/php.jar!/stubs/standard/standard_1.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="451">
+              <caret line="134" column="9" selection-start-line="134" selection-start-column="9" selection-end-line="134" selection-end-column="9" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/linkate-posts.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="200">
+              <caret line="8" column="26" lean-forward="true" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/readme.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="325">
+              <caret line="73" column="10" lean-forward="true" selection-start-line="73" selection-start-column="10" selection-end-line="73" selection-end-column="10" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/linkate.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="29200">
+              <caret line="1168" column="17" selection-start-line="1168" selection-start-column="17" selection-end-line="1168" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>sort</find>
+      <find>export</find>
+      <find>window.location.href.indexOf('term.php')</find>
+      <find>dummy</find>
+      <find>suggestion-buttons</find>
+      <find>links-count-targets</find>
+      <find>оноры слов/фраз для подсказо</find>
+      <find>linkate_add_stopwords</find>
+      <find>suggestions_join</find>
+      <find>show_cust</find>
+      <find>let host</find>
+      <find>чить в список произвольные типы запи</find>
+      <find>Использовать SEO Title вместо H1:</find>
+      <find>Записи каких авторов выводить:</find>
+      <find>window.location.href</find>
+      <find>ыстрые действия в подсказках: переход к анкору в тексте при наведении мышкой, вставка</find>
+      <find>suggestions_switch_action</find>
+      <find>удалить</find>
+      <find>suggestions_donors</find>
+      <find>stop</find>
+      <find>stopwords-remove-all</find>
+      <find>suggestion-find</find>
+      <find>enqu</find>
+      <find>categoryna</find>
+      <find>file_put_c</find>
+      <find>imagesrc</find>
+      <find>anons</find>
+    </findStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/linkate-editor.php" />
+        <option value="$PROJECT_DIR$/ru_stemmer.php" />
+        <option value="$PROJECT_DIR$/css/linkate.css" />
+        <option value="$PROJECT_DIR$/readme.md" />
+        <option value="$PROJECT_DIR$/js/linkate-admin.js" />
+        <option value="$PROJECT_DIR$/linkate-posts-admin.php" />
+        <option value="$PROJECT_DIR$/admin_common_functions.php" />
+        <option value="$PROJECT_DIR$/js/linkate.js" />
+        <option value="$PROJECT_DIR$/output_tags.php" />
+        <option value="$PROJECT_DIR$/readme.txt" />
+        <option value="$PROJECT_DIR$/linkate-posts.php" />
+      </list>
+    </option>
+  </component>
+  <component name="PhpServers">
+    <servers>
+      <server host="localhost" id="ccf92c90-f09d-4117-8649-5afe5420ce66" name="localhost" port="8888" />
+      <server host="seoplugs" id="331d6403-0f68-46b4-87b1-fe47f98963a7" name="seoplugs" />
+      <server host="test.seoplugs" id="284d49c4-93bc-4382-aea3-f17e4d0bb39d" name="test.seoplugs" use_path_mappings="true">
+        <path_mappings>
+          <mapping local-root="$PROJECT_DIR$/../../../wp-admin" remote-root="C:/wamp64/www/test.seoplugs/wp-admin" />
+        </path_mappings>
+      </server>
+      <server host="transsib" id="59357549-6fd7-4b46-8bca-846f32b2556f" name="transsib" use_path_mappings="true">
+        <path_mappings>
+          <mapping local-root="$PROJECT_DIR$/../../upgrade/wordpress-5.2.4-1tsjBq/wordpress/wp-admin" remote-root="C:/wamp64/www/transsib/wp-admin" />
+        </path_mappings>
+      </server>
+    </servers>
+  </component>
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="PHP7">
+    <include_path>
+      <path value="$PROJECT_DIR$/vendor/composer" />
+      <path value="$PROJECT_DIR$/../../.." />
+    </include_path>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="835" />
+    <option name="width" value="1294" />
+    <option name="height" value="1040" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="cherrylink" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cherrylink" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cherrylink" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cherrylink" type="462c0819:PsiDirectoryNode" />
+              <item name="assets" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cherrylink" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cherrylink" type="462c0819:PsiDirectoryNode" />
+              <item name="css" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cherrylink" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cherrylink" type="462c0819:PsiDirectoryNode" />
+              <item name="img" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cherrylink" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cherrylink" type="462c0819:PsiDirectoryNode" />
+              <item name="js" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cherrylink" type="b2602c69:ProjectViewProjectNode" />
+              <item name="cherrylink" type="462c0819:PsiDirectoryNode" />
+              <item name="updater" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="cherrylink" type="b2602c69:ProjectViewProjectNode" />
+              <item name="External Libraries" type="bcb0276e:PhpExternalLibrariesNodePatcher$PatchedExternalLibrariesNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../stickyads" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="settings.github" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="49bc74b0-ff8e-4416-bf96-3d55c15d8a59" name="Default Changelist" comment="" />
+      <created>1554105451201</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1554105451201</updated>
+      <workItem from="1554105458895" duration="10496000" />
+      <workItem from="1555168659583" duration="10438000" />
+      <workItem from="1555440060823" duration="610000" />
+      <workItem from="1555861217951" duration="2346000" />
+      <workItem from="1556195763707" duration="3052000" />
+      <workItem from="1558785078478" duration="45000" />
+      <workItem from="1558863784481" duration="762000" />
+      <workItem from="1558951243952" duration="64022000" />
+      <workItem from="1559572557157" duration="9000" />
+      <workItem from="1559573018391" duration="5176000" />
+      <workItem from="1561534752154" duration="1954000" />
+      <workItem from="1562093355947" duration="85000" />
+      <workItem from="1563266326691" duration="59000" />
+      <workItem from="1563562899323" duration="1229000" />
+      <workItem from="1564399510046" duration="28000" />
+      <workItem from="1565363228610" duration="2740000" />
+      <workItem from="1568199080973" duration="1945000" />
+      <workItem from="1571083545207" duration="1093000" />
+      <workItem from="1571167483072" duration="1499000" />
+    </task>
+    <task id="LOCAL-00001" summary="1.6.6">
+      <created>1559076708822</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1559076708823</updated>
+    </task>
+    <task id="LOCAL-00002" summary="1.6.6 forgot to change version">
+      <created>1559114855426</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1559114855426</updated>
+    </task>
+    <task id="LOCAL-00003" summary="1.6.6 update readme">
+      <created>1559115119604</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1559115119604</updated>
+    </task>
+    <task id="LOCAL-00004" summary="1.6.6 update updater credentials">
+      <created>1559120103687</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1559120103687</updated>
+    </task>
+    <task id="LOCAL-00005" summary="1.6.6 suggestion fixes">
+      <created>1559155934736</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1559155934736</updated>
+    </task>
+    <task id="LOCAL-00006" summary="1.6.6 suggestion fixes">
+      <created>1559156096304</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1559156096304</updated>
+    </task>
+    <task id="LOCAL-00007" summary="1.6.6 оптимизация реиндексации">
+      <created>1559212210995</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1559212210995</updated>
+    </task>
+    <task id="LOCAL-00008" summary="1.6.7 мелкие доработки">
+      <created>1559290272887</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1559290272887</updated>
+    </task>
+    <task id="LOCAL-00009" summary="1.6.8 размеры картинок">
+      <created>1559298184462</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1559298184462</updated>
+    </task>
+    <task id="LOCAL-00010" summary="1.6.8 плейсхолдер">
+      <created>1559298226019</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1559298226020</updated>
+    </task>
+    <task id="LOCAL-00011" summary="1.6.8 name fix">
+      <created>1559299208760</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1559299208760</updated>
+    </task>
+    <task id="LOCAL-00012" summary="1.6.9 updater fix">
+      <created>1559549983989</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1559549983989</updated>
+    </task>
+    <task id="LOCAL-00013" summary="1.6.10 changes to support CRB css_override">
+      <created>1559591286700</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1559591286701</updated>
+    </task>
+    <task id="LOCAL-00014" summary="1.6.11 fix suggestions">
+      <created>1559593833962</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1559593833962</updated>
+    </task>
+    <task id="LOCAL-00015" summary="1.6.12 php version">
+      <created>1559636872187</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1559636872187</updated>
+    </task>
+    <task id="LOCAL-00016" summary="1.6.13 remove http://unpkg.com scripts">
+      <created>1561536101953</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1561536101954</updated>
+    </task>
+    <task id="LOCAL-00017" summary="1.6.14 quick cats filter fix for multi cat posts">
+      <created>1565380265333</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1565380265334</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="107588000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="2576" height="1056" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.10771065" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="Debug" order="3" visible="true" weight="0.23618636" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Database Changes" order="8" />
+      <window_info anchor="bottom" id="Version Control" order="9" />
+      <window_info anchor="bottom" id="Terminal" order="10" />
+      <window_info anchor="bottom" id="Event Log" order="11" side_tool="true" />
+      <window_info anchor="bottom" id="Messages" order="12" weight="0.21451788" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Database" order="3" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="1.6.6" />
+    <MESSAGE value="1.6.6 forgot to change version" />
+    <MESSAGE value="1.6.6 update readme" />
+    <MESSAGE value="1.6.6 update updater credentials" />
+    <MESSAGE value="1.6.6 suggestion fixes" />
+    <MESSAGE value="1.6.6 оптимизация реиндексации" />
+    <MESSAGE value="1.6.7 мелкие доработки" />
+    <MESSAGE value="1.6.8 размеры картинок" />
+    <MESSAGE value="1.6.8 плейсхолдер" />
+    <MESSAGE value="1.6.8 name fix" />
+    <MESSAGE value="1.6.9 updater fix" />
+    <MESSAGE value="1.6.10 changes to support CRB css_override" />
+    <MESSAGE value="1.6.11 fix suggestions" />
+    <MESSAGE value="1.6.12 php version" />
+    <MESSAGE value="1.6.13 remove http://unpkg.com scripts" />
+    <MESSAGE value="1.6.14 quick cats filter fix for multi cat posts" />
+    <option name="LAST_COMMIT_MESSAGE" value="1.6.14 quick cats filter fix for multi cat posts" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/linkate-posts.php</url>
+          <line>694</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <condition expression="$postID == 3109" language="PHP" />
+          <url>file://$PROJECT_DIR$/linkate-posts-admin.php</url>
+          <line>650</line>
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <condition expression="$word == &quot;крупных&quot;" language="PHP" />
+          <url>file://$PROJECT_DIR$/linkate-posts.php</url>
+          <line>702</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/linkate-posts.php</url>
+          <line>713</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <condition expression="$word == &quot;которых&quot;" language="PHP" />
+          <url>file://$PROJECT_DIR$/ru_stemmer.php</url>
+          <line>87</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/admin_common_functions.php</url>
+          <line>105</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/common_functions.php</url>
+          <line>529</line>
+          <option name="timeStamp" value="19" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/common_functions.php</url>
+          <line>505</line>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/linkate-posts.php</url>
+          <line>500</line>
+          <option name="timeStamp" value="21" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/linkate-posts.php</url>
+          <line>519</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/linkate-posts.php</url>
+          <line>528</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/output_tags.php</url>
+          <line>705</line>
+          <option name="timeStamp" value="26" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/common_functions.php</url>
+          <line>187</line>
+          <option name="timeStamp" value="27" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/../cherrylink-related-block/cherrylink-related-block.php</url>
+          <line>113</line>
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/common_functions.php</url>
+          <line>157</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/../cherrylink-related-block/crb-admin.php</url>
+          <line>270</line>
+          <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/../cherrylink-related-block/crb-admin.php</url>
+          <line>236</line>
+          <option name="timeStamp" value="32" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/../cherrylink-related-block/crb-admin.php</url>
+          <line>286</line>
+          <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/output_tags.php</url>
+          <line>689</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/admin_common_functions.php</url>
+          <line>17</line>
+          <option name="timeStamp" value="35" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/linkate-posts.php</url>
+          <line>55</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint type="php">
+          <url>file://$PROJECT_DIR$/linkate-posts.php</url>
+          <line>906</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/output_tags.php</url>
+          <line>114</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="debuggerHistoryManager">
+    <expressions id="breakpointCondition">
+      <expression>
+        <expression-string>$word == &quot;которых&quot;</expression-string>
+        <language-id>PHP</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>$word == &quot;крупных&quot;</expression-string>
+        <language-id>PHP</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>$postID == 3109</expression-string>
+        <language-id>PHP</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+    <expressions id="setValue">
+      <expression>
+        <expression-string>&quot;join&quot;</expression-string>
+        <language-id>PHP</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
+    </expressions>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/../../../wp-admin/admin-ajax.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="22" lean-forward="true" selection-start-line="22" selection-end-line="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../wp-admin/options-general.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="100">
+          <caret line="9" selection-start-line="9" selection-end-line="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../../../bin/phpMyAdmin/tbl_sql.php" />
+    <entry file="file://$PROJECT_DIR$/../../../../../bin/phpMyAdmin/lint.php" />
+    <entry file="file://$PROJECT_DIR$/../../../../../bin/phpMyAdmin/tbl_structure.php" />
+    <entry file="file://$PROJECT_DIR$/../../../../../bin/phpMyAdmin/js/get_scripts.js.php" />
+    <entry file="file://$PROJECT_DIR$/../../../../../bin/phpMyAdmin/index.php" />
+    <entry file="file://$PROJECT_DIR$/js/linkate-gutenberg.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5600">
+          <caret line="224" column="10" selection-start-line="224" selection-start-column="10" selection-end-line="224" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ru_stemmer.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2100">
+          <caret line="89" selection-start-line="89" selection-end-line="89" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/img/search.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/css/linkate.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="383">
+          <caret line="249" column="18" selection-start-line="249" selection-start-column="18" selection-end-line="249" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/export_options.txt" />
+    <entry file="file://$PROJECT_DIR$/stopwords.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/php/lib/php.jar!/stubs/Core/Core.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="226">
+          <caret line="458" column="9" selection-start-line="458" selection-start-column="9" selection-end-line="458" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../wordpress-seo/wp-seo.php">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../wordpress-seo/index.php">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../wordpress-seo/wp-seo-main.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-125">
+          <caret line="1" column="3" selection-start-line="1" selection-start-column="3" selection-end-line="1" selection-end-column="3" />
+          <folding>
+            <element signature="e#6#61#0#PHP" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../wordpress-seo/inc/class-wpseo-replace-vars.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="146" column="20" selection-start-line="146" selection-start-column="20" selection-end-line="146" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../wordpress-seo/frontend/class-frontend.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="594">
+          <caret line="1743" column="23" selection-start-line="1743" selection-start-column="23" selection-end-line="1743" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../wp-includes/class-wp-hook.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="226">
+          <caret line="274" selection-start-line="274" selection-end-line="274" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/php/lib/php.jar!/stubs/standard/standard_9.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="826">
+          <caret line="254" column="9" selection-start-line="254" selection-start-column="9" selection-end-line="254" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/updater/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="-900" />
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../cherrylink-1.6.4/cherrylink/linkate-posts-admin.php" />
+    <entry file="file://$PROJECT_DIR$/../cherrylink-1.6.4/cherrylink/linkate-posts.php" />
+    <entry file="file://$PROJECT_DIR$/../cherrylink-related-block/cherrylink-related-block.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2825">
+          <caret line="113" selection-start-line="113" selection-end-line="113" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/common_functions.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4625">
+          <caret line="187" selection-start-line="187" selection-end-line="187" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/linkate-editor.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="125">
+          <caret line="8" column="57" selection-start-line="8" selection-start-column="57" selection-end-line="8" selection-end-column="57" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/linkate-terms.php">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../cherrylink-related-block/crb-admin.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5925">
+          <caret line="242" column="16" selection-start-line="242" selection-start-column="16" selection-end-line="242" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/linkate-admin.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="75">
+          <caret line="3" column="36" selection-start-line="3" selection-start-column="36" selection-end-line="3" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/linkate-posts-admin.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="19525">
+          <caret line="783" column="17" selection-start-line="783" selection-start-column="7" selection-end-line="783" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/linkate.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="29200">
+          <caret line="1168" column="17" selection-start-line="1168" selection-start-column="17" selection-end-line="1168" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/admin_common_functions.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="581" column="71" selection-start-line="581" selection-start-column="62" selection-end-line="581" selection-end-column="71" />
+          <folding>
+            <element signature="e#6#29#0#PHP" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/php/lib/php.jar!/stubs/standard/standard_1.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="451">
+          <caret line="134" column="9" selection-start-line="134" selection-start-column="9" selection-end-line="134" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../yt-link-fixer-0.1.2/yt-link-fixer/vendor/symfony/polyfill-mbstring/bootstrap.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="226">
+          <caret line="37" column="13" selection-start-line="37" selection-start-column="13" selection-end-line="37" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/php/lib/php.jar!/stubs/mbstring/mbstring.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="503" column="9" selection-start-line="503" selection-start-column="9" selection-end-line="503" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/output_tags.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="431">
+          <caret line="125" column="46" lean-forward="true" selection-start-line="125" selection-start-column="46" selection-end-line="125" selection-end-column="46" />
+          <folding>
+            <element signature="e#142#150#1" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="325">
+          <caret line="73" column="10" lean-forward="true" selection-start-line="73" selection-start-column="10" selection-end-line="73" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/linkate-posts.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="200">
+          <caret line="8" column="26" lean-forward="true" selection-start-line="8" selection-start-column="26" selection-end-line="8" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
