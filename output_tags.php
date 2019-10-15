@@ -720,7 +720,13 @@ function linkate_otf_imagesrc($option_key, $result, $ext) {
 	    $size = $crb_image_size;
 
     if ($size) {
-        $att_id = attachment_url_to_postid($imgsrc);
+        // remove sizes
+        $imgsrc_test = preg_replace("/-\d{2,3}x\d{2,3}/", '', $imgsrc);
+        $att_id = attachment_url_to_postid($imgsrc_test);
+        if (!$att_id) {
+            $att_id = attachment_url_to_postid($imgsrc);
+        }
+
         $finalsrc = wp_get_attachment_image_url( $att_id, $size );
         if ($finalsrc)
             return $finalsrc;
