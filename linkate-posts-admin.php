@@ -696,9 +696,7 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 			 arsort($common_words);
 		}
 		$start += $batch;
-		if (!$is_ajax_call) {
-			if (!ini_get('safe_mode')) set_time_limit(30);
-		}
+
 	}
 	unset($posts);
 
@@ -758,7 +756,6 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 			unset($suggestions);
 		}
 		$start += $batch;
-		if (!ini_get('safe_mode')) set_time_limit(30);
 	}
 	unset($terms);
 

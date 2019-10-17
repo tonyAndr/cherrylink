@@ -123,11 +123,9 @@ class LinkatePosts {
 			$check_custom = (trim($options['custom']['key']) !== '');
 			$limit = $offset.', '.$options['limit_ajax'];
 	 		//get the terms to do the matching
-			// if ($options['term_extraction'] === 'pagerank') {
-			// 	list( $contentterms, $titleterms, $tagterms, $suggestions) = linkate_sp_terms_by_textrank($postid, $options['num_terms'], $is_term);
-			// } else {
-				list( $contentterms, $titleterms, $tagterms, $suggestions) = linkate_sp_terms_by_freq($postid, $options['num_terms'], $is_term);
-			// }
+
+            list( $contentterms, $titleterms, $tagterms, $suggestions) = linkate_sp_terms_by_freq($postid, $options['num_terms'], $is_term);
+
 	 		// these should add up to 1.0
 			$weight_content = $options['weight_content'];
 			$weight_title = $options['weight_title'];
@@ -383,64 +381,6 @@ function levenshtein_utf8($s1, $s2)
     return levenshtein($s1, $s2);
 }
 
-function linkate_sp_terms_by_textrank($ID, $num_terms = 50, $is_term = 0) {
-	global $wpdb, $table_prefix;
-	$table_name = $table_prefix . 'linkate_posts';
-	$terms = '';
-	$results = $wpdb->get_results("SELECT title, content, tags, suggestions FROM $table_name WHERE pID=$ID AND is_term=$is_term LIMIT 1", ARRAY_A);
-	if ($results) {
-		// build a directed graph with words as vertices and, as edges, the words which precede them
- 		$prev_word = 'aaaaa';
-		$graph = array();
-		$out_edges = array();
-		$word = strtok($results[0]['content'], ' ');
-		while ($word !== false) {
-			isset($graph[$word][$prev_word]) ? $graph[$word][$prev_word] += 1 : $graph[$word][$prev_word] = 1; // list the incoming words and keep a tally of how many times words co-occur
-			isset($out_edges[$prev_word]) ? $out_edges[$prev_word] += 1 : $out_edges[$prev_word] = 1; // count the number of different words that follow each word
-			$prev_word = $word;
-			$word = strtok(' ');
-		}
- 		// initialise the list of PageRanks-- one for each unique word
-		reset($graph);
-		while (list($vertex, $in_edges) =  each($graph)) {
-			$oldrank[$vertex] = 0.25;
-		}
-		$n = count($graph);
-		if ($n > 0) {
-			$base = 0.15 / $n;
-			$error_margin = $n * 0.005;
-			do {
-				$error = 0.0;
-				// the edge-weighted PageRank calculation
-				reset($graph);
-				while (list($vertex, $in_edges) =  each($graph)) {
-					$r = 0;
-					reset($in_edges);
-					while (list($edge, $weight) =  each($in_edges)) {
-						if (isset($oldrank[$edge])) {
-							$r += ($weight * $oldrank[$edge]) / $out_edges[$edge];
-						}
-					}
-					$rank[$vertex] = $base + 0.95 * $r;
-					$error += abs($rank[$vertex] - $oldrank[$vertex]);
-				}
-				$oldrank = $rank;
-				//echo $error . '<br>';
-			} while ($error > $error_margin);
-			arsort($rank);
-			if ($num_terms < 1) $num_terms = 1;
-			$rank = array_slice($rank, 0, $num_terms);
-			foreach ($rank as $vertex => $score) {
-				$terms .= ' ' . $vertex;
-			}
-		}
-		$res[] = $terms;
-		$res[] = $results[0]['title'];
-		$res[] = $results[0]['tags'];
-		$res[] = $results[0]['suggestions'];
- 	}
-	return $res;
-}
 
 // Update post index
 
