@@ -116,15 +116,19 @@ function linkate_otf_anons($option_key, $result, $ext) {
     } else {
         $limit = 220;
     }
-
-	$value = trim($result->post_excerpt);
-	if ($value == '') $value = $result->post_content;
+    $meta = get_post_meta($result->ID, 'perelink', true);
+    if ($meta) {
+        $value = $meta;
+    } else {
+        $value = trim($result->post_excerpt);
+        if ($value == '') $value = $result->post_content;
+    }
 	//$value = linkate_oth_trim_excerpt($value, $ext);
 	$excerpt = preg_replace(" (\[.*?\])",'',$value);
     $excerpt = strip_shortcodes($excerpt);
     $excerpt = strip_tags($excerpt);
     $excerpt = mb_substr($excerpt, 0, $limit);
-    $next_space_pos = mb_strpos($excerpt, " ");
+    $next_space_pos = mb_strripos($excerpt, " ");
     if ($next_space_pos)
         $excerpt = mb_substr($excerpt, 0, $next_space_pos);
     $excerpt = trim(preg_replace( '/\s+/', ' ', $excerpt));
@@ -716,23 +720,28 @@ function linkate_otf_imagesrc($option_key, $result, $ext) {
 		$imgsrc = unparse_url($imgsrc, $url_option);
 	}
 
-	if ($crb_image_size)
-	    $size = $crb_image_size;
+	// first check using vanilla url
+	$att_id = attachment_url_to_postid($imgsrc);
 
-    if ($size) {
-        // remove sizes
-        $imgsrc_test = preg_replace("/-\d{2,3}x\d{2,3}/", '', $imgsrc);
-        $att_id = attachment_url_to_postid($imgsrc_test);
-        if (!$att_id) {
-            $att_id = attachment_url_to_postid($imgsrc);
-        }
-
-        $finalsrc = wp_get_attachment_image_url( $att_id, $size );
-        if ($finalsrc)
-            return $finalsrc;
+	// cut the shit outta here
+	if (!$att_id) {
+        $imgsrc = preg_replace("~-\d{2,4}x\d{2,4}(?!.*-\d{2,4}x\d{2,4})~", '', $imgsrc);
+        $att_id = attachment_url_to_postid($imgsrc);
     }
 
-    if (!$imgsrc) // placeholder
+    if ($att_id) {
+
+        if ($crb_image_size) {
+            $imgsrc = wp_get_attachment_image_url( $att_id, $crb_image_size );
+            if ($imgsrc)
+                return $imgsrc;
+        } else {
+            return $imgsrc;
+        }
+
+    }
+
+    if (!$imgsrc || !$att_id) // placeholder
         $imgsrc = WP_PLUGIN_URL . '/cherrylink/img/imgsrc_placeholder.jpg';
 
 	return $imgsrc;
