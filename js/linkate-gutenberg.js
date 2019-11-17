@@ -1,4 +1,4 @@
-( function( wp ) {
+(function (wp) {
     var registerPlugin = wp.plugins.registerPlugin;
     var PluginSidebar = wp.editPost.PluginSidebar;
     var el = wp.element.createElement;
@@ -25,7 +25,7 @@
                     icon: 'admin-links',
                     title: 'CherryLink',
                 },
-                el (
+                el(
                     'div',
                     {
                         className: 'cherry-panel-container'
@@ -34,15 +34,15 @@
             )
         );
     }
-    registerPlugin( 'cherrylink-sidebar', {
-        icon: 'admin-links',
-        render: Component
-    });
+    // registerPlugin( 'cherrylink-sidebar', {
+    //     icon: 'admin-links',
+    //     render: Component
+    // });
 
 
-} )( window.wp );
+})(window.wp);
 
-jQuery(document).ready(function($) {
+jQuery(document).ready(function ($) {
 
     // keep references to be able to kill them
     let ajax_panel;
@@ -50,7 +50,7 @@ jQuery(document).ready(function($) {
     let ajax_stats;
 
     let blocks_count;
-    const getBlockList = () => wp.data.select( 'core/editor' ).getBlocks();
+    const getBlockList = () => wp.data.select('core/editor').getBlocks();
     const getSideBarName = () => wp.data.select('core/edit-post').getActiveGeneralSidebarName();
     const isSideBarOpened = () => wp.data.select('core/edit-post').isPluginSidebarOpened();
     let sideBarState = getSideBarName() === "cherrylink-sidebar/cherrylink-sidebar" && isSideBarOpened();
@@ -61,7 +61,7 @@ jQuery(document).ready(function($) {
         const newBlockList = getBlockList();
         const blockListChanged = newBlockList !== blockList;
         blockList = newBlockList;
-        if ( blockListChanged ) {
+        if (blockListChanged) {
             blocks_count = blockList.length;
         }
 
@@ -94,7 +94,7 @@ jQuery(document).ready(function($) {
     function fcl_collectAllLinksFromContent() {
         let links = document.querySelectorAll(".editor-writing-flow a");
         cl_urls_in_content = [];
-        links.forEach(function(el){
+        links.forEach(function (el) {
             let href = el.href;
             if (href) {
                 href = fcl_convertRelativeUrl(href);
@@ -131,7 +131,7 @@ jQuery(document).ready(function($) {
     }
 
     function fcl_fileTypeChecker(url) { // cuz we don't want to count media as int/ext links
-        let prohibited = ['.jpg','.jpeg','.tiff','.bmp','.psd', '.png', '.gif','.webp', '.doc', '.docx', '.xlsx', '.xls', '.odt', '.pdf', '.ods','.odf', '.ppt', '.pptx', '.txt', '.rtf', '.mp3', '.mp4', '.wav', '.avi', '.ogg', '.zip', '.7z', '.tar', '.gz', '.rar', '#'];
+        let prohibited = ['.jpg', '.jpeg', '.tiff', '.bmp', '.psd', '.png', '.gif', '.webp', '.doc', '.docx', '.xlsx', '.xls', '.odt', '.pdf', '.ods', '.odf', '.ppt', '.pptx', '.txt', '.rtf', '.mp3', '.mp4', '.wav', '.avi', '.ogg', '.zip', '.7z', '.tar', '.gz', '.rar', '#'];
 
         for (let i = prohibited.length - 1; i >= 0; i--) {
             if (url.indexOf(prohibited[i]) !== -1) {
@@ -143,7 +143,7 @@ jQuery(document).ready(function($) {
 
     function fcl_countLinksInContent(url) {
         url = fcl_convertRelativeUrl(url);
-        let selector = "a[href='"+url+"']";
+        let selector = "a[href='" + url + "']";
         if (cl_urls_in_content) {
             let found = $(cl_urls_in_content).filter(selector);
             return found.length;
@@ -202,7 +202,7 @@ jQuery(document).ready(function($) {
             url: ajaxurl,
             data: ajax_data,
             datatype: 'json',
-            success: function(response) {
+            success: function (response) {
                 $(".cherry-panel-container").html(response);
 
                 cherrylink_panel_tabs();
@@ -220,7 +220,7 @@ jQuery(document).ready(function($) {
 
     // Get Links
     function ajax_get_data_from_server() {
-        var this_id = cherrylink_options['post_id'].length == 0 || cherrylink_options['post_id'] == 0  ? window.location.href.match(/tag_ID=(\d+)\&/i)[1] : cherrylink_options['post_id'];
+        var this_id = cherrylink_options['post_id'].length == 0 || cherrylink_options['post_id'] == 0 ? window.location.href.match(/tag_ID=(\d+)\&/i)[1] : cherrylink_options['post_id'];
         var ajax_post_data = {
             'action': 'getLinkateLinks',
             // here we get post or taxonomy id
@@ -231,8 +231,8 @@ jQuery(document).ready(function($) {
         // show loading css
         $('.lds-ellipsis').removeClass('lds-ellipsis-hide');
         $('.load-more-text').addClass('lds-ellipsis-hide');
-        ajax_data = $.post(ajaxurl, ajax_post_data, function(response) {
-            response = JSON.parse(response);
+        ajax_data = $.post(ajaxurl, ajax_post_data, function (response) {
+            // response = JSON.parse(response);
             // append if we have result, decide when to append 'not found' text
             if (response['count'] == 0) {
                 if (fcl_get_data_offset == 0)
@@ -259,7 +259,7 @@ jQuery(document).ready(function($) {
     function ajax_get_links_stats() {
 
         if (cherrylink_options['linkate_scheme_exists']) {
-            let this_id = cherrylink_options['post_id'].length == 0 || cherrylink_options['post_id'] == 0  ? window.location.href.match(/tag_ID=(\d+)\&/i)[1] : cherrylink_options['post_id'];
+            let this_id = cherrylink_options['post_id'].length == 0 || cherrylink_options['post_id'] == 0 ? window.location.href.match(/tag_ID=(\d+)\&/i)[1] : cherrylink_options['post_id'];
 
             let ajax_post_data = {
                 'action': 'linkate_generate_json',
@@ -271,21 +271,21 @@ jQuery(document).ready(function($) {
                 url: ajaxurl,
                 data: ajax_post_data,
                 datatype: 'json',
-                success: function(response) {
+                success: function (response) {
                     let resp = JSON.parse(response); // All done!
                     // console.log(resp['count']);
-                    let links_title='Входящие ссылки [анкор:url]<ul>';
+                    let links_title = 'Входящие ссылки [анкор:url]<ul>';
                     for (var i = resp['links'].length - 1; i >= 0; i--) {
                         links_title += '<li><span class=\'tooltip-ankor-text\'>' + resp['links'][i]['ankor'] + '</span>: <span class=\'tooltip-url\'>' + resp['links'][i]['source_url'] + '</span></li>';
                     }
                     links_title += '</ul>';
-                    $('#links-count-targets').html('<div class=\'cherry-adm-tooltip\'>'+resp['count']+'<div class=\'tooltiptext\'>'+links_title+'</div></div>');
+                    $('#links-count-targets').html('<div class=\'cherry-adm-tooltip\'>' + resp['count'] + '<div class=\'tooltiptext\'>' + links_title + '</div></div>');
 
                 }
             });
         } else {
-            let host = window.location.href.replace(window.location.href.slice(window.location.href.indexOf('/wp-admin/') + 10),'options-general.php?page=linkate-posts&subpage=scheme');
-            $('#links-count-targets').html('<a style="font-weight:bold;color:white;" href="'+host+'" title="Нет данных, перейдите по ссылки для настройки">??</a>');
+            let host = window.location.href.replace(window.location.href.slice(window.location.href.indexOf('/wp-admin/') + 10), 'options-general.php?page=linkate-posts&subpage=scheme');
+            $('#links-count-targets').html('<a style="font-weight:bold;color:white;" href="' + host + '" title="Нет данных, перейдите по ссылки для настройки">??</a>');
         }
     }
 
@@ -297,15 +297,15 @@ jQuery(document).ready(function($) {
     UI
      */
 
-    function cherrylink_panel_tabs(){
+    function cherrylink_panel_tabs() {
         cl_quick_cat_select = $('#quick_cat_filter');
         $('.container-articles').parent().attr('id', 'cherrylink_meta_inside'); // add it to our metabox to save scroll position
 
         $('.container-articles').show();
         $('.container-taxonomy').hide();
 
-        $('div.tab').click(function() {
-            if($(this).hasClass('tab-articles')) {
+        $('div.tab').click(function () {
+            if ($(this).hasClass('tab-articles')) {
                 $('.container-articles').show();
                 $('.container-taxonomy').hide();
                 $('div.tab-articles').addClass('linkate-tab-selected');
@@ -331,7 +331,7 @@ jQuery(document).ready(function($) {
 
     // func get block content
     function getBlockContentHtml(block_ind) {
-        return wp.data.select( "core/editor" ).getBlocks()[block_ind].attributes.content;
+        return wp.data.select("core/editor").getBlocks()[block_ind].attributes.content;
     }
 
     function getBlockContentRich(block_ind) {
@@ -348,7 +348,7 @@ jQuery(document).ready(function($) {
 
     // func get block uid
     function getBlockUID(block_ind) {
-       return wp.data.select( "core/editor" ).getBlocks()[block_ind].clientId;
+        return wp.data.select("core/editor").getBlocks()[block_ind].clientId;
     }
 
     // func create el (string html)
@@ -362,13 +362,13 @@ jQuery(document).ready(function($) {
         let richText = getBlockContentRich(block_ind);
 
         richText = wp.richText.replace(richText, text_to_replace, replacement_rich_element);
-        wp.data.dispatch( 'core/editor' ).updateBlock( blockUid, {
+        wp.data.dispatch('core/editor').updateBlock(blockUid, {
             attributes: {
                 content: wp.richText.toHTMLString({
                     richText
                 })
             }
-        } );
+        });
     }
     // func replace text (RichText Obj el) by positions
     function replaceText(start_pos, end_pos, replacement_rich_element, block_ind) {
@@ -376,13 +376,13 @@ jQuery(document).ready(function($) {
         let richText = getBlockContentRich(block_ind);
 
         richText = wp.richText.insert(richText, replacement_rich_element, start_pos, end_pos);
-        wp.data.dispatch( 'core/editor' ).updateBlock( blockUid, {
+        wp.data.dispatch('core/editor').updateBlock(blockUid, {
             attributes: {
                 content: wp.richText.toHTMLString({
                     richText
                 })
             }
-        } );
+        });
     }
 
     // func replace html by substring
@@ -394,30 +394,30 @@ jQuery(document).ready(function($) {
 
         let richText = wp.richText.create(html);
 
-        wp.data.dispatch( 'core/editor' ).updateBlock( blockUid, {
+        wp.data.dispatch('core/editor').updateBlock(blockUid, {
             attributes: {
                 content: wp.richText.toHTMLString({
                     richText
                 })
             }
-        } );
+        });
     }
     // func replace html by positions
     function replaceHtml(start_pos, end_pos, replacement_html, block_ind) {
         let blockUid = getBlockUID(block_ind);
         let html = getBlockContentHtml(block_ind);
 
-        html = html.substring(0,start_pos) + replacement_html + html.substring(end_pos, html.length);
+        html = html.substring(0, start_pos) + replacement_html + html.substring(end_pos, html.length);
 
         let richText = wp.richText.create(html);
 
-        wp.data.dispatch( 'core/editor' ).updateBlock( blockUid, {
+        wp.data.dispatch('core/editor').updateBlock(blockUid, {
             attributes: {
                 content: wp.richText.toHTMLString({
                     richText
                 })
             }
-        } );
+        });
     }
 
     // get all indices of substr in block (text or html)
@@ -447,7 +447,7 @@ jQuery(document).ready(function($) {
             content = isHtml ? getBlockContentHtml(i) : getBlockContentText(i);
             let indices = getIndicesOf(needle, content, false);
             for (let j in indices) {
-                all_indices.push({'block_id': i, 'start_pos': indices[j], 'end_pos': indices[j] + needle.length})
+                all_indices.push({ 'block_id': i, 'start_pos': indices[j], 'end_pos': indices[j] + needle.length })
             }
 
         }
@@ -479,7 +479,7 @@ jQuery(document).ready(function($) {
         if (lastScrollSelector !== selector) {
             lastScrollSelector = selector;
             if (isUrl) {
-                lastScrollNodes = $(cl_urls_in_content).filter("a[href='"+selector+"']")
+                lastScrollNodes = $(cl_urls_in_content).filter("a[href='" + selector + "']")
             } else {
                 lastScrollNodes = $(".editor-writing-flow").find(selector);
             }
@@ -488,7 +488,7 @@ jQuery(document).ready(function($) {
     }
 
     // func find link and scroll
-    function elementScrollSelect (selector, isUrl) {
+    function elementScrollSelect(selector, isUrl) {
         let node = windowFindNodes(selector, isUrl);
         console.log('Old selection');
         console.log(customRange);
@@ -502,7 +502,7 @@ jQuery(document).ready(function($) {
         console.log('New selection');
         console.log(customRange);
 
-        node.scrollIntoView({behavior: "instant", block: "center", inline: "nearest"});
+        node.scrollIntoView({ behavior: "instant", block: "center", inline: "nearest" });
         if (lastScrollNodeIndex >= (lastScrollNodes.length - 1)) {
             lastScrollNodeIndex = 0;
         } else {
@@ -526,11 +526,11 @@ jQuery(document).ready(function($) {
         timeOutLinksChecker(T_WAIT_SHOW_PANEL);
 
         // incoming stats
-        $('#links-count-targets').unbind().click(function() {
+        $('#links-count-targets').unbind().click(function () {
             ajax_get_links_stats();
         })
 
-        $('.link-suggestions').unbind().click(function(e) {
+        $('.link-suggestions').unbind().click(function (e) {
             cl_articles_scrolltop = $('#cherrylink_meta_inside').scrollTop();
             // do the work (search everything)
             let suggestions = $(e.target).parent().find('div.linkate-link').attr('data-suggestions');
@@ -545,15 +545,15 @@ jQuery(document).ready(function($) {
             // remove everything but text
             let curr_content = fcl_strip(cl_editor_lastfocus_html_content).toLowerCase();
             var punctuationless = curr_content.replace(/[\.,-\/#!$%\^&\*;\":{}=\-_`~()@\+\?><\[\]\+]/g, ' ');
-            var finalString = punctuationless.replace(/\n/g, " ").replace(/\s+/g," ");
+            var finalString = punctuationless.replace(/\n/g, " ").replace(/\s+/g, " ");
 
             let coincidence = [];
             let sug_arr = suggestions.trim().split(' ');
             let text_arr = finalString.trim().split(' ');
 
             // Filter short words
-            let tinywords = ['ли', 'но', 'на', 'или', 'по', 'при', 'не', 'об', 'за', 'со','от', 'до', 'то', 'ни', 'да', 'он', 'она', 'оно', 'они','его','ее','нее','про','вне','ваш','вам', 'вы', 'вас', 'го','ти', 'их', 'из', 'них'];
-            text_arr = text_arr.filter(function(w) {
+            let tinywords = ['ли', 'но', 'на', 'или', 'по', 'при', 'не', 'об', 'за', 'со', 'от', 'до', 'то', 'ни', 'да', 'он', 'она', 'оно', 'они', 'его', 'ее', 'нее', 'про', 'вне', 'ваш', 'вам', 'вы', 'вас', 'го', 'ти', 'их', 'из', 'них'];
+            text_arr = text_arr.filter(function (w) {
                 return w.length > 1 && !tinywords.includes(w);
             })
 
@@ -566,9 +566,9 @@ jQuery(document).ready(function($) {
 
                 if (len < 3) {
                     lev_koef = 1;
-                } else if (len >= 3  && len < 7) {
+                } else if (len >= 3 && len < 7) {
                     lev_koef = 1;
-                } else if (len >=7 && len < 11) {
+                } else if (len >= 7 && len < 11) {
                     lev_koef = 2;
                 } else {
                     lev_koef = 3;
@@ -579,7 +579,7 @@ jQuery(document).ready(function($) {
                         count++;
                         if (!words.includes(text_arr[j]))
                             words.push(text_arr[j]);
-                    } else if (fcl_levenshtein(sug_arr[i],text_arr[j]) <= lev_koef) {
+                    } else if (fcl_levenshtein(sug_arr[i], text_arr[j]) <= lev_koef) {
                         count++;
                         if (!words.includes(text_arr[j]))
                             words.push(text_arr[j]);
@@ -588,18 +588,18 @@ jQuery(document).ready(function($) {
                 // remove some duplicates
                 let similar_coincidence_exists = false;
                 for (var k = 0; k < coincidence.length; k++) {
-                    if  (coincidence[k].count === count && JSON.stringify(coincidence[k].words) == JSON.stringify(words)) {
+                    if (coincidence[k].count === count && JSON.stringify(coincidence[k].words) == JSON.stringify(words)) {
                         similar_coincidence_exists = true;
                         break;
                     }
                 }
                 if (!similar_coincidence_exists)
-                    coincidence.push({suggestion:sug_arr[i], count:count, words:words});
+                    coincidence.push({ suggestion: sug_arr[i], count: count, words: words });
             }
             // sort: less used words in text will be first
-            coincidence.sort(function(a, b){return a.count - b.count});
+            coincidence.sort(function (a, b) { return a.count - b.count });
             // not found? - remove
-            coincidence = coincidence.filter(function(obj) {
+            coincidence = coincidence.filter(function (obj) {
                 return obj.words.length > 0;
             })
 
@@ -615,13 +615,13 @@ jQuery(document).ready(function($) {
                         if (this_len > max_len) max_len = this_len;
                         word_pos.forEach(function (el) {
                             let contains = false;
-                            set_arr.forEach(function(sa){
+                            set_arr.forEach(function (sa) {
 
                                 if (sa.pos == el) {
                                     contains = true;
                                 }
                             });
-                            set_arr.push({pos: el, len: this_len});
+                            set_arr.push({ pos: el, len: this_len });
                         })
                     }
                 }
@@ -637,7 +637,7 @@ jQuery(document).ready(function($) {
             let nearest_multi = [];
 
             // Predlogi ne pokazivat' dlya prostih ankorov
-            let predl = ['без','для','вне','под','над','безо','из-за','из-под','изо','кроме','обо','ото', 'при', 'него', 'чего'];
+            let predl = ['без', 'для', 'вне', 'под', 'над', 'безо', 'из-за', 'из-под', 'изо', 'кроме', 'обо', 'ото', 'при', 'него', 'чего'];
             predl = predl.concat(tinywords);
 
             // result array
@@ -673,7 +673,7 @@ jQuery(document).ready(function($) {
                                     }
                                     if (add) {
                                         let contains = false;
-                                        nearest_positions.forEach(function(el) {
+                                        nearest_positions.forEach(function (el) {
                                             if (el[0] == start && el[1] == end) {
                                                 contains = true;
                                             }
@@ -684,13 +684,13 @@ jQuery(document).ready(function($) {
                                 }
                             }
                             let contains = false;
-                            nearest_single.forEach(function(el) {
+                            nearest_single.forEach(function (el) {
                                 if (el[0] == pos_matrix[i][j].pos && el[1] == pos_matrix[i][j].pos + pos_matrix[i][j].len) {
                                     contains = true;
                                 }
                             })
                             if (!contains && !fcl_inHeaderOrLink(pos_matrix[i][j].pos)) {
-                                let el = fcl_getAnkorText(pos_matrix[i][j].pos,pos_matrix[i][j].pos + pos_matrix[i][j].len);
+                                let el = fcl_getAnkorText(pos_matrix[i][j].pos, pos_matrix[i][j].pos + pos_matrix[i][j].len);
                                 if (!predl.includes(el[2].toLowerCase()))
                                     nearest_single.push(el);
                             }
@@ -711,8 +711,8 @@ jQuery(document).ready(function($) {
                 // see definition below
                 nearest_positions = fcl_removeBadSuggestions(nearest_positions);
                 // get text for frases
-                nearest_positions.forEach(function(el) {
-                    nearest_multi.push(fcl_getAnkorText (el[0], el[1]));
+                nearest_positions.forEach(function (el) {
+                    nearest_multi.push(fcl_getAnkorText(el[0], el[1]));
                 })
                 //console.timeEnd('findnearest');
             }
@@ -722,12 +722,12 @@ jQuery(document).ready(function($) {
             return false;
         });
 
-        $('.link-preview').unbind().click(function() {
+        $('.link-preview').unbind().click(function () {
             let url = $(this).parent().parent().find('div.linkate-link').attr('data-url');
-            window.open(url,'_blank');
+            window.open(url, '_blank');
         });
 
-        $('.link-counter').unbind().click(function() {
+        $('.link-counter').unbind().click(function () {
             if ($(this).hasClass('link-counter-good') || $(this).hasClass('link-counter-bad')) {
                 let parent = $(this).parent()[0];
                 let url = '';
@@ -742,16 +742,16 @@ jQuery(document).ready(function($) {
             }
         });
 
-        $('#hide_that_exists').change(function() {
+        $('#hide_that_exists').change(function () {
             timeOutLinksFilter(T_WAIT_FILTER_CB);
         });
-        $('#show_that_exists').change(function() {
+        $('#show_that_exists').change(function () {
             timeOutLinksFilter(T_WAIT_FILTER_CB);
         });
-        $(cl_quick_cat_select).change(function() {
+        $(cl_quick_cat_select).change(function () {
             timeOutLinksFilter(T_WAIT_FILTER_CB);
         });
-        $('#filter_by_title').on('input propertychange', function() {
+        $('#filter_by_title').on('input propertychange', function () {
             timeOutLinksFilter(T_WAIT_FILTER);
         });
         $('.filter-clear-box').click(function (e) {
@@ -759,11 +759,11 @@ jQuery(document).ready(function($) {
         });
 
         var cl_timerCheck;
-        function timeOutLinksChecker (delay) { // wait after input some time, if input repeats - null timer and wait again, then call func
+        function timeOutLinksChecker(delay) { // wait after input some time, if input repeats - null timer and wait again, then call func
             if (cl_timerCheck) {
                 clearTimeout(cl_timerCheck);
             }
-            cl_timerCheck = setTimeout(function() {
+            cl_timerCheck = setTimeout(function () {
                 cl_total_links = 0;
                 //console.time('checkTextLinks');
                 fcl_checkTextLinks(cl_list_links);
@@ -773,11 +773,11 @@ jQuery(document).ready(function($) {
         }
 
         var cl_timerFilter;
-        function timeOutLinksFilter (delay) { // wait after input some time, if input repeats - null timer and wait again, then call func
+        function timeOutLinksFilter(delay) { // wait after input some time, if input repeats - null timer and wait again, then call func
             if (cl_timerFilter) {
                 clearTimeout(cl_timerFilter);
             }
-            cl_timerFilter = setTimeout(function() {
+            cl_timerFilter = setTimeout(function () {
                 //console.time('filterLinks');
                 fcl_filterLinks(cl_list_links);
                 fcl_filterLinks(cl_list_terms);
@@ -786,21 +786,21 @@ jQuery(document).ready(function($) {
         }
 
         var cl_timerTotalLinks;
-        function timeOutTotalCount (delay, content) { // to prevent second call of the function (it's called for links and terms separately)
+        function timeOutTotalCount(delay, content) { // to prevent second call of the function (it's called for links and terms separately)
             if (cl_timerTotalLinks) {
                 clearTimeout(cl_timerTotalLinks);
             }
-            cl_timerTotalLinks = setTimeout(function() {
+            cl_timerTotalLinks = setTimeout(function () {
                 // $("#links-count-total").html(fcl_getAllIndexes(content, 'href=', 0, 0));
                 //let cnt = fcl_collectAllLinksFromContent(content);
                 let ankors = fcl_getAllAnkorsInUse(content);
-                let links_title='Ссылки в тексте [анкор:url]<ul>';
+                let links_title = 'Ссылки в тексте [анкор:url]<ul>';
 
                 for (var i = ankors.length - 1; i >= 0; i--) {
                     links_title += '<li><span class=\'tooltip-ankor-text\'>' + ankors[i].ankor + '</span>: <span class=\'tooltip-url\'>' + ankors[i].url + '</span></li>';
                 }
                 links_title += '</ul>';
-                $("#links-count-total").html('<div class=\'cherry-adm-tooltip\'>'+ankors.length+'<div class=\'tooltiptext\'>'+links_title+'</div></div>');
+                $("#links-count-total").html('<div class=\'cherry-adm-tooltip\'>' + ankors.length + '<div class=\'tooltiptext\'>' + links_title + '</div></div>');
 
             }, delay);
         }
@@ -820,13 +820,13 @@ jQuery(document).ready(function($) {
 
         function fcl_toggle_suggestions_tab(div, single_words, multi_words) {
             let ankors_in_use = fcl_getAllAnkorsInUse(cl_editor_lastfocus_html_content);
-            let insert_button = '<div class="suggestion-insert-anywhere" data-url="'+$(div).parent().find('.linkate-link').attr('data-url')+'" title="Запасная кнопка, может пригодится, если вы выделили кусок текста вручную">&#9088; Вставить вокруг выделения</div>';
-            let panel_header = (single_words.length > 0 || multi_words.length > 0) ? 'Найдены предполагаемые анкоры для: <strong>' + $(div).parent().find('.linkate-link').attr('data-titleseo') +'</strong>' + insert_button : '<strong>Ничего не найдено</strong>';
-            let panel = '<div class="suggestions-panel"><div class="suggestions-panel-content"><div class="suggestions-panel-header">'+panel_header+'</div>';
+            let insert_button = '<div class="suggestion-insert-anywhere" data-url="' + $(div).parent().find('.linkate-link').attr('data-url') + '" title="Запасная кнопка, может пригодится, если вы выделили кусок текста вручную">&#9088; Вставить вокруг выделения</div>';
+            let panel_header = (single_words.length > 0 || multi_words.length > 0) ? 'Найдены предполагаемые анкоры для: <strong>' + $(div).parent().find('.linkate-link').attr('data-titleseo') + '</strong>' + insert_button : '<strong>Ничего не найдено</strong>';
+            let panel = '<div class="suggestions-panel"><div class="suggestions-panel-content"><div class="suggestions-panel-header">' + panel_header + '</div>';
             if (ankors_in_use.length > 0) {
                 panel += '<div class="suggestions-panel-words"><div class="suggestions-panel-words-in-use-header"> > Использованные анкоры в статье</div><div class="suggestions-panel-words-in-use-text"><ul>';
                 let c = 0; // to hide used ankors if many
-                ankors_in_use.forEach(function(el) {
+                ankors_in_use.forEach(function (el) {
                     if (c > 2) {
                         panel += '<li class="suggestions-word-in-use-hide">' + el.ankor + '</li>';
                     } else {
@@ -835,18 +835,18 @@ jQuery(document).ready(function($) {
                     c++;
                 })
                 if (ankors_in_use.length > 3) {
-                    panel += '</ul><a class="words-in-use-show-btn">Показать все '+c+'...</a><div style="clear:both;"></div></div></div>';
+                    panel += '</ul><a class="words-in-use-show-btn">Показать все ' + c + '...</a><div style="clear:both;"></div></div></div>';
                 } else {
                     panel += '</ul></div></div>';
                 }
             }
             if (multi_words.length > 0) {
-                panel += '<div class="suggestions-panel-frases"><div class="suggestions-panel-frases-header"> > Фразы-анкоры (найдено: '+multi_words.length+') </div>';
+                panel += '<div class="suggestions-panel-frases"><div class="suggestions-panel-frases-header"> > Фразы-анкоры (найдено: ' + multi_words.length + ') </div>';
                 panel = fcl_generateSuggestionsTemplateDropDown(panel, multi_words);
                 panel += '</div>';
             }
             if (single_words.length > 0) {
-                panel += '<div class="suggestions-panel-words"><div class="suggestions-panel-words-header"> > Простые анкоры (найдено: '+single_words.length+')</div>';
+                panel += '<div class="suggestions-panel-words"><div class="suggestions-panel-words-header"> > Простые анкоры (найдено: ' + single_words.length + ')</div>';
                 panel = fcl_generateSuggestionsTemplateDropDown(panel, single_words);
                 panel += '</div>';
             }
@@ -867,15 +867,15 @@ jQuery(document).ready(function($) {
                 fast_action_class = " suggestion-fast-insert";
             }
             panel += "<div class=\"suggestion-group\"><div class=\"suggestion-select-list\">"
-            words_array.forEach(function(el, id, array) {
-                panel += "<div class=\"suggestion-select-option \" data-start=\""+el[0]+"\" data-end=\""+el[1]+"\" data-text=\""+el[2]+"\"><div class=\"suggestion-buttons\"><a title=\"Найти в тексте\" class=\"suggestion-find\">&#x1F50E;</a><a class=\"suggestion-insert\" title=\"Вставить ссылку\">&#9088;</a></div><div class=\"suggestion-select-option-text"+fast_action_class+"\">"+el[2]+"</div></div>";
+            words_array.forEach(function (el, id, array) {
+                panel += "<div class=\"suggestion-select-option \" data-start=\"" + el[0] + "\" data-end=\"" + el[1] + "\" data-text=\"" + el[2] + "\"><div class=\"suggestion-buttons\"><a title=\"Найти в тексте\" class=\"suggestion-find\">&#x1F50E;</a><a class=\"suggestion-insert\" title=\"Вставить ссылку\">&#9088;</a></div><div class=\"suggestion-select-option-text" + fast_action_class + "\">" + el[2] + "</div></div>";
             });
             panel += "</div></div>";
             return panel;
         }
 
         function fcl_findSuggestionOnHover() {
-            $(".suggestion-select-option").off( "mouseenter mouseleave" ).hover(function () {
+            $(".suggestion-select-option").off("mouseenter mouseleave").hover(function () {
                 fcl_findAndSelectSuggestionDropDown(this);
             })
             $(".suggestion-select-option-text").click(function () {
@@ -895,34 +895,34 @@ jQuery(document).ready(function($) {
                 $('.suggestions-panel-back').hide();
                 $('.linkate-filter-bar').fadeIn();
                 $('.linkate-tabs').fadeIn();
-                $('.container-articles').fadeIn('fast', function() {
+                $('.container-articles').fadeIn('fast', function () {
                     $('#cherrylink_meta_inside').scrollTop(cl_articles_scrolltop);
                 });
             }
         }
 
         function fcl_enableSuggestionSwitches() {
-            $('.words-in-use-show-btn').unbind().click(function(){
+            $('.words-in-use-show-btn').unbind().click(function () {
                 $(this).prev().find('li[class*="suggestions-word-in-use-hide"]').show();
                 $(this).remove();
             })
 
-            $('.suggestions-panel-back').unbind().click(function(){
+            $('.suggestions-panel-back').unbind().click(function () {
                 $('.suggestions-panel').remove();
                 fcl_toggleOnOffGeneralUI(false);
                 return false;
             })
-            $('.suggestion-find').unbind().click(function(e) {
+            $('.suggestion-find').unbind().click(function (e) {
                 fcl_findAndSelectSuggestionDropDown($(this).parent().parent());
             })
-            $('.suggestion-insert').unbind().click(function(e) {
+            $('.suggestion-insert').unbind().click(function (e) {
                 let el = $(this).parent().parent();
                 fcl_suggestionFindandInsertLink(el);
             })
 
             $('.suggestion-insert-anywhere').unbind().click(function (e) {
-                    fcl_insertSuggestionTinyMCE(cl_suggestion_template_object.temp_before, cl_suggestion_template_object.temp_after);
-                    tinymce.activeEditor.fire('change');
+                fcl_insertSuggestionTinyMCE(cl_suggestion_template_object.temp_before, cl_suggestion_template_object.temp_after);
+                tinymce.activeEditor.fire('change');
                 $('.suggestions-panel').remove();
                 fcl_toggleOnOffGeneralUI(false);
             })
@@ -933,9 +933,9 @@ jQuery(document).ready(function($) {
             let end = $(element).attr('data-end');
             let word = $(element).attr('data-text');
 
-                fcl_selectSuggestionTinyMCE(start, end, word);
-                fcl_insertSuggestionTinyMCE(cl_suggestion_template_object.temp_before, cl_suggestion_template_object.temp_after);
-                tinymce.activeEditor.fire('change');
+            fcl_selectSuggestionTinyMCE(start, end, word);
+            fcl_insertSuggestionTinyMCE(cl_suggestion_template_object.temp_before, cl_suggestion_template_object.temp_after);
+            tinymce.activeEditor.fire('change');
 
 
             $('.suggestions-panel').remove();
@@ -953,7 +953,7 @@ jQuery(document).ready(function($) {
         }
 
 
-        $('.suggestions-panel-close').unbind().click(function() {
+        $('.suggestions-panel-close').unbind().click(function () {
             $(this).remove();
         });
 
@@ -969,7 +969,7 @@ jQuery(document).ready(function($) {
         function fcl_getAnkorText(start, end) {
             let txt = cl_editor_lastfocus_html_content;
             let st = start, en = end;
-            txt = txt.substring(st,en);
+            txt = txt.substring(st, en);
             return [st, en, txt];
         }
 
@@ -993,7 +993,7 @@ jQuery(document).ready(function($) {
         // check if in header or in <a> or in img
         function fcl_inHeaderOrLink(pos) {
             let txt = cl_editor_lastfocus_html_content;
-            for (var i = pos - 1 ; i >= 0; i--) {
+            for (var i = pos - 1; i >= 0; i--) {
                 if (!isLetter(txt.charAt(i)) && !IsNumeric(txt.charAt(i))) {
                     if (txt.charAt(i) == "<") {
                         let close_bracket_pos = txt.indexOf(">", i);
@@ -1033,7 +1033,7 @@ jQuery(document).ready(function($) {
         }
 
         // extract plain text from html
-        function fcl_strip(html){
+        function fcl_strip(html) {
             var doc = new DOMParser().parseFromString(html, 'text/html');
             return doc.body.textContent || "";
         }
@@ -1068,7 +1068,7 @@ jQuery(document).ready(function($) {
                     cl_total_links = cl_total_links + count; // вроде не используется
                     fcl_markNumber(el, count);
 
-                    if (fcl_hideItem(el,hide_exist,show_exist,filter_word)) {
+                    if (fcl_hideItem(el, hide_exist, show_exist, filter_word)) {
                         el.parentElement.classList.add('link-hidden');
                     } else {
                         el.parentElement.classList.remove('link-hidden');
@@ -1089,7 +1089,7 @@ jQuery(document).ready(function($) {
             for (let i = list.length - 1; i >= 0; i--) {
                 el = list[i];
                 if (el.classList.contains('linkate-link') && !el.classList.contains('linkate-terms-devider')) {
-                    if (fcl_hideItem(el,hide_exist,show_exist,filter_word)) {
+                    if (fcl_hideItem(el, hide_exist, show_exist, filter_word)) {
                         el.parentElement.classList.add('link-hidden');
                     } else {
                         el.parentElement.classList.remove('link-hidden');
@@ -1098,7 +1098,7 @@ jQuery(document).ready(function($) {
             }
         }
 
-        function fcl_hideItem(el,hide_exist,show_exist,filter_word){
+        function fcl_hideItem(el, hide_exist, show_exist, filter_word) {
             let text, contains, hide, hide_not_exist, dont_show_cat;
             let cat_el = $("#quick_cat_filter option:selected"); // selected item
             let cat = $(cat_el).val(); // selected val + sub val
@@ -1122,7 +1122,7 @@ jQuery(document).ready(function($) {
             return hide || !contains || hide_not_exist || dont_show_cat;
         }
 
-        function fcl_markNumber(el,count) {
+        function fcl_markNumber(el, count) {
             let num = el.parentElement.querySelector('.link-counter');
             let title = el.querySelector('.link-title');
 
@@ -1130,7 +1130,7 @@ jQuery(document).ready(function($) {
                 if (!title.classList.contains(cl_exists_class)) {
                     title.classList.add(cl_exists_class);
                 }
-                num.innerText = '[ ' +count+ ' ] ' ;
+                num.innerText = '[ ' + count + ' ] ';
                 if (count > 1) {
                     num.classList.remove('link-counter-good');
                     num.classList.add('link-counter-bad');
@@ -1140,7 +1140,7 @@ jQuery(document).ready(function($) {
                 }
             } else {
                 if (title.classList.contains(cl_exists_class)) {
-                    num.innerText = '[ 0 ]' ;
+                    num.innerText = '[ 0 ]';
                     title.classList.remove(cl_exists_class);
                     num.classList.remove('link-counter-bad');
                     num.classList.remove('link-counter-good');
@@ -1151,20 +1151,20 @@ jQuery(document).ready(function($) {
         // When pressed link which is already in text, it's url will be found and selected in the editor
         function selectExistingTinyMCE(url) {
             fcl_collectAllLinksFromContent();
-                elementScrollSelect(url, true);
+            elementScrollSelect(url, true);
 
         }
 
         // Select suggestion
         function fcl_selectSuggestionTinyMCE(start, end, word) {
-            let content = cl_editor_lastfocus_html_content.substring(0,start) +  '<span id="sugg_'+ start + '_' + end + '">' + word + '</span>' + cl_editor_lastfocus_html_content.substring(end, cl_editor_lastfocus_html_content.length);
+            let content = cl_editor_lastfocus_html_content.substring(0, start) + '<span id="sugg_' + start + '_' + end + '">' + word + '</span>' + cl_editor_lastfocus_html_content.substring(end, cl_editor_lastfocus_html_content.length);
             tinyMCE.activeEditor.setContent(content);
 
-            let selection = tinyMCE.activeEditor.dom.select('span[id="sugg_'+ start + '_' +  end + '"]')[0];
+            let selection = tinyMCE.activeEditor.dom.select('span[id="sugg_' + start + '_' + end + '"]')[0];
 
             if (selection) {
                 tinyMCE.activeEditor.selection.select(selection);
-                selection.scrollIntoView({behavior: "instant", block: "center", inline: "nearest"});
+                selection.scrollIntoView({ behavior: "instant", block: "center", inline: "nearest" });
             }
 
         }
@@ -1174,7 +1174,8 @@ jQuery(document).ready(function($) {
             if (event.ctrlKey || event.metaKey) {
                 before_param = 'data-temp-alt';
             }
-            return {temp_before: decodeURIComponent(atob($('#link_template').attr(before_param)))
+            return {
+                temp_before: decodeURIComponent(atob($('#link_template').attr(before_param)))
                     .replace(/{url}/g, i.url)
                     .replace(/{title}/g, i.title)
                     .replace(/{title_seo}/g, i.title_seo)
@@ -1209,8 +1210,8 @@ jQuery(document).ready(function($) {
             let temp_after = template_obj.temp_after;
 
 
-                replaceSelectedTinyMCE(temp_before, temp_after, event, i, false);
-                tinymce.activeEditor.fire('change');
+            replaceSelectedTinyMCE(temp_before, temp_after, event, i, false);
+            tinymce.activeEditor.fire('change');
 
         }
 
@@ -1233,8 +1234,8 @@ jQuery(document).ready(function($) {
                 .replace(/\+/g, ' ')
                 .replace(/\\/g, '');
 
-                replaceSelectedTinyMCE(temp_before, temp_after, event, i, true);
-                tinymce.activeEditor.fire('change');
+            replaceSelectedTinyMCE(temp_before, temp_after, event, i, true);
+            tinymce.activeEditor.fire('change');
 
         }
 
@@ -1253,14 +1254,14 @@ jQuery(document).ready(function($) {
             else {
                 let between = '';
                 if (!(event.ctrlKey || event.metaKey) && (between == undefined || between.length == 0)) {
-                    switch(cherrylink_options['no_selection_action']) {
+                    switch (cherrylink_options['no_selection_action']) {
                         case 'title': between = item.title_seo; break;
                         case 'h1': between = item.title; break;
                         case 'placeholder': between = 'ТЕКСТ_ССЫЛКИ'; break;
                         case 'empty': between = '&nbsp;'; break;
                     }
                 }
-                tinymce.activeEditor.execCommand('mceInsertContent', false, temp_before+ between +temp_after);
+                tinymce.activeEditor.execCommand('mceInsertContent', false, temp_before + between + temp_after);
             }
 
         }
@@ -1281,11 +1282,11 @@ jQuery(document).ready(function($) {
         }
 
         // check for spaces before/after
-        function trimSelection (selection) {
+        function trimSelection(selection) {
             let arr = [];
             if (selection) {
                 selection.charAt(0) === ' ' ? arr['first'] = ' ' : arr['first'] = ''
-                selection.charAt(selection.length-1) === ' ' ? arr['last'] = ' ' : arr['last'] = ''
+                selection.charAt(selection.length - 1) === ' ' ? arr['last'] = ' ' : arr['last'] = ''
                 arr['hasSpaces'] = false;
                 if (arr['first'] == " " || arr['last'] == " ") {
                     arr['hasSpaces'] = true;
@@ -1306,7 +1307,7 @@ jQuery(document).ready(function($) {
                 let title = getAttr(element, 'data-title');
                 let taxonomy = getAttr(element, 'data-taxonomy');
                 let exists = fcl_hasClassExists(element);
-                item = {url: url, title: title, taxonomy: taxonomy, exists: exists};
+                item = { url: url, title: title, taxonomy: taxonomy, exists: exists };
             } else {
                 let url = getAttr(element, 'data-url');
                 let title = getAttr(element, 'data-title');
@@ -1318,7 +1319,7 @@ jQuery(document).ready(function($) {
                 let imagesrc = getAttr(element, 'data-imagesrc');
                 let anons = getAttr(element, 'data-anons');
                 let exists = fcl_hasClassExists(element);
-                item = {url: url, title: title,title_seo: title_seo, categorynames: categorynames,date:date,author:author,postid:postid,imagesrc:imagesrc,anons:anons, exists: exists};
+                item = { url: url, title: title, title_seo: title_seo, categorynames: categorynames, date: date, author: author, postid: postid, imagesrc: imagesrc, anons: anons, exists: exists };
             }
             return item;
         }
@@ -1328,7 +1329,7 @@ jQuery(document).ready(function($) {
 
             if (item.exists && !cl_allow_multilink) {
 
-                    selectExistingTinyMCE(item.url)
+                selectExistingTinyMCE(item.url)
 
             } else {
                 is_term ? replaceSelectedTerm(item, e) : replaceSelectedLink(item, e);
@@ -1363,13 +1364,13 @@ jQuery(document).ready(function($) {
             let ankors = [];
             // get dom
             // get all links <a>
-            var a_links = $('<div>'+content+'</div>').find('a');
+            var a_links = $('<div>' + content + '</div>').find('a');
             if (a_links.length > 0) {
 
-                $.each(a_links, function(i, el) {
+                $.each(a_links, function (i, el) {
                     if (!fcl_fileTypeChecker($(el).attr("href"))) {
                         let url = fcl_convertRelativeUrl($(el).attr("href"));
-                        ankors.push({ankor: $(el).text(), url: url});
+                        ankors.push({ ankor: $(el).text(), url: url });
                     }
                 })
             }
@@ -1379,7 +1380,7 @@ jQuery(document).ready(function($) {
 
 
 
-        function fcl_levenshtein(a, b){
+        function fcl_levenshtein(a, b) {
             if (a.length === 0) return b.length
             if (b.length === 0) return a.length
 
@@ -1413,12 +1414,12 @@ jQuery(document).ready(function($) {
             return matrix[b.length][a.length]
         }
 
-        function fcl_getAllAnkorPositions(text, ankor, offset, pos){
-            if(pos === undefined) {
+        function fcl_getAllAnkorPositions(text, ankor, offset, pos) {
+            if (pos === undefined) {
                 pos = [];
                 offset = 0;
             }
-            offset = text.toLowerCase().indexOf(ankor, offset+ankor.length);
+            offset = text.toLowerCase().indexOf(ankor, offset + ankor.length);
             if (offset > -1) {
                 let dont_add = false;
                 if (offset - 1 > 0) {
@@ -1439,5 +1440,5 @@ jQuery(document).ready(function($) {
     }
 
 
-} );
+});
 

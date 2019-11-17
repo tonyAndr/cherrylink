@@ -136,7 +136,7 @@ function link_cf_options_from_post($options, $args) {
         case 'export':
 //        	parse_str(base64_decode($_POST['export']),$options);
             $options = $_POST['export'];
-        	parse_str($_POST['export'],$options);
+        	parse_str($_POST['export'], $options);
         	break;
 		default:
 			$options[$arg] = trim($_POST[$arg]);

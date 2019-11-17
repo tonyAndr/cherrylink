@@ -152,30 +152,101 @@ jQuery(document).ready(function($){
         $('#generate_csv').show();
     })
 
+	let stats_interval_check, stats_serialized_form;
+
     $('#generate_csv').click(function(e){
     	e.preventDefault();
-
     	$('#csv_progress').show();
     	$('#generate_csv').hide();
-		let ajax_data = {
-	        'action': 'linkate_generate_csv_or_json_prettyfied'
-	    };
-	    ajax_data = $("#form_generate_csv").serialize() + '&action=linkate_generate_csv_or_json_prettyfied';
+		stats_serialized_form = $("#form_generate_csv").serialize();
+		$("input").prop('disabled', true);
+		stats_get_posts_count();
+	})
 
-        $("input").prop('disabled', true);
-	    $.ajax({
-		      type: "POST",
-			  url: ajaxurl,
-			  data: ajax_data,
-			  datatype: 'json',
-		    success: function(response) {
-		    	response = JSON.parse(response);
-		       $('#generate_csv').after('<a id="btn_csv_dload" class="button button-download" href="'+response['url']+'" download>Скачать файл</a>');
-		    	$('#csv_progress').hide();
-                $("input").prop('disabled', false);
-		    }
+
+
+	function stats_get_posts_count() {
+		// let ajax_data = {
+		// 	'action': 'linkate_get_all_posts_count'
+		// };
+		let ajax_data = stats_serialized_form + '&action=linkate_get_all_posts_count';
+
+
+		$.ajax({
+			type: "POST",
+			url: ajaxurl,
+			data: ajax_data,
+			datatype: 'text',
+			success: function (response) {
+				// response = JSON.parse(response);
+				console.log("Starting process with " + response + " posts found");
+				stats_posts_count = parseInt(response);
+				// update stats_posts_count
+				stats_interval_check = setInterval(stats_process_next, 500);
+			}
 		});
-    })
+	}
+
+	let stats_offset = 0, stats_limit = 300, stats_posts_count = 0, in_progress = false;
+	
+	function stats_process_next() {
+		if (stats_offset >= stats_posts_count) {
+			clearInterval(stats_interval_check);
+
+			
+			$('#csv_progress').hide();
+			$("input").prop('disabled', false);
+			console.log("Stats created successfully")
+			stats_get_file();
+			return;
+		}
+
+		if (in_progress)
+			return;
+		
+		let ajax_data = stats_serialized_form
+		+ '&action=linkate_generate_csv_or_json_prettyfied'
+		+ '&stats_offset=' + stats_offset
+		+ '&stats_limit=' + stats_limit;
+
+		in_progress = true;
+		$.ajax({
+			type: "POST",
+			url: ajaxurl,
+			data: ajax_data,
+			datatype: 'json',
+			success: function (response) {
+				console.log(JSON.parse(response));
+				stats_offset += stats_limit; 
+				in_progress = false;
+				stats_update_progress();
+			}
+		});
+	}
+
+	function stats_get_file() {
+		let ajax_data = 'action=linkate_merge_csv_files';
+
+		in_progress = true;
+		$.ajax({
+			type: "POST",
+			url: ajaxurl,
+			data: ajax_data,
+			datatype: 'json',
+			success: function (response) {
+				response = JSON.parse(response);
+				console.log(response);
+				$('#generate_csv').after('<a id="btn_csv_dload" class="button button-download" href="' + response['url'] + '" download>Скачать файл</a>');
+			}
+		});
+	}
+
+	function stats_update_progress() {
+		let current = 0;
+		current = Math.round(stats_offset/stats_posts_count*100)
+		$('#csv_progress').prop('max', 100);
+		$('#csv_progress').val(current);
+	}
 
 
 	// ========================= STOPWORDS TABLE =========================

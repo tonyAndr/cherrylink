@@ -65,7 +65,6 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	if (!isset($arg['divider'])) $arg['divider'] = stripslashes(@$options['divider']);
 	if (!isset($arg['match_all_against_title'])) $arg['match_all_against_title'] = @$options['match_all_against_title'];
 	if (!isset($arg['omit_current_post'])) $arg['omit_current_post'] = @$options['omit_current_post'];
-	if (!isset($arg['just_current_post'])) $arg['just_current_post'] = @$options['just_current_post'];
 	if (!isset($arg['show_private'])) $arg['show_private'] = @$options['show_private'];
 	if (!isset($arg['show_pages'])) $arg['show_pages'] = @$options['show_pages'];
 	if (!isset($arg['show_attachments'])) $arg['show_attachments'] = @$options['show_attachments'];
@@ -94,45 +93,19 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	if (!isset($arg['status'])) $arg['status'] = @$options['status'];
 	if (!isset($arg['clean_suggestions_stoplist'])) $arg['clean_suggestions_stoplist'] = @$options['clean_suggestions_stoplist'];
 	if (!isset($arg['ignore_relevance'])) $arg['ignore_relevance'] = @$options['ignore_relevance'];
-
-	// just for linkate_posts[feed]
-	if (!isset($arg['combine'])) $arg['combine'] = @$options['crossmatch'];
 	if (!isset($arg['weight_content'])) $arg['weight_content'] = @$options['weight_content'];
 	if (!isset($arg['weight_title'])) $arg['weight_title'] = @$options['weight_title'];
 	if (!isset($arg['weight_tags'])) $arg['weight_tags'] = @$options['weight_tags'];
 	if (!isset($arg['num_terms'])) $arg['num_terms'] = stripslashes(@$options['num_terms']);
 	if (!isset($arg['term_extraction'])) $arg['term_extraction'] = @$options['term_extraction'];
 	if (!isset($arg['hand_links'])) $arg['hand_links'] = @$options['hand_links'];
-	
-	// just for other_posts
-	if (!isset($arg['orderby'])) $arg['orderby'] = stripslashes(@$options['orderby']);
-	if (!isset($arg['orderby_order'])) $arg['orderby_order'] = @$options['orderby_order'];
-	if (!isset($arg['orderby_case'])) $arg['orderby_case'] = @$options['orderby_case'];
 
 	// the last options cannot be set via arguments
 	$arg['stripcodes'] = @$options['stripcodes'];
 	$arg['utf8'] = @$options['utf8'];
-	$arg['cjk'] = @$options['cjk'];
 	$arg['use_stemmer'] = @$options['use_stemmer'];
 	$arg['batch'] = @$options['batch'];
-	$arg['content_filter'] = @$options['content_filter'];
-	$arg['widget_parameters'] = stripslashes(@$options['widget_parameters']);
-	$arg['widget_condition'] = stripslashes(@$options['widget_condition']);
-	$arg['feed_on'] = @$options['feed_on'];
-	$arg['feed_priority'] = @$options['feed_priority'];
-	$arg['feed_parameters'] = stripslashes(@$options['feed_parameters']);
-	$arg['append_on'] = @$options['append_on'];
-	$arg['append_priority'] = @$options['append_priority'];
-	$arg['append_parameters'] = stripslashes(@$options['append_parameters']);
-	$arg['append_condition'] = stripslashes(@$options['append_condition']);
 	$arg['exclude_users'] = @$options['exclude_users'];
-	$arg['count_home'] = @$options['count_home'];
-	$arg['count_feed'] = @$options['count_feed'];
-	$arg['count_single'] = @$options['count_single'];
-	$arg['count_archive'] = @$options['count_archive'];
-	$arg['count_category'] = @$options['count_category'];
-	$arg['count_page'] = @$options['count_page'];
-	$arg['count_search'] = @$options['count_search'];
 
 	// for related block
 	$arg['crb_show_after_content'] = @$options['crb_show_after_content'];
@@ -144,6 +117,14 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	$arg['crb_temp_after'] = @$options['crb_temp_after'];
 	$arg['crb_installed'] = @$options['crb_installed'];
 
+	$arg['crb_cache_minutes'] = @$options['crb_cache_minutes'];
+	$arg['crb_show_latest'] = @$options['crb_show_latest'];
+	$arg['crb_image_size'] = @$options['crb_image_size'];
+	$arg['crb_placeholder_path'] = @$options['crb_placeholder_path'];
+	$arg['crb_content_filter'] = @$options['crb_content_filter'];
+	$arg['crb_choose_template'] = @$options['crb_choose_template'];
+	$arg['crb_css_tuning'] = @$options['crb_css_tuning'];
+	$arg['crb_css_override'] = @$options['crb_css_override'];
 
 	return $arg;
 }
@@ -596,91 +577,3 @@ function link_cf_microtime() {
 	list($usec, $sec) = explode(" ", microtime());
 	return ((float)$usec + (float)$sec); 
 } 
-
-/*
-
-	Some routines to handle appending output
-
-*/
-
-// array of what to append to posts
-global $link_cf_filter_data;
-$link_cf_filter_data = array();
-
-// each plugin calls this on startup to have content scanned for its own tag
-function link_cf_register_post_filter($type, $key, $class, $condition='') {
-	global $link_cf_filter_data;
-	$options = get_option($key);
-	$priority = $options[$type . '_priority'];
-	$parameters = stripslashes($options[$type . '_parameters']);
-	$link_cf_filter_data [] = array('type' => $type, 'priority' => $priority, 'class' => $class, 'parameters' => $parameters, 'key' => $key, 'condition' => stripslashes($condition));
-	// we want them in decreasing priority
-	sort($link_cf_filter_data);
-}
-
-function link_cf_post_filter($content) {
-	global $link_cf_filter_data;
-	foreach ($link_cf_filter_data as $data) {
-		if (('append' === $data['type'] && !is_feed() && eval($data['condition'])) || ('feed' === $data['type'] && is_feed()) ){
-			$content .= call_user_func_array(array($data['class'], 'execute'), array($data['parameters'], '<li>{link}</li>', $data['key']));
-		}
-	}
-	return $content;
-}
-
-function link_cf_post_filter_init() {
-	global $link_cf_filter_data;
-	if (!$link_cf_filter_data) return;
-	add_filter('the_content', 'link_cf_post_filter', 5);
-}
-
-// watch out that the registration functions are called earlier
-add_action ('init', 'link_cf_post_filter_init');
-
-/*
-
-	Now some routines to handle content filtering
-
-*/
-
-// the '|'-separated list of valid content filter tags
-global $link_cf_filter_tags;
-
-// each plugin calls this on startup to have content scanned for its own tag
-function link_cf_register_content_filter($tag) {
-	global $link_cf_filter_tags;
-	if (!$link_cf_filter_tags) {
-		$link_cf_filter_tags = $tag;
-	} else {
-		$tags = explode('|', $link_cf_filter_tags);
-		$tags[] = $tag;
-		$tags = array_unique($tags);
-		$link_cf_filter_tags = implode('|', $tags);
-	}
-}
-
-
-function link_cf_do_replace($matches) {
-	return call_user_func(array($matches[1], 'execute'), $matches[2]);
-}
-
-function link_cf_content_filter($content) {
-	global $link_cf_filter_tags;
-	// replaces every instance of "<!--RecentPosts-->", for example, with the output of the plugin
-	// the filter tag can be followed by text which will be used as a parameter string to change the behaviour of the plugin
-	return preg_replace_callback("/<!--($link_cf_filter_tags)\s*(.*)-->/", "link_cf_do_replace", $content);
-}
-
-function link_cf_content_filter_init() {
-	global $link_cf_filter_tags;
-	if (!$link_cf_filter_tags) return;
-	add_filter( 'the_content',     'link_cf_content_filter', 5 );
-	add_filter( 'the_content_rss', 'link_cf_content_filter', 5 );
-	add_filter( 'the_excerpt',     'link_cf_content_filter', 5 );
-	add_filter( 'the_excerpt_rss', 'link_cf_content_filter', 5 );
-	add_filter( 'widget_text',     'link_cf_content_filter', 5 );
-}
-
-// watch out that the registration functions are called earlier
-add_action ('init', 'link_cf_content_filter_init');
-add_action ('init', 'link_cf_post_filter_init');

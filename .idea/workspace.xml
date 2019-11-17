@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="49bc74b0-ff8e-4416-bf96-3d55c15d8a59" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/linkate-posts-admin.php" beforeDir="false" afterPath="$PROJECT_DIR$/linkate-posts-admin.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/linkate-posts.php" beforeDir="false" afterPath="$PROJECT_DIR$/linkate-posts.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -76,11 +77,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/output_tags.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="8">
-              <caret line="117" column="5" selection-start-line="117" selection-start-column="5" selection-end-line="117" selection-end-column="5" />
+            <state relative-caret-position="508">
+              <caret line="741" column="5" lean-forward="true" selection-start-line="741" selection-start-column="5" selection-end-line="741" selection-end-column="5" />
               <folding>
                 <element signature="e#142#150#1" expanded="true" />
               </folding>
@@ -91,17 +92,21 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../../../wp-includes/media.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="101275">
+            <state relative-caret-position="226">
               <caret line="4056" column="9" selection-start-line="4056" selection-start-column="9" selection-end-line="4056" selection-end-column="9" />
+              <folding>
+                <element signature="n#style#0;n#br#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#br#0;n#!!top" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/linkate-posts.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="110">
-              <caret line="404" column="27" selection-start-line="404" selection-start-column="20" selection-end-line="404" selection-end-column="27" />
+            <state relative-caret-position="140">
+              <caret line="25" column="55" selection-start-line="25" selection-start-column="55" selection-end-line="25" selection-end-column="55" />
               <folding>
                 <element signature="e#6#351#0#PHP" expanded="true" />
               </folding>
@@ -110,10 +115,19 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../../wp-includes/link-template.php">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="723">
+              <caret line="3163" column="9" selection-start-line="3163" selection-start-column="9" selection-end-line="3163" selection-end-column="9" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/readme.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="400">
-              <caret line="76" column="10" lean-forward="true" selection-start-line="76" selection-start-column="10" selection-end-line="76" selection-end-column="10" />
+            <state relative-caret-position="325">
+              <caret line="73" column="10" selection-start-line="73" selection-start-column="10" selection-end-line="73" selection-end-column="10" />
             </state>
           </provider>
         </entry>
@@ -121,8 +135,13 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/linkate.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="29200">
-              <caret line="1168" column="17" selection-start-line="1168" selection-start-column="17" selection-end-line="1168" selection-end-column="17" />
+            <state relative-caret-position="-10024">
+              <caret line="1127" column="17" selection-start-line="1127" selection-start-column="17" selection-end-line="1127" selection-end-column="17" />
+              <folding>
+                <element signature="n#style#0;n#a#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#span#0;n#div#1;n#div#0;n#!!top" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -131,7 +150,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>sort</find>
       <find>export</find>
       <find>window.location.href.indexOf('term.php')</find>
       <find>dummy</find>
@@ -158,10 +176,14 @@
       <find>file_put_c</find>
       <find>anons</find>
       <find>preg_rep</find>
-      <find>imagesrc</find>
       <find>$result-&gt;ID</find>
       <find>linkate_posts_output_block_options_subpage</find>
+      <find>linkate_sp_terms_by_textrank</find>
+      <find>imagesrc</find>
     </findStrings>
+    <dirStrings>
+      <dir>C:\wamp64\www\seoplugs\wp-content\plugins\cherrylink</dir>
+    </dirStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -178,12 +200,13 @@
         <option value="$PROJECT_DIR$/js/linkate.js" />
         <option value="$PROJECT_DIR$/../cherrylink-related-block/js/crb-admin.js" />
         <option value="$PROJECT_DIR$/output_tags.php" />
-        <option value="$PROJECT_DIR$/readme.txt" />
-        <option value="$PROJECT_DIR$/linkate-posts.php" />
         <option value="$PROJECT_DIR$/linkate-posts-admin.php" />
+        <option value="$PROJECT_DIR$/linkate-posts.php" />
+        <option value="$PROJECT_DIR$/readme.txt" />
       </list>
     </option>
   </component>
+  <component name="PhpDebugGeneral" listening_started="true" />
   <component name="PhpServers">
     <servers>
       <server host="localhost" id="ccf92c90-f09d-4117-8649-5afe5420ce66" name="localhost" port="8888" />
@@ -206,7 +229,7 @@
       <path value="$PROJECT_DIR$/../../.." />
     </include_path>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="835" />
     <option name="width" value="1294" />
     <option name="height" value="1040" />
@@ -283,7 +306,7 @@
       <workItem from="1568199080973" duration="1945000" />
       <workItem from="1571083545207" duration="1093000" />
       <workItem from="1571167483072" duration="3516000" />
-      <workItem from="1571331878732" duration="4111000" />
+      <workItem from="1571331878732" duration="8673000" />
     </task>
     <task id="LOCAL-00001" summary="1.6.6">
       <created>1559076708822</created>
@@ -415,25 +438,25 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="113716000" />
+    <option name="totallyTimeSpent" value="118278000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="2576" height="1056" extended-state="6" />
+    <frame x="-8" y="-8" width="2576" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.10850556" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32936078" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.23618636" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.23618636" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
       <window_info anchor="bottom" id="Database Changes" order="8" />
-      <window_info active="true" anchor="bottom" id="Version Control" order="9" visible="true" weight="0.32936078" />
+      <window_info anchor="bottom" id="Version Control" order="9" weight="0.32936078" />
       <window_info anchor="bottom" id="Terminal" order="10" weight="0.32936078" />
       <window_info anchor="bottom" id="Event Log" order="11" side_tool="true" />
       <window_info anchor="bottom" id="Messages" order="12" weight="0.21451788" />
@@ -471,7 +494,7 @@
       <breakpoints>
         <line-breakpoint type="php">
           <url>file://$PROJECT_DIR$/linkate-posts.php</url>
-          <line>694</line>
+          <line>634</line>
           <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint type="php">
@@ -483,12 +506,12 @@
         <line-breakpoint type="php">
           <condition expression="$word == &quot;крупных&quot;" language="PHP" />
           <url>file://$PROJECT_DIR$/linkate-posts.php</url>
-          <line>702</line>
+          <line>642</line>
           <option name="timeStamp" value="12" />
         </line-breakpoint>
         <line-breakpoint type="php">
           <url>file://$PROJECT_DIR$/linkate-posts.php</url>
-          <line>713</line>
+          <line>653</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint type="php">
@@ -514,17 +537,17 @@
         </line-breakpoint>
         <line-breakpoint type="php">
           <url>file://$PROJECT_DIR$/linkate-posts.php</url>
-          <line>500</line>
+          <line>440</line>
           <option name="timeStamp" value="21" />
         </line-breakpoint>
         <line-breakpoint type="php">
           <url>file://$PROJECT_DIR$/linkate-posts.php</url>
-          <line>519</line>
+          <line>459</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint type="php">
           <url>file://$PROJECT_DIR$/linkate-posts.php</url>
-          <line>528</line>
+          <line>468</line>
           <option name="timeStamp" value="25" />
         </line-breakpoint>
         <line-breakpoint type="php">
@@ -558,11 +581,6 @@
           <option name="timeStamp" value="33" />
         </line-breakpoint>
         <line-breakpoint type="php">
-          <url>file://$PROJECT_DIR$/output_tags.php</url>
-          <line>693</line>
-          <option name="timeStamp" value="34" />
-        </line-breakpoint>
-        <line-breakpoint type="php">
           <url>file://$PROJECT_DIR$/admin_common_functions.php</url>
           <line>17</line>
           <option name="timeStamp" value="35" />
@@ -574,7 +592,7 @@
         </line-breakpoint>
         <line-breakpoint type="php">
           <url>file://$PROJECT_DIR$/linkate-posts.php</url>
-          <line>906</line>
+          <line>846</line>
           <option name="timeStamp" value="37" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="php">
@@ -586,6 +604,16 @@
           <url>file://$PROJECT_DIR$/output_tags.php</url>
           <line>709</line>
           <option name="timeStamp" value="41" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/output_tags.php</url>
+          <line>693</line>
+          <option name="timeStamp" value="42" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="php">
+          <url>file://$PROJECT_DIR$/output_tags.php</url>
+          <line>1167</line>
+          <option name="timeStamp" value="43" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -777,20 +805,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../wp-includes/media.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="101275">
-          <caret line="4056" column="9" selection-start-line="4056" selection-start-column="9" selection-end-line="4056" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/linkate.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="29200">
-          <caret line="1168" column="17" selection-start-line="1168" selection-start-column="17" selection-end-line="1168" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/linkate-admin.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-2625">
@@ -833,23 +847,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/output_tags.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="8">
-          <caret line="117" column="5" selection-start-line="117" selection-start-column="5" selection-end-line="117" selection-end-column="5" />
-          <folding>
-            <element signature="e#142#150#1" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/readme.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="400">
-          <caret line="76" column="10" lean-forward="true" selection-start-line="76" selection-start-column="10" selection-end-line="76" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/linkate-posts-admin.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="162">
@@ -868,12 +865,59 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../../../wp-includes/link-template.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="723">
+          <caret line="3163" column="9" selection-start-line="3163" selection-start-column="9" selection-end-line="3163" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/readme.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="325">
+          <caret line="73" column="10" selection-start-line="73" selection-start-column="10" selection-end-line="73" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/linkate-posts.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="404" column="27" selection-start-line="404" selection-start-column="20" selection-end-line="404" selection-end-column="27" />
+        <state relative-caret-position="140">
+          <caret line="25" column="55" selection-start-line="25" selection-start-column="55" selection-end-line="25" selection-end-column="55" />
           <folding>
             <element signature="e#6#351#0#PHP" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/linkate.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-10024">
+          <caret line="1127" column="17" selection-start-line="1127" selection-start-column="17" selection-end-line="1127" selection-end-column="17" />
+          <folding>
+            <element signature="n#style#0;n#a#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#span#0;n#div#1;n#div#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../wp-includes/media.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="226">
+          <caret line="4056" column="9" selection-start-line="4056" selection-start-column="9" selection-end-line="4056" selection-end-column="9" />
+          <folding>
+            <element signature="n#style#0;n#br#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#br#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/output_tags.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="508">
+          <caret line="741" column="5" lean-forward="true" selection-start-line="741" selection-start-column="5" selection-end-line="741" selection-end-column="5" />
+          <folding>
+            <element signature="e#142#150#1" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -764,7 +764,7 @@ function linkate_posts_save_index_entries ($is_ajax_call) {
 		$ajax_array['mode'] = 'done';
 		$ajax_array['total'] = $amount_of_db_rows;
 		$ajax_array['time'] = $t;
-		$existing_blacklist = array_flip(array_filter(linkate_get_blacklist(false)));
+		$existing_blacklist = array_flip(array_filter(linkate_get_blacklist(true)));
 //		$common_words = array_slice($common_words,0,20, true);
 		arsort($common_words);
 		$sw_count = 36;
@@ -905,11 +905,46 @@ function linkate_generate_json() {
 	wp_die();
 }
 
+// Get all needed posts type count to split into batches
+add_action('wp_ajax_linkate_get_all_posts_count', 'linkate_get_all_posts_count');
+function linkate_get_all_posts_count () {
+	global $wpdb, $table_prefix;
+	$types = array_map(function ($el) { 
+		return "'".$el."'";
+	}, $_POST['export_types']);
+	$types = implode(",", $types);
+	$count = 0;
+	$count = $wpdb->get_var("SELECT COUNT(*) from ".$table_prefix."posts WHERE post_type IN (".$types.")");
+	echo $count;
+	linkate_stats_remove_old(false); //remove old stats csv files
+	wp_die();
+}
+
 // WorkHorse
 add_action('wp_ajax_linkate_generate_csv_or_json_prettyfied', 'linkate_generate_csv_or_json_prettyfied');
 function linkate_generate_csv_or_json_prettyfied() {
 	// get rows from db
 	global $wpdb, $table_prefix;
+	if (isset($_POST['post_ids'])) {
+		$ids_query = $table_prefix."posts.ID IN (".$_POST['post_ids'].") AND ";
+	} else {
+		$ids_query = "";
+	}
+
+	if (isset($_POST['stats_offset'])) {
+		$bounds = " LIMIT ".  $_POST['stats_offset'] .",". $_POST['stats_limit'];
+	} else {
+		$bounds = "";
+	}
+	if (isset($_POST['export_types'])) {
+		$types = array_map(function ($el) { 
+			return "'".$el."'";
+		}, $_POST['export_types']);
+		$types = $table_prefix."posts.post_type IN ( ". implode(",", $types) .") ";
+	} else {
+		$types = $table_prefix."posts.post_type NOT IN ('attachment', 'nav_menu_item', 'revision')";
+	}
+
 	$table_name = $table_prefix.'linkate_scheme';
 	$wpdb->query('SET @@group_concat_max_len = 100000;');
 	$links_post = $wpdb->get_results("
@@ -925,11 +960,18 @@ function linkate_generate_csv_or_json_prettyfied() {
 				FROM ".$table_prefix."linkate_scheme
 				GROUP BY target_id, target_type
 				) AS scheme2 ON ".$table_prefix."posts.ID = scheme2.target_id AND (scheme2.target_type = 0 OR scheme2.target_type IS NULL)
-		WHERE ".$table_prefix."posts.post_type NOT IN ('attachment', 'nav_menu_item', 'revision') 
-		GROUP BY ".$table_prefix."posts.ID 
-		ORDER BY ".$table_prefix."posts.ID ASC", ARRAY_A); //
+		WHERE ".$ids_query." " // selected post IDs
+		.$types // post types
+		." GROUP BY ".$table_prefix."posts.ID ORDER BY ".$table_prefix."posts.ID ASC " 
+		.$bounds // LIMIT X,Y
+		, ARRAY_A); //
+
 	reset($links_post);
-	$links_term = $wpdb->get_results("
+	$output_array = linkate_queryresult_to_array($links_post, 0);
+	unset($links_post);
+
+	if (!isset($_POST["from_editor"]) && (isset($_POST['stats_offset']) && intval($_POST['stats_offset']) === 0)) {
+		$links_term = $wpdb->get_results("
 		SELECT ".$table_prefix."terms.term_id as source_id, COALESCE(COUNT(scheme1.target_id), 0) AS count_targets, GROUP_CONCAT(scheme1.target_id SEPARATOR ';') AS targets, GROUP_CONCAT(scheme1.target_type SEPARATOR ';') AS target_types, GROUP_CONCAT(scheme1.ankor_text SEPARATOR ';') AS ankors, GROUP_CONCAT(scheme1.external_url SEPARATOR ';') AS ext_links, COALESCE(scheme2.count_sources, 0) AS count_sources
 		FROM
 			".$table_prefix."terms
@@ -944,22 +986,21 @@ function linkate_generate_csv_or_json_prettyfied() {
 				) AS scheme2 ON ".$table_prefix."terms.term_id = scheme2.target_id AND (scheme2.target_type = 1 OR scheme2.target_type IS NULL)
 		GROUP BY ".$table_prefix."terms.term_id
 		ORDER BY ".$table_prefix."terms.term_id ASC", ARRAY_A); //
-	reset($links_term);
+		reset($links_term);
 
 	// echo json_encode($links_post);
-	$output_array = linkate_queryresult_to_array($links_post, 0);
-	$output_array = array_merge($output_array, linkate_queryresult_to_array($links_term, 1));
 
-	unset($links_post);
-	unset($links_term);
+		$output_array = array_merge($output_array, linkate_queryresult_to_array($links_term, 1));
+		unset($links_term);
+	}
 
 	if (isset($_POST["from_editor"])) {
         wp_send_json($output_array);
 	} else {
-		query_to_csv($output_array, 'cherrylink_stats.csv');
+		query_to_csv($output_array, 'cherrylink_stats_'.$_POST['stats_offset'].'.csv');
 		$response = array();
 		$response['status'] = 'OK';
-		$response['url'] = WP_PLUGIN_URL.'/cherrylink/cherrylink_stats.csv';
+		$response['url'] = WP_PLUGIN_URL.'/cherrylink/stats/cherrylink_stats_'.$_POST['stats_offset'].'.csv';
 		echo json_encode($response);
 	}
 	unset($output_array);
@@ -1076,7 +1117,13 @@ function query_to_csv($array, $filename) {
 	$arr_sources_count = 	'Входящих_ссылок';
 	$headers = array($arr_post_id, $arr_post_type, $arr_post_cats, $arr_source_url, $arr_target, $arr_ankor, $arr_targets_count, $arr_sources_count);
 
-	$fp = fopen(WP_PLUGIN_DIR.'/cherrylink/'.$filename, 'w');
+	// create dir
+	if (!file_exists(WP_PLUGIN_DIR.'/cherrylink/stats'))
+	{
+		mkdir(WP_PLUGIN_DIR.'/cherrylink/stats', 0755, true);
+	}
+
+	$fp = fopen(WP_PLUGIN_DIR.'/cherrylink/stats/'.$filename, 'w');
 
 	// output header row (if at least one row exists)
 	array_walk($headers, 'encodeCSV');
@@ -1088,6 +1135,85 @@ function query_to_csv($array, $filename) {
 	}
 
 	fclose($fp);
+}
+
+add_action('wp_ajax_linkate_merge_csv_files', 'linkate_merge_csv_files');
+function linkate_merge_csv_files() {
+	$directory = WP_PLUGIN_DIR.'/cherrylink/stats/*'; // CSV Files Directory Path
+
+	// Open and Write Master CSV File
+	$masterCSVFile = fopen(WP_PLUGIN_DIR.'/cherrylink/stats/cherrylink_stats.csv', "w+");
+	$first_file = true;
+	// Process each CSV file inside root directory
+	foreach(glob($directory) as $file) {
+
+		$data = []; // Empty Data
+
+		// Allow only CSV files
+		if (strpos($file, 'cherrylink_stats_') !== false) {
+
+			// Open and Read individual CSV file
+			if (($handle = fopen($file, 'r')) !== false) {
+				// Collect CSV each row records
+				while (($dataValue = fgetcsv($handle, 1000)) !== false) {
+					$data[] = $dataValue;
+				}
+			}
+
+			fclose($handle); // Close individual CSV file 
+
+			if (!$first_file)
+				unset($data[0]); // Remove first row of CSV, commonly tends to CSV header
+
+			// Check whether record present or not
+			if(count($data) > 0) {
+
+				foreach ($data as $value) {
+					try {
+					// Insert record into master CSV file
+					fputcsv_eol($masterCSVFile, $value,',','"', "\r\n");
+					} catch (Exception $e) {
+						echo $e->getMessage();
+					}
+				
+				}
+
+			// } else {
+			// 	echo "[$file] file contains no record to process.";
+			}
+			$first_file = false;
+		}
+
+	}
+
+	// Close master CSV file 
+	fclose($masterCSVFile);
+
+	linkate_stats_remove_old(true);
+
+	$response = array();
+	$response['status'] = 'OK';
+	$response['url'] = WP_PLUGIN_URL.'/cherrylink/stats/cherrylink_stats.csv';
+	echo json_encode($response);
+	wp_die();
+}
+
+function linkate_stats_remove_old($onlytemp_files = false) {
+	if (!file_exists(WP_PLUGIN_DIR.'/cherrylink/stats'))
+	{
+		return;
+	}
+
+	$files = glob(WP_PLUGIN_DIR.'/cherrylink/stats/*'); // get all file names
+	foreach($files as $file) { // iterate files
+		if(is_file($file)) {
+			if ($onlytemp_files && strpos($file, 'cherrylink_stats_') !== false) {
+				unlink($file); // delete file
+			}
+			if (!$onlytemp_files)
+				unlink($file); // delete file
+		}
+	}
 }
 
 // Some funcs moved to main file (add/remove single item from scheme)
@@ -1106,21 +1232,47 @@ function linkate_get_stopwords() {
 
 add_action("wp_ajax_linkate_get_whitelist", "linkate_get_whitelist");
 function linkate_get_whitelist() {
-	global $wpdb;
-	$table_name = $wpdb->prefix . "linkate_stopwords";
-	$rows = $wpdb->get_col("SELECT word FROM $table_name WHERE is_white = 1");
-	wp_send_json($rows);
+
+	if ( false === ( $output = get_transient( "cherry_stop_whitelist" ) ) ) {
+            // It wasn't there, so regenerate the data and save the transient
+		global $wpdb;
+		$table_name = $wpdb->prefix . "linkate_stopwords";
+		$rows = $wpdb->get_col("SELECT word FROM $table_name WHERE is_white = 1");
+		$output = json_encode($rows);
+        set_transient( "cherry_stop_whitelist", $output, 1440 * MINUTE_IN_SECONDS * 7 );
+	}
+	
+	echo $output;
+	wp_die();
 }
 add_action("wp_ajax_linkate_get_blacklist", "linkate_get_blacklist");
-function linkate_get_blacklist($is_ajax = true) {
-	global $wpdb;
-	$table_name = $wpdb->prefix . "linkate_stopwords";
-	$rows = $wpdb->get_col("SELECT word FROM $table_name WHERE is_white = 0");
-	if ($is_ajax)
-	    wp_send_json($rows);
-	else {
+function linkate_get_blacklist($from_reindex = true) {
+	
+	if (wp_doing_ajax() && !$from_reindex) {
+
+		if ( false === ( $output = get_transient( "cherry_stop_blacklist" ) ) ) {
+				// It wasn't there, so regenerate the data and save the transient
+			global $wpdb;
+			$table_name = $wpdb->prefix . "linkate_stopwords";
+			$rows = $wpdb->get_col("SELECT word FROM $table_name WHERE is_white = 0");
+			$output = json_encode($rows);
+			set_transient( "cherry_stop_blacklist", $output, 1440 * MINUTE_IN_SECONDS * 7 );
+		}
+		
+		echo $output;
+		wp_die();
+
+	} else {
+		global $wpdb;
+		$table_name = $wpdb->prefix . "linkate_stopwords";
+		$rows = $wpdb->get_col("SELECT word FROM $table_name WHERE is_white = 0");
 	    return $rows;
     }
+}
+
+function linkate_stoplist_clear_cache() {
+    global $wpdb;
+    $wpdb->query("DELETE FROM $wpdb->options WHERE `option_name` LIKE ('%cherry\_stop\_%')");
 }
 
 add_action("wp_ajax_linkate_add_stopwords", "linkate_add_stopwords");
@@ -1148,6 +1300,7 @@ function linkate_add_stopwords() {
 			$wpdb->query($query . $values);
 		}
 	}
+	linkate_stoplist_clear_cache();
 }
 
 add_action("wp_ajax_linkate_delete_stopword", "linkate_delete_stopword");
@@ -1161,7 +1314,8 @@ function linkate_delete_stopword() {
 	    $wpdb->query("TRUNCATE TABLE $table_name");
     } else if ($id >= 0) {
 	    $wpdb->delete($table_name, array('ID' => $id));
-    }
+	}
+	linkate_stoplist_clear_cache();
 }
 add_action("wp_ajax_linkate_update_stopword", "linkate_update_stopword");
 function linkate_update_stopword() {
@@ -1174,6 +1328,7 @@ function linkate_update_stopword() {
 
         $wpdb->update($table_name,array('is_white' => $is_white), array("ID" => $id));
 	}
+	linkate_stoplist_clear_cache();
 }
 
 // ========================================================================================= //
@@ -1465,7 +1620,7 @@ function linkate_checkNeededOption() {
 	$status = '';
 	if ($arr != NULL) {
 		$k = base64_decode('c2hhMjU2');
-		$d = isset($_SERVER[base64_decode('SFRUUF9IT1NU')]) ?  $_SERVER[base64_decode('SFRUUF9IT1NU')] : $_SERVER[base64_decode('U0VSVkVSX05BTUU=')];
+		$d = isset($_SERVER['HTTP_HOST']) ?  $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
 		$h = hash($k,$d);
 		for ($i = 0; $i < sizeof($arr); $i++) {
 			$a = base64_decode($arr[$i]);
@@ -1505,7 +1660,7 @@ function linkate_checkNeededOption() {
 
 function getNeededOption() {
 	$options = get_option('linkate-posts');
-	$s = $options[base64_decode('aGFzaF9maWVsZA==')];
+	$s = $options['hash_field'];
 	if (empty($s)) {
 		return NULL;
 	} else {
@@ -1527,7 +1682,7 @@ function linkate_lastStatus() {
 
 function linkate_call_home($val,$d) {
 	$data = array('key' => $val, 'action' => 'getInfo', 'domain' =>$d);
-	$url = base64_decode('aHR0cDovL3Nlb2NoZXJyeS5ydS9wbHVnaW5zLWxpY2Vuc2Uv');
+	$url = 'https://seocherry.ru/plugins-license/';
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_POST, 1);
@@ -1549,7 +1704,7 @@ function linkate_call_home($val,$d) {
 
 function linkate_call_home_nocurl ($val,$d) {
 	$data = array('key' => $val, 'action' => 'getInfo', 'domain' =>$d);
-	$url = base64_decode('aHR0cDovL3Nlb2NoZXJyeS5ydS9wbHVnaW5zLWxpY2Vuc2Uv');
+	$url = 'https://seocherry.ru/plugins-license/';
 	$response = wp_remote_post( $url, array(
 			'method' => 'POST',
 			'timeout' => 30,

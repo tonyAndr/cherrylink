@@ -48,7 +48,7 @@ function linkate_otf_url($option_key, $result, $ext) {
 	$options = get_option('linkate-posts');
 	$url_option = $options['relative_links'];
 	$value = apply_filters('the_permalink', get_permalink($result->ID));
-	$value = unparse_url($value, $url_option);
+	$value = linkate_unparse_url($value, $url_option);
 	return linkate_oth_truncate_text($value, $ext);
 }
 
@@ -694,30 +694,54 @@ function linkate_otf_imagesrc($option_key, $result, $ext) {
 	$options = get_option($option_key);
 	$url_option = $options['relative_links'];
 	$crb_image_size = $options['crb_image_size'];
+	$crb_placeholder_path = $options['crb_placeholder_path'];
+	$crb_content_filter = $options['crb_content_filter'] == 1 ? true : false;
+	if (empty($crb_placeholder_path))
+		$crb_placeholder_path = WP_PLUGIN_URL . '/cherrylink/img/imgsrc_placeholder.jpg';
 
     // extract any image tags
-    $s = array();
-    $size = '';
-    $content = $result->post_content;
-    if ($ext) {
-        $s = explode(':', $ext);
-        if ($s[1] === 'post') {
-            $content = apply_filters('the_content', $content);
-        }
-        if ($s[2]) $size = $s[2];
-    }
 
-	$featured_src = linkate_get_featured_src($result->ID);
-	if ($featured_src) {
+	$content = $result->post_content;
+	if ($crb_content_filter) {
+		$content = str_replace("[crb_show_block]", "", $content); // preventing nesting overflow
+		$content = apply_filters('the_content', $content);
+	}
+
+	// $s = array();
+    // $size = '';
+    // if ($ext) {
+    //     $s = explode(':', $ext);
+    //     if ($s[1] === 'post') {
+    //         $content = apply_filters('the_content', $content);
+    //     }
+    //     if ($s[2]) $size = $s[2];
+    // }
+
+	// Check Featured Image first
+	$imgsrc = false;
+	if (linkate_get_featured_src($result->ID)) {
+		$featured_src = linkate_get_featured_src($result->ID);
 		$featured_src = get_site_url() . "/wp-content/uploads/" . $featured_src;
-		$imgsrc = unparse_url($featured_src, $url_option);
-	} else {
+		$imgsrc = linkate_unparse_url($featured_src, $url_option);
+	}
+
+	// Try to extract img tags from html
+	if (!$imgsrc) {
 		$pattern = '/<img.+?src\s*=\s*[\'|\"](.*?)[\'|\"].+?>/i';
-		if (!preg_match_all($pattern, $content, $matches)) $imgsrc = false;
-		$i = isset($s[0]) ? $s[0] : false;
-		if (!$i) $i = 0;
-		$imgsrc = $matches[1][$i];
-		$imgsrc = unparse_url($imgsrc, $url_option);
+		$found = preg_match_all($pattern, $content, $matches);
+		if ($found)  {
+			// $i = isset($s[0]) ? $s[0] : false;
+			// if (!$i) $i = 0;
+			// $imgsrc = $matches[1][$i];
+			$imgsrc = $matches[1][0];
+			$imgsrc = linkate_unparse_url($imgsrc, $url_option);
+		}
+	}
+
+	// Well, shite, return placeholder
+    if (!$imgsrc) { // placeholder
+        $imgsrc = $crb_placeholder_path;
+		return $imgsrc;
 	}
 
 	// first check using vanilla url
@@ -727,22 +751,20 @@ function linkate_otf_imagesrc($option_key, $result, $ext) {
 	if (!$att_id) {
         $imgsrc = preg_replace("~-\d{2,4}x\d{2,4}(?!.*-\d{2,4}x\d{2,4})~", '', $imgsrc);
         $att_id = attachment_url_to_postid($imgsrc);
-    }
+	}
+	
+	// If not found again, return imgsrc from prev step and relax
+	if (!$att_id) {
+		return $imgsrc;
+	}
 
-    if ($att_id) {
+	// Now lets try to get needed size
+	// If size is empty then original will be returned
+	if (wp_get_attachment_image_url( $att_id, $crb_image_size ))
+		$imgsrc = wp_get_attachment_image_url( $att_id, $crb_image_size );
 
-        if ($crb_image_size) {
-            $imgsrc = wp_get_attachment_image_url( $att_id, $crb_image_size );
-            if ($imgsrc)
-                return $imgsrc;
-        } else {
-            return $imgsrc;
-        }
-
-    }
-
-    if (!$imgsrc || !$att_id) // placeholder
-        $imgsrc = WP_PLUGIN_URL . '/cherrylink/img/imgsrc_placeholder.jpg';
+    if (!$imgsrc) // placeholder
+        $imgsrc = $crb_placeholder_path;
 
 	return $imgsrc;
 }
@@ -1164,7 +1186,7 @@ function linkate_oth_regescape($s) {
 }
 
 
-function unparse_url($url, $opt) {
+function linkate_unparse_url($url, $opt) {
 	$parsed_url = parse_url($url);
 	if ($parsed_url) {
 

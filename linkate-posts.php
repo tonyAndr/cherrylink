@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 1.6.17
+Version: 1.6.18
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -21,7 +21,7 @@ function linkate_posts_mark_current(){
 // define ('LINKATE_POST_PLUGIN_LIBRARY', true);
 
 if ( ! defined( 'WP_CONTENT_URL' ) )
-	define( 'WP_CONTENT_URL', site_url() . '/wp-content' );
+	define( 'WP_CONTENT_URL', get_site_url() . '/wp-content' );
 if ( ! defined( 'WP_CONTENT_DIR' ) )
 	define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
 if ( ! defined( 'WP_PLUGIN_URL' ) )
@@ -75,7 +75,7 @@ class LinkatePosts {
     
 	static function execute($args='', $default_output_template='<li>{link}</li>', $option_key='linkate-posts'){
 		global $table_prefix, $wpdb, $wp_version, $linkate_posts_current_ID;
-		//$start_time = link_cf_microtime();
+		// $debug_timer = link_cf_microtime();
 		
 		// Manually throws id of the current post if set
 		$arg_id = 0;
@@ -241,6 +241,7 @@ class LinkatePosts {
 			$translations = link_cf_prepare_template($options['none_text']);
 			$output = "<p>" . link_cf_expand_template(array(), $options['none_text'], $translations, $option_key) . "</p>";
 		}
+
 		$send_data['links'] = trim($output);
 		$send_data['count'] = $results_count;
 		return $send_data;
@@ -319,27 +320,6 @@ function linkate_sp_terms_by_freq_ankor($content) {
 	}
 	return $terms;
 }
-
-
-// ONLY FOR TEST
-//function linkate_sp_terms_by_freq_test($ID) {
-//	if (!$ID) return '';
-//	global $wpdb, $table_prefix;
-//	$table_name = $table_prefix . 'linkate_posts';
-//	$post = $wpdb->get_row("SELECT post_content, post_title, post_type FROM $wpdb->posts WHERE ID = $ID", ARRAY_A);
-//
-//	if ($post) {
-//		$seotitle = '';
-//		if (function_exists('wpseo_init')){
-//	    	$seotitle = get_post_meta( $ID, "_yoast_wpseo_title", true);
-//		}
-//	    if (function_exists( 'aioseop_init_class' )){
-//	        $seotitle = get_post_meta( $ID, "_aioseop_title", true);
-//	    }
-//
-//	    return linkate_sp_prepare_suggestions($post['post_title'], $seotitle);
-// 	}
-//}
 
 // Convert an UTF-8 encoded string to a single-byte string suitable for
 // functions such as levenshtein.
@@ -783,13 +763,6 @@ function linkate_scheme_add_row($str, $post_id, $is_term) {
 		// remove some escaping stuff
 		$href = str_replace("\"", "", str_replace("\\", "", $href));
 
-		// prepare relative links
-		// if (strpos($href, 'http') == false || strpos($href, 'www') == false) {
-		// 	$proto = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https' : 'http';
-		// 	$base =  isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : $_SERVER['HTTP_HOST'];
-		// 	$href = $proto.$base.$href;
-		// }
-
 		$ext_url = '';
 		$ankor = esc_sql($node->textContent);
 		$target_id = url_to_postid($href); //post_id
@@ -869,15 +842,6 @@ function linkate_posts_init () {
   	LinkatePosts::get_linkate_version();
 
 	$options = get_option('linkate-posts');
-	if ($options['content_filter'] === 'true' && function_exists('link_cf_register_content_filter')) link_cf_register_content_filter('LinkatePosts');
-	if ($options['append_condition']) {
-		$condition = $options['append_condition'];
-	} else {
-		$condition = 'true';
-	}
-	$condition = (stristr($condition, "return")) ? $condition : "return ".$condition;
-	$condition = rtrim($condition, '; ') . ';';
-	if ($options['append_on'] === 'true' && function_exists('link_cf_register_post_filter')) link_cf_register_post_filter('append', 'linkate-posts', 'LinkatePosts', $condition);
 
 	//install the actions to keep the index up to date
 	add_action('save_post', 'linkate_sp_save_index_entry', 1);
@@ -885,7 +849,7 @@ function linkate_posts_init () {
 	
 	add_action('create_term', 'linkate_sp_save_index_entry_term', 1,3);
 	add_action('edited_term', 'linkate_sp_save_index_entry_term', 1,3);
-	add_action('delete_term', 'linkate_sp_delete_index_entry_term', 1,3);
+	add_action('delete_term', 'linkate_sp_delete_index_entry_term', 1,4);
 
 	add_action( 'admin_enqueue_scripts', 'linkate_posts_wp_admin_style' );
 
