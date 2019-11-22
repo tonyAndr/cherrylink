@@ -111,9 +111,6 @@
   top: 67px;
 }
 
-.linkateposts-column-left {
-}
-
 .linkateposts-column-left textarea {
     width:100%;
 }
@@ -151,8 +148,9 @@
 }
 .linkateposts-accessibility-good,
 .linkateposts-accessibility-warning {
-    padding: 1em;
+    padding: 10px;
     color: white;
+    margin-right:20px;
 }
 .linkateposts-accessibility-good h2,
 .linkateposts-accessibility-warning h2 {
@@ -166,7 +164,7 @@
     background: green;
 }
 .linkateposts-accessibility-warning {
-    background: red;
+    background: tomato;
 }
 
 #reindex_progress {
@@ -237,7 +235,6 @@ input[id^="spoiler"]{
 }
 input[id^="spoiler"] + label {
     display: block;
-    width: 200px;
     padding: 5px 20px;
     margin: 0 auto;
     background: #00b75f;
@@ -247,12 +244,14 @@ input[id^="spoiler"] + label {
     border-radius: 8px;
     cursor: pointer;
     transition: all .6s;
+    height: 30px;
+    line-height: 30px;
 }
 input[id^="spoiler"]:checked + label {
     color: #333;
     background: #ccc;
 }
-input[id^="spoiler"] ~ .spoiler {
+input[id^="spoiler"] ~ [class^="spoiler"] {
     height: 0;
     overflow: hidden;
     opacity: 0;
@@ -260,7 +259,7 @@ input[id^="spoiler"] ~ .spoiler {
     padding: 0;
     transition: all .6s;
 }
-input[id^="spoiler"]:checked + label + .spoiler{
+input[id^="spoiler"]:checked + label + [class^="spoiler"]{
     height: auto;
     opacity: 1;
     margin: 10px auto 0;
@@ -303,4 +302,19 @@ input[id^="spoiler"]:checked + label + .spoiler{
 }
 .crb-addon-info li {
     margin-left: 10px;
+}
+
+.cherry-db-status {
+    background: lavender;
+    padding: 5px;
+}
+
+.cherry_db_status_good {
+    color:green;
+    font-weight: bold;
+}
+
+.cherry_db_status_bad {
+    color:tomato;
+    font-weight: bold;
 }

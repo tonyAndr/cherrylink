@@ -119,6 +119,13 @@ function link_cf_options_from_post($options, $args) {
 			$options['num_terms'] = $_POST['num_terms'];
 			if ($options['num_terms'] < 1) $options['num_terms'] = 50;
 			break;
+		case 'multilink':
+		case 'compare_seotitle':
+			if (isset($options[$arg])) {
+				$options[$arg] = 'checked';
+			} else {
+				$options[$arg] = '';
+			}
 		case 'link_before':
 		case 'link_after':		
 		case 'term_before':
@@ -202,13 +209,6 @@ function get_linkate_version($prefix) {
 	global $$plugin_version;
 	return ${$plugin_version};
 }
-
-function link_cf_display_accessibility_template($hash_field) {
-	?>
-	<label for="hash_field"><?php _e('Введите ваш ключ:', 'post_plugin_library') ?></label>
-	<textarea name="hash_field" id="hash_field" rows="2" ><?php echo htmlspecialchars(stripslashes($hash_field)); ?></textarea>
-	<?php
-}
 function link_cf_display_export_template($export) {
 	?>
 	<label for="export"><?php _e('Настройки плагина:', 'post_plugin_library') ?></label>
@@ -216,12 +216,15 @@ function link_cf_display_export_template($export) {
 	<?php
 }
 
+function link_cf_display_accessibility_template($hash_field) {
+	?>
+
+	<?php
+}
+
+
 function link_cf_display_accessibility_response($info) {
-	if ($info) {
-		echo base64_decode('PGRpdiBjbGFzcz0ibGlua2F0ZXBvc3RzLWFjY2Vzc2liaWxpdHktZ29vZCI+PGgyPtCf0LvQsNCz0LjQvSDQsNC60YLQuNCy0LjRgNC+0LLQsNC9ITwvaDI+PC9kaXY+');
-	} else {
-		echo base64_decode('PGRpdiBjbGFzcz0ibGlua2F0ZXBvc3RzLWFjY2Vzc2liaWxpdHktd2FybmluZyI+PGgyPtCf0LvQsNCz0LjQvSDQvdC1INCw0LrRgtC40LLQuNGA0L7QstCw0L0hPC9oMj48cD7QlNC70Y8g0L/QvtC70YPRh9C10L3QuNGPINC60LvRjtGH0LAg0L/QvtGB0LXRgtC40YLQtSDRgdGC0YDQsNC90LjRhtGDINC/0LvQsNCz0LjQvdCwOiBbPHN0cm9uZz48YSBocmVmPSJodHRwOi8vc2VvY2hlcnJ5LnJ1L2Rldi9jaGVycnlsaW5rIj5TZW9DaGVycnkucnU8L2E+PC9zdHJvbmc+XS48L3A+DQoJCQkJPC9kaXY+');
-	}
+
 }
 
 /*
@@ -748,15 +751,30 @@ function link_cf_display_scheme_export_options() {
 		</div>
 		<div style="margin-left: 50px">
 		<p><strong>Поля данных</strong></p>
-			<input name="source_id" type="checkbox" value="cb_source_id" checked>ID источника</input><br>
-			<input name="source_type" type="checkbox" value="cb_source_type" checked>Тип источника</input><br>
-			<input name="source_cats" type="checkbox" value="cb_source_cats" checked>Рубрики</input><br>
-			<input name="source_url" type="checkbox" value="cb_source_url" checked>URL источника</input><br>
-			<input name="target_url" type="checkbox" value="cb_target_url" checked>URL цели</input><br>
+			Ориентация ссылок
+			<select name="links_direction" id="links_direction"> 
+				<option value="outgoing" selected>Исходящие</option>
+				<option value="incoming">Входящие</option>
+			</select>
+			<div id="links_direction_outgoing">
+				<input name="source_id" type="checkbox" value="cb_source_id" checked>ID источника</input><br>
+				<input name="source_type" type="checkbox" value="cb_source_type" checked>Тип источника</input><br>
+				<input name="source_cats" type="checkbox" value="cb_source_cats" checked>Рубрики</input><br>
+				<input name="source_url" type="checkbox" value="cb_source_url" checked>URL источника</input><br>
+				<input name="target_url" type="checkbox" value="cb_target_url" checked>URL цели</input><br>
+			</div>
+			<div id="links_direction_incoming" style="display:none">
+				<input name="target_id" type="checkbox"   value="cb_target_id" checked>ID цели</input><br>
+				<input name="target_type" type="checkbox" value="cb_target_type" checked>Тип цели</input><br>
+				<input name="target_cats" type="checkbox" value="cb_target_cats" checked>Рубрики цели</input><br>
+				<input name="target_url" type="checkbox"  value="cb_target_url" checked>URL цели</input><br>
+				<input name="source_url" type="checkbox"  value="cb_source_url" checked>URL источника</input><br>
+			</div>
 			<input name="ankor" type="checkbox" value="cb_ankor" checked>Анкор</input><br>
 			<input name="count_out" type="checkbox" value="cb_count_out" checked>Кол-во исходящих ссылок</input><br>
 			<input name="count_in" type="checkbox" value="cb_count_in" checked>Кол-во входящих ссылок</input><br>
-			<input name="duplicate_fields" type="checkbox" value="cb_duplicate_fields">Дублировать поля (id, тип, ...)</input>
+			<input name="duplicate_fields" type="checkbox" value="cb_duplicate_fields" checked>Дублировать поля (id, тип, ...)</input><br>
+
 		</div>
 	</div>
 	<p>Если возникнут затруднения с экспортом/импортом в эксель - посмотрите <a href="https://seocherry.ru/dev/statistika-vnutrennej-perelinkovki-v-cherrylink-jeksport-iz-plagina-i-import-v-excel/">этот пост</a>.</p>

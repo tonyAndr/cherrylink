@@ -1,10 +1,5 @@
 <?php
 
-
-// add_action( 'after_wp_tiny_mce', 'custom_after_wp_tiny_mce' );
-// function custom_after_wp_tiny_mce() {
-//     printf( '<script type="text/javascript" src="%s"></script>',  plugins_url('/js/linkate.js', __FILE__) );
-// }
 add_action ( 'admin_head', 'linkate_send_options_frontend');
 add_action('wp_ajax_getLinkateLinks', 'getLinkateLinks');
 add_action( 'admin_enqueue_scripts', 'hook_term_edit', 10);
@@ -52,23 +47,23 @@ function hook_term_edit( $hook_suffix ) {
 }
 
 function linkate_panel_css() {
-	wp_register_style( 'linkate-style', plugins_url( '/css/linkate.css', __FILE__ ), '', LinkatePosts::get_linkate_version() );
-	wp_enqueue_style ('linkate-style');
+	wp_register_style( 'cherrylink-css-main', plugins_url( '/css/cherry-main.css', __FILE__ ), '', LinkatePosts::get_linkate_version() );
+	wp_enqueue_style ('cherrylink-css-main');
 }
 
 function linkate_panel_tinymce_js() {
-    wp_register_script( 'linkate-script', plugins_url( '/js/linkate.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
-	wp_localize_script( 'linkate-script', 'ajax_obj', ['ajaxurl' => admin_url('admin-ajax.php')] );
-    wp_enqueue_script( 'linkate-script' );
+    wp_register_script( 'cherrylink-js-main', plugins_url( '/js/cherry-front.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
+	wp_localize_script( 'cherrylink-js-main', 'ajax_obj', ['ajaxurl' => admin_url('admin-ajax.php')] );
+    wp_enqueue_script( 'cherrylink-js-main' );
 }
 
 function linkate_panel_gutenberg_css() {
-	wp_register_style( 'linkate-style', plugins_url( '/css/linkate-gutenberg.css', __FILE__ ), '', LinkatePosts::get_linkate_version() );
-	wp_enqueue_style ('linkate-style');
+	wp_register_style( 'cherrylink-css-main', plugins_url( '/css/cherry-gutenberg.css', __FILE__ ), '', LinkatePosts::get_linkate_version() );
+	wp_enqueue_style ('cherrylink-css-main');
 }
 function linkate_panel_gutenberg_js() {
-    wp_register_script( 'linkate-script', plugins_url( '/js/linkate-gutenberg.js', __FILE__ ), array( 'jquery', 'wp-blocks', 'wp-editor', 'wp-dom-ready' ,'wp-plugins', 'wp-edit-post', 'wp-element'), LinkatePosts::get_linkate_version() );
-    wp_enqueue_script( 'linkate-script' );
+    wp_register_script( 'cherrylink-js-main', plugins_url( '/js/cherry-gutenberg.js', __FILE__ ), array( 'jquery', 'wp-blocks', 'wp-editor', 'wp-dom-ready' ,'wp-plugins', 'wp-edit-post', 'wp-element'), LinkatePosts::get_linkate_version() );
+    wp_enqueue_script( 'cherrylink-js-main' );
 }
 function linkate_snowball_js() {
 	wp_register_script( 'snowball-script', plugins_url( '/js/Snowball.min.js', __FILE__ ));
@@ -114,17 +109,10 @@ function linkate_is_version_old( $operator = '<', $version = '4.9.6' ) {
     return version_compare( $wp_version, $version, $operator ) ? 1 : 0;
 }
 
-
-
-
-
-
-
 function tinymce_plugin($init) {
-    $init['cherrylink_change'] = plugins_url( '/js/linkate.js', __FILE__ );
+    $init['cherrylink_change'] = plugins_url( '/js/cherry-front.js', __FILE__ );
     return $init;
 }
-
 
 function cherrylink_gutenberg_panel() {
     $options = (array) get_option('linkate-posts');
