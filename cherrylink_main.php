@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 1.6.19
+Version: 1.6.20
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -94,12 +94,16 @@ class LinkatePosts {
 		$is_term = 0;
 		$offset = 0;
 		$relevant_block = 0;
+		$presentation_mode = 'classic';
 		if (function_exists('get_string_between')) {
 		    $linkate_posts_current_ID = get_string_between ($args, "manual_ID=", "&");
 		    $is_term = get_string_between ($args, "is_term=", "&");
 		    $offset = get_string_between ($args, "offset=", "&");
 			$relevant_block = get_string_between ($args, "relevant_block=", "&");
 			if (empty($relevant_block)) $relevant_block = 0;
+			$presentation_mode = get_string_between ($args, "mode=", "&");
+			if (empty($presentation_mode)) $presentation_mode = 'relevant_block';
+			
 		}
 
 		$postid = link_cf_current_post_id($linkate_posts_current_ID);
@@ -203,11 +207,45 @@ class LinkatePosts {
 		} else {
 			$results = false;
 		}
-		if ($relevant_block) {
-		    return CherryLink_Related_Block::prepare_related_block($results, $option_key, $options);
-        } else {
-			return LinkatePosts::prepare_for_cherrylink_panel($results, $option_key, $options);
+		switch($presentation_mode) {
+			case 'relevant_block':
+				return CherryLink_Related_Block::prepare_related_block($postid, $results, $option_key, $options);
+				break;
+			case 'gutenberg':
+				return LinkatePosts::prepare_for_cherry_gutenberg($results, $option_key, $options);
+				break;
+			case 'classic':
+			default:
+				return LinkatePosts::prepare_for_cherrylink_panel($results, $option_key, $options);
+				break;
 		}
+	}
+
+	static function prepare_for_cherry_gutenberg($results, $option_key, $options) {
+		
+		$output_template = '"data-url":"{url}","data-titleseo":"{title_seo}","data-title":"{title}","data-category":"{categorynames}","data-date":"{date}","data-author":"{author}","data-postid":"{postid}","data-imagesrc":"{imagesrc}","data-anons":"{anons}","data-suggestions":"{suggestions}"';
+
+		$results_count = 0;
+		if ($results) {
+			$out_final = $output_template;
+			$translations = link_cf_prepare_template($out_final);
+			foreach ($results as $result) {
+				$items[] = "{".link_cf_expand_template($result, $out_final, $translations, $option_key)."}";
+			}
+			if ($options['sort']['by1'] !== '') $items = link_cf_sort_items($options['sort'], $results, $option_key, $options['group_template'], $items);
+			$output = "[".implode(",", str_replace("\n", "", $items))."]"; 
+
+			$results_count = sizeof($results);
+			$send_data['links'] = $output;
+			$send_data['count'] = $results_count;
+		} else {
+			// we display the blank message, with tags expanded if necessary
+			// $translations = link_cf_prepare_template($options['none_text']);
+			// $output = "<p>" . link_cf_expand_template(array(), $options['none_text'], $translations, $option_key) . "</p>";
+			$send_data['links'] = [];
+			$send_data['count'] = -1;
+		}
+		return $send_data;
 	}
 
 	// PREPARE TEMPLATES FOR CHERRYLINK PANEL
@@ -400,3 +438,11 @@ function linkate_check_update(){
 linkate_check_update();
 add_action ('init', 'linkate_posts_init', 1);
 register_activation_hook(__FILE__, array('LinkatePosts', 'lp_activate'));
+
+
+function deactivate_crb_if_active() {
+    if ( is_plugin_active('cherrylink-related-block/cherrylink-related-block.php') ) {
+        deactivate_plugins('cherrylink-related-block/cherrylink-related-block.php');    
+    }
+}
+add_action( 'admin_init', 'deactivate_crb_if_active' );

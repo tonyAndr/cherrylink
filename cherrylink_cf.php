@@ -75,7 +75,13 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	if (!isset($arg['included_cats'])) $arg['included_cats'] = stripslashes(@$options['included_cats']);
 	if (!isset($arg['excluded_authors'])) $arg['excluded_authors'] = stripslashes(@$options['excluded_authors']);
 	if (!isset($arg['included_authors'])) $arg['included_authors'] = stripslashes(@$options['included_authors']);
-	if (!isset($arg['excluded_posts'])) $arg['excluded_posts'] = stripslashes(@$options['excluded_posts']);
+	// БЫЛО if (!isset($arg['excluded_posts'])) $arg['excluded_posts'] = stripslashes(@$options['excluded_posts']);
+	if (!isset($arg['excluded_posts']) || empty($arg['excluded_posts'])) {
+		$arg['excluded_posts'] = stripslashes(@$options['excluded_posts']);
+	} else {
+		$arg['excluded_posts'] .= "," . stripslashes(@$options['excluded_posts']);
+	}
+	
 	if (!isset($arg['included_posts'])) $arg['included_posts'] = stripslashes(@$options['included_posts']);
 	if (!isset($arg['show_customs'])) $arg['show_customs'] = stripslashes(@$options['show_customs']);
 	if (!isset($arg['stripcodes'])) $arg['stripcodes'] = @$options['stripcodes'];

@@ -56,11 +56,11 @@
 	border-bottom: 4px solid #e43839;
 }
 
-.linkateposts-tabs-menu li a[href*="output_block"]:after {
+/* .linkateposts-tabs-menu li a[href*="output_block"]:after {
     content: url("../img/new.png");
     zoom: 0.7;
     margin-left: 10px;
-}
+} */
 
 
 .linkateposts-inner-table{ 

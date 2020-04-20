@@ -57,11 +57,24 @@ jQuery(document).ready(function ($) {
             if (meta_text.length > 0) {
                 meta_text = meta_text.split("\n");
                 let visual_content = '<p>Для данной записи выбраны ссылки:</p>';
-                meta_text.forEach(function (row) {
-                    let row_id = row.split('[|]')[0];
-                    let row_title = row.split('[|]')[1];
-                    visual_content += "<div title='Намите, чтобы удалить из списка' class='crb-meta-visual-item' data-postid='" + row_id + "' data-title='" + row_title + "'>[ " + row_id + " ] " + row_title + "</div>";
-                });
+                if ($('#crb-meta-use-manual').prop('checked')) {
+                    meta_text.forEach(function (row) {
+                        let split = row.split('[|]');
+                        let row_id = split[0];
+                        let row_title = split[1];
+                        let row_m_title = split[2];
+                        
+                        visual_content += "<div title='Намите, чтобы удалить из списка' class='crb-meta-visual-item' data-postid='" + row_id + "' data-title='" + row_title + "'><span>[ " + row_id + " ]</span><input type='text' class='crb-manual-input "+row_id+"' value='"+row_m_title+"' /></div>";
+                    });
+                } else { 
+                    meta_text.forEach(function (row) {
+                        let split = row.split('[|]');
+                        let row_id = split[0];
+                        let row_title = split[1];
+                        visual_content += "<div title='Намите, чтобы удалить из списка' class='crb-meta-visual-item' data-postid='" + row_id + "' data-title='" + row_title + "'>[ " + row_id + " ] " + row_title + "</div>";
+                    });
+                }
+
                 $('.crb-meta-visual').html(visual_content);
             } else {
                 let host = window.location.href.replace(window.location.href.slice(window.location.href.indexOf('/wp-admin/') + 10), 'options-general.php?page=linkate-posts&subpage=output_block');
@@ -69,27 +82,65 @@ jQuery(document).ready(function ($) {
                 $('.crb-meta-visual').html(visual_content);
             }
         }
-        $('.crb-meta-visual-item').unbind().click(function () {
-            crb_remove_from_block($(this).attr('data-postid'), $(this).attr('data-title'));
+        $('.crb-meta-visual-item').unbind().on('click', function (e) {
+            crb_remove_from_block($(this).attr('data-postid'));
+        })
+        
+        $('.crb-manual-input').unbind().on('click', function (e) {
+            e.stopPropagation();
+        })
+
+        $('.crb-manual-input').on('change', function (e) {
+            let m_text = e.target.value;
+            let post_id = e.target.classList[1];
+            let meta_links = $(fcl_crb_metabox).val();
+
+            meta_links = meta_links.length > 0 ? meta_links.split("\n").map(x => {
+                let y = x.split("[|]");
+                if (y[0] === post_id) {
+                    return y[0] + "[|]" + y[1] + "[|]" + m_text +"[|]"+ y[3];
+                } else {
+                    return y[0] + "[|]" + y[1] + "[|]" + y[2] +"[|]"+ y[3];
+                }
+            }) : [];
+
+            meta_links = meta_links.length > 0 ? meta_links.join("\n") : "";
+            $(fcl_crb_metabox).val(meta_links).trigger('change');
         })
     }
     fcl_update_meta_visual();
 
     // for related block
-    function crb_remove_from_block(post_id, title) {
-        let this_string = post_id + "[|]" + title;
+    function crb_remove_from_block(post_id) {
+        // let this_string = post_id + "[|]" + title;
         if (fcl_crb_metabox.length > 0) {
             let meta_links = $(fcl_crb_metabox).val();
             if (meta_links.length > 0) {
                 meta_links = meta_links.split('\n');
-                if (meta_links.includes(this_string)) {
-                    var index = meta_links.indexOf(this_string);
-                    if (index > -1) {
-                        meta_links.splice(index, 1);
+                let remIndex = false;
+
+                meta_links.some((x, i) => {
+                    if (x.includes(post_id+"[|]")) {
+                        remIndex = i;
+                        return true;
                     }
+                    return false;
+                })
+
+                if (remIndex !== false) {
+                    meta_links.splice(remIndex, 1);
                     meta_links = meta_links.join('\n');
                     $(fcl_crb_metabox).val(meta_links).trigger('change');
                 }
+
+                // if (meta_links.includes(this_string)) {
+                //     var index = meta_links.indexOf(this_string);
+                //     if (index > -1) {
+                //         meta_links.splice(index, 1);
+                //     }
+                //     meta_links = meta_links.join('\n');
+                //     $(fcl_crb_metabox).val(meta_links).trigger('change');
+                // }
             }
         }
     }
@@ -353,6 +404,10 @@ jQuery(document).ready(function ($) {
             fcl_update_meta_visual();
         })
 
+        $('#crb-meta-use-manual').unbind().on('change', function () {
+            fcl_update_meta_visual();
+        })
+
         // incoming stats
         $('#links-count-targets').unbind().click(function () {
             fcl_toggle_links_stats();
@@ -592,7 +647,7 @@ jQuery(document).ready(function ($) {
             $('.link-del-from-block').unbind().click(function () {
                 let post_id = $(this).parent().parent().find('div.linkate-link').attr('data-postid');
                 let title = $(this).parent().parent().find('div.linkate-link').attr('data-title');
-                crb_remove_from_block(post_id, title)
+                crb_remove_from_block(post_id)
             });
         }
 
@@ -1614,6 +1669,8 @@ jQuery(document).ready(function ($) {
         }
 
         function fcl_fileTypeChecker(url) { // cuz we don't want to count media as int/ext links
+            if (url === undefined)
+                return true;
             let prohibited = ['.jpg', '.jpeg', '.tiff', '.bmp', '.psd', '.png', '.gif', '.webp', '.doc', '.docx', '.xlsx', '.xls', '.odt', '.pdf', '.ods', '.odf', '.ppt', '.pptx', '.txt', '.rtf', '.mp3', '.mp4', '.wav', '.avi', '.ogg', '.zip', '.7z', '.tar', '.gz', '.rar', '#'];
 
             for (let i = prohibited.length - 1; i >= 0; i--) {

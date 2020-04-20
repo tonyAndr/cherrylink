@@ -3,19 +3,27 @@
 add_action ( 'admin_head', 'linkate_send_options_frontend');
 add_action('wp_ajax_getLinkateLinks', 'getLinkateLinks');
 add_action( 'admin_enqueue_scripts', 'hook_term_edit', 10);
-add_action('enqueue_block_editor_assets', 'linkate_panel_gutenberg_js', 15 );
-add_action('enqueue_block_editor_assets', 'linkate_panel_gutenberg_css', 15 );
+// add_action('enqueue_block_editor_assets', 'linkate_panel_gutenberg_js', 15 );
+// add_action('enqueue_block_editor_assets', 'linkate_panel_gutenberg_css', 15 );
 add_action('wp_ajax_cherrylink_gutenberg_panel', 'cherrylink_gutenberg_panel');
 
 
 // Using linkateposts to get relevant results
 function getLinkateLinks() {
+    $data = json_decode(file_get_contents('php://input'), true);
+    if (isset($data)) {
+        $post_id = $data['post_id'];
+        $is_term = $data['is_term'];
+        $offset = $data['offset'];
+        $mode = 'gutenberg';
+    } else {
+        $post_id = $_POST['post_id'];
+        $is_term = $_POST['is_term'];
+        $offset = $_POST['offset'];
+        $mode = 'classic';
+    }
 
-    $post_id = $_POST['post_id'];
-    $is_term = $_POST['is_term'];
-    $offset = $_POST['offset'];
-
-    $data =  linkate_posts("manual_ID=".$post_id."&is_term=".$is_term."&offset=".$offset."&");
+    $data =  linkate_posts("manual_ID=".$post_id."&is_term=".$is_term."&offset=".$offset."&mode=".$mode."&");
     wp_send_json($data);
 //    wp_die();
 }
@@ -33,10 +41,10 @@ function hook_term_edit( $hook_suffix ) {
     }
 	// Post editor
 	if ('post.php' === $hook_suffix || 'post-new.php' === $hook_suffix) {
-		add_action( 'admin_footer', 'cherrylink_classiceditor_panel' );
 
 		if (!is_gutenberg_enabled()) // For TinyMCE
 		{
+		    add_action( 'admin_footer', 'cherrylink_classiceditor_panel' );
 			linkate_panel_css();
 	        add_action('media_buttons', 'add_linkate_button', 15);
 	        linkate_panel_tinymce_js();
@@ -100,6 +108,20 @@ function linkate_send_options_frontend() {
     cherrylink_options['multilink'] = <?php echo '"'. $options['multilink'] . '"'; ?>;
     cherrylink_options['wp_ver'] = <?php echo linkate_is_version_old('<', '4.9.6'); ?>;
     cherrylink_options['term_length_limit'] = <?php echo $options['term_length_limit']; ?>;
+    cherrylink_options['templates'] = {
+        isH1: '<?php echo stripslashes(urldecode($options['output_template'])) === "{title}" ? 'true' : 'false'; ?>',
+        term: {
+            before: '<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['term_before'])))); ?>',
+            after: '<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['term_after'])))); ?>',
+            alt:'<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['term_temp_alt'])))); ?>',
+        }, 
+        link: {
+            before:'<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['link_before'])))); ?>',
+            after:'<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['link_after'])))); ?>',
+            alt:'<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['link_temp_alt'])))); ?>',
+        }
+    };
+    
     </script>
     <?php
 }

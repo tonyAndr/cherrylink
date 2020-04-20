@@ -86,7 +86,7 @@ function hierarchical_term_tree($category = 0, $taxonomy = array()) {
     return $r;
 }
 
-// For quick filtering, returns json
+// For quick filtering Classic
 function linkate_get_all_categories($category = 0, $level = 0) {
 	// get all terms from DB
 	$args = array(
@@ -116,6 +116,107 @@ function linkate_get_all_categories($category = 0, $level = 0) {
 	return $r;
 }
 
+/* ====== GUTENBERG ====== */
+
+// Cat links list, including custom and tags
+function linkate_gutenberg_hierarchical_terms($category = 0, $taxonomy = array()) {
+    $r = array(); // tax item
+
+    // get all terms from DB
+    $args = array( 
+        'parent' => $category,
+        'taxonomy' => $taxonomy, // if not empty - looking for children
+        'hide_empty'    => '0',
+        'orderby' => 'taxonomy',
+        'order' => 'ASC',
+    );
+
+    $next = get_terms($args);
+
+    if ($next) {
+        foreach ($next as $cat) {
+             if (!$cat instanceof WP_Term || $cat->taxonomy == 'nav_menu')
+                 continue;
+
+            if ($taxonomy != $cat->taxonomy) { // if next type of taxonomy - add header/divider
+                $taxonomy = $cat->taxonomy;
+                $label = is_object(get_taxonomy($cat->taxonomy)) ? get_taxonomy($cat->taxonomy)->label : $cat->taxonomy;
+                // $r .= str_replace('{taxonomy}', $label, $output_tepmlate_devider);
+                $r[] = array(
+                    "name" => $label,
+                    "is_divider" => "yes"
+                );
+            }
+            // $r .= str_replace(  // item template with values
+            //         array('{url}','{title}','{taxonomy}'),
+            //         array(get_term_link($cat),$cat->name,$cat->taxonomy),
+            //         $output_template_item_prefix) .  $cat->name . ' ('.$cat->count.')' . $output_template_item_suffix;
+
+            $r[] = array(
+                "url" => get_term_link($cat),
+                "name" => $cat->name,
+                "taxonomy" => $cat->taxonomy,
+                "post_count" => $cat->count,
+                "is_divider" => "no",
+                "children" => []
+            ); 
+
+            // $r .= $cat->term_id !== 0 ? linkate_gutenberg_hierarchical_terms($cat->term_id, $taxonomy) : null; // check children
+
+			if ($cat->term_id !== 0) {
+				$r[sizeof($r)-1]['children'] = linkate_gutenberg_hierarchical_terms($cat->term_id, $taxonomy);
+			}
+
+
+        }
+    }
+
+    return $r;
+}
+//, returns json
+function linkate_gutenberg_hierarchical_terms_json() {
+    $cats = linkate_gutenberg_hierarchical_terms();
+    echo json_encode($cats);
+    wp_die();
+}
+add_action('wp_ajax_linkate_gutenberg_hierarchical_terms_json', 'linkate_gutenberg_hierarchical_terms_json');
+
+// For quick filtering Gutenberg
+function linkate_get_all_categories_gutenberg($category = 0) {
+	// get all terms from DB
+	$args = array(
+		'parent' => $category,
+		'taxonomy' => 'category', // if not empty - looking for children
+		'hide_empty'    => '0',
+	);
+
+	$r = array();
+
+	$next = get_terms($args);
+
+	if ($next) {
+		foreach ($next as $cat) {
+			if (!$cat instanceof WP_Term)
+				continue;
+
+			$r[] = array ('name' => $cat->name, 'children' => []);
+
+			if ($cat->term_id !== 0) {
+				$r[sizeof($r)-1]['children'] = linkate_get_all_categories_gutenberg($cat->term_id);
+			}
+
+		}
+	}
+
+	return $r;
+}
+//, returns json
+function linkate_get_all_categories_json() {
+    $cats = linkate_get_all_categories_gutenberg();
+    echo json_encode($cats);
+    wp_die();
+}
+add_action('wp_ajax_linkate_get_all_categories_json', 'linkate_get_all_categories_json');
 //$str = "[
 //	{\"cat\": \"name\",
 //		\"sub\": [

@@ -29,20 +29,33 @@ function linkate_otf_postid ($option_key, $result, $ext) {
 }
 
 function linkate_otf_title ($option_key, $result, $ext) {
+	if (isset($result->manual_title))
+		return $result->manual_title; // return manual title for block links
 	$value = linkate_oth_truncate_text($result->post_title, $ext);
 	return apply_filters('the_title', $value, $result->ID);
 }
 
 function linkate_otf_title_seo ($option_key, $result, $ext) {
-
+	if (isset($result->manual_title))
+		return $result->manual_title; // return manual title for block links
     if (function_exists('wpseo_init'))
         $title = linkate_decode_yoast_variables($result->ID);
     if (function_exists( 'aioseop_init_class' ))
         $title = get_post_meta( $result->ID, "_aioseop_title", true);
     if (!$title)
-        $title = $result->post_title;
+		$title = $result->post_title;
+	$title = htmlspecialchars($title, ENT_QUOTES);  
     return linkate_oth_truncate_text($title, $ext);
 }
+
+// function linkate_otf_manual_title($option_key, $result, $ext) {
+// 	$titles = get_post_meta( $result->ID, "crb-meta-links", true);
+
+
+
+// 	$title = htmlspecialchars($title, ENT_QUOTES);  
+//     return linkate_oth_truncate_text($title, $ext);
+// }
 
 function linkate_otf_url($option_key, $result, $ext) {
 	$options = get_option('linkate-posts');

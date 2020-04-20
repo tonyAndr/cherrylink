@@ -321,8 +321,15 @@ function linkate_generate_json() {
 	// get rows from db
 	global $wpdb, $table_prefix;
 	$table_name = $table_prefix.'linkate_scheme';
-	$this_id = $_POST['this_id'];
-	$this_type = $_POST['this_type'];
+	$gutenberg_data = json_decode(file_get_contents('php://input'), true);
+	if (isset($gutenberg_data['this_id'])) {
+		$this_id = $gutenberg_data['this_id'];
+		$this_type = $gutenberg_data['this_type'];
+	} else {
+		$this_id = $_POST['this_id'];
+		$this_type = $_POST['this_type'];
+	}
+
 	$this_type = $this_type == 'post' ? 0 : 1;
 	$links = $wpdb->get_results("SELECT * FROM $table_name WHERE target_id = $this_id AND target_type = $this_type", ARRAY_A);
 	if ($links != null && sizeof($links) > 0) {
@@ -377,8 +384,11 @@ add_action('wp_ajax_linkate_generate_csv_or_json_prettyfied', 'linkate_generate_
 function linkate_generate_csv_or_json_prettyfied() {
 	// get rows from db
 	global $wpdb, $table_prefix;
+	$gutenberg_data = json_decode(file_get_contents('php://input'), true);
 	if (isset($_POST['post_ids'])) {
 		$ids_query = $table_prefix."posts.ID IN (".$_POST['post_ids'].") AND ";
+	} else if (isset($gutenberg_data['post_ids'])) {
+		$ids_query = $table_prefix."posts.ID IN (".$gutenberg_data['post_ids'].") AND ";
 	} else {
 		$ids_query = "";
 	}
@@ -428,7 +438,7 @@ function linkate_generate_csv_or_json_prettyfied() {
 	$output_array = linkate_queryresult_to_array($links_post, 0);
 	unset($links_post);
 
-	if (!isset($_POST["from_editor"]) && (isset($_POST['stats_offset']) && intval($_POST['stats_offset']) === 0)) {
+	if (!(isset($_POST["from_editor"]) || isset($gutenberg_data["from_editor"])) && (isset($_POST['stats_offset']) && intval($_POST['stats_offset']) === 0)) {
 		$links_term = $wpdb->get_results("
 		SELECT ".$table_prefix."terms.term_id as source_id, COALESCE(COUNT(scheme1.target_id), 0) AS count_targets, GROUP_CONCAT(scheme1.target_id SEPARATOR ';') AS targets, GROUP_CONCAT(scheme1.target_type SEPARATOR ';') AS target_types, GROUP_CONCAT(scheme1.ankor_text SEPARATOR ';') AS ankors, GROUP_CONCAT(scheme1.external_url SEPARATOR ';') AS ext_links, COALESCE(scheme2.count_sources, 0) AS count_sources
 		FROM
@@ -452,7 +462,7 @@ function linkate_generate_csv_or_json_prettyfied() {
 		unset($links_term);
 	}
 
-	if (isset($_POST["from_editor"])) {
+	if (isset($_POST["from_editor"]) || isset($gutenberg_data["from_editor"]) ) {
         wp_send_json($output_array);
 	} else {
 		query_to_csv($output_array, 'cherrylink_stats_'.$_POST['stats_offset'].'.csv');
@@ -636,6 +646,7 @@ function linkate_queryresult_to_array_backwards($links, $target_type) {
 function linkate_queryresult_to_array($links, $source_type) {
     $include_types = array();
 	$include_types = $_POST['export_types'];
+	$from_editor = isset($_POST["from_editor"]) || isset($gutenberg_data["from_editor"]);
 	$output_array = array();
 	//echo sizeof($links);
 	foreach ($links as $link) {
@@ -643,7 +654,7 @@ function linkate_queryresult_to_array($links, $source_type) {
 		$source_url = '';
 		if ($source_type == 0) { //post
 			$source_url = get_permalink((int)$link['source_id']);
-			if (false === in_array($link['post_type'], $include_types) && !isset($_POST["from_editor"]))
+			if (false === in_array($link['post_type'], $include_types) && !isset($from_editor))
 				continue; // skip, if not in our list
 			// get post's categories
 			$post_categories = get_the_terms( (int)$link['source_id'], 'category' );
@@ -680,7 +691,7 @@ function linkate_queryresult_to_array($links, $source_type) {
 			}
 			// check POST options
 			$buf_array = array();
-			if (isset($_POST["from_editor"])) {
+			if (isset($from_editor)) {
 			    if ($i > 0)
 			        break;
 				$buf_array[] = $link['count_targets'];
@@ -706,7 +717,7 @@ function linkate_queryresult_to_array($links, $source_type) {
 					if (isset($_POST['count_in'])) $buf_array[] = '';
 				}
             }
-            if (isset($_POST["from_editor"])) {
+            if (isset($from_editor)) {
 	            $output_array["\"id_".$link['source_id']."\""] = $buf_array;
             } else {
 	            $output_array[] = $buf_array;

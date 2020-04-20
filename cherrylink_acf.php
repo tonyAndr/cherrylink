@@ -135,7 +135,7 @@ function link_cf_options_from_post($options, $args) {
 		case 'crb_temp_before': // For Relevant Block Addon
 		case 'crb_temp_link':
 		case 'crb_temp_after':
-		    $options[$arg] = link_cf_is_base64_encoded($_POST[$arg]) ? $_POST[$arg] : base64_encode(urlencode($_POST[$arg]));
+		    $options[$arg] = link_cf_is_base64_encoded($_POST[$arg]) ? $_POST[$arg] : base64_encode(urlencode(str_replace("'", "\"", $_POST[$arg])));
             break;
         case 'crb_css_override':
             $options[$arg] = $_POST[$arg];
@@ -380,7 +380,7 @@ function link_cf_display_suggestions_donors($suggestions_donors_src, $suggestion
 		</td>
 	</tr>
     <tr valign="top">
-        <th scope="row"><label for="suggestions_donors_join"><?php _e('Что делать с донорами?', 'post_plugin_library') ?></label></th>
+        <th scope="row"><label for="suggestions_donors_join"><?php _e('Что делать с донорами для подсказок?', 'post_plugin_library') ?></label></th>
         <td>
             <select name="suggestions_donors_join" id="suggestions_donors_join">
                 <option <?php if($suggestions_donors_join == 'join') { echo 'selected="selected"'; } ?> value="join">Дополнить друг друга (берем все слова = больше подсказок)</option>
@@ -484,7 +484,7 @@ function link_cf_display_show_custom_posts($show_customs) {
 function link_cf_display_quickfilter_dblclick($quickfilter_dblclick) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="quickfilter_dblclick"><?php _e('При выделении слова в редакторе вставлять его в поле быстрого фильтра автоматически', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="quickfilter_dblclick"><?php _e('При выделении слова в редакторе вставлять его в поле быстрого фильтра автоматически <span style="color: red">(classic editor)</span>', 'post_plugin_library') ?></label></th>
 		<td>
 			<select name="quickfilter_dblclick" id="quickfilter_dblclick">
 			<option <?php if($quickfilter_dblclick == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>

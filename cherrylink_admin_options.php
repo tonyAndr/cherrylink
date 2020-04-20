@@ -25,8 +25,8 @@ function linkate_posts_options_page(){
 	$m->add_subpage('Шаблон ссылок', 'output', 'linkate_posts_output_options_subpage');
 	$m->add_subpage('Фильтрация', 'general', 'linkate_posts_filter_options_subpage');
 	$m->add_subpage('Релевантность', 'relevance', 'linkate_posts_relevance_options_subpage');
-	$m->add_subpage('Разное', 'accessibility', 'linkate_posts_accessibility_options_subpage');
 	$m->add_subpage('Блок ссылок', 'output_block', 'linkate_posts_output_block_options_subpage');
+	$m->add_subpage('Экспорт и сброс', 'accessibility', 'linkate_posts_accessibility_options_subpage');
 	// $m->add_subpage('TEST', 'test', 'linkate_posts_test_options_subpage');
 	$m->display();
 	add_action('in_admin_footer', 'linkate_posts_admin_footer');
@@ -104,7 +104,6 @@ function linkate_posts_filter_options_subpage(){
                     link_cf_display_show_private($options['show_private']);
                     link_cf_display_age($options['age']);
                     link_cf_display_show_custom_posts($options['show_customs']);
-
                     link_cf_display_quickfilter_dblclick($options['quickfilter_dblclick']);
                     link_cf_display_singleword_suggestions($options['singleword_suggestions']);
 
@@ -223,29 +222,10 @@ function linkate_posts_output_block_options_subpage(){
 	?>
     <div class="linkateposts-admin-flex">
         <div class="wrap linkateposts-tab-content">
-            <?php if (!class_exists('CherryLink_Related_Block')): ?>
-            <h2>Опции вывода блока с релевантными ссылками</h2>
-                <p>Установите аддон <a href="https://seocherry.ru/dev/cherrylink-related-block/">CherryLink Related Block</a> для вывода списка похожих статей под текстом записи или внутри нее.</p>
-            <h3>Некоторые возможности дополнения</h3>
-                <p>При установке аддона появится следующий функционал:</p>
-            <ul class="crb-addon-info">
-                <li>Автоматический вывод блока ссылок после статьи</li>
-                <li>Вывод в произвольном месте шаблона с помощью PHP функции</li>
-                <li>Вывод в любом месте в тексте шорткодом</li>
-                <li>Возможность убрать из блока те ссылки, которые уже есть в тексте</li>
-                <li>Настройка произвольного шаблона для блока ссылок</li>
-                <li>Поддержка всех тегов шаблона ссылки, как и в основном плагине ({imagesrc}, {title}, {anons}...)</li>
-                <li>Подбор ссылок вручную со страницы редактирования статьи</li>
-            </ul>
-                <div class="linkate-get-addon"><a href="https://seocherry.ru/dev/cherrylink-related-block/">Получить дополнение</a></div>
-            <h3>Как будет выглядеть?</h3>
-                <p>Выглядит блок ссылок примерно так (этот шаблон вы можете изменить):</p>
-                <img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/crb-example.jpg">
-
-
-            <?php else: ?>
-                <?php CRB_Admin_Area::output_admin_options(); ?>
+            <?php if (is_plugin_active('cherrylink-related-block/cherrylink-related-block.php')): ?>
+                <div style="border: 3px dashed tomato; padding: 10px; font-size:20px;text-align: center;line-height: 25px;">Плагины <code>CherryLink</code> и <code>CRB</code> объединились. Удалите дополнение <code>CherryLink Related Block</code>, чтобы не возникало конфликтов. Все настройки останутся на месте.</div>
             <?php endif; ?>
+            <?php CRB_Admin_Area::output_admin_options(); ?>
         </div>
 		<?php link_cf_display_sidebar(); ?>
     </div>
@@ -317,13 +297,19 @@ function linkate_posts_index_options_subpage(){
 						link_cf_display_num_term_length_limit($options['term_length_limit']);
 					?>
 				</table>
-                
-                <p><strong style="color:red">Реиндексация ссылок может занять значительное время, если на сайте тысячи и десятки тысяч публикаций (до нескольких минут), пожалуйста, не обновляйте страницу пока идет процесс.</strong> </p>
-			    <div id="reindex_progress_text"></div>
+                <h3>Полезные советы</h3>
+                <ol style="color:red;">
+                <li style="font-weight:bold">ВАЖНО! Перед манипуляциями с БД всегда лучше сделать бэкап. Безопасность прежде всего :)</li>
+                <li>Если плагин не предлагает ссылок или присутствуют дубликаты - пересоздайте индекс. </li>
+                <li>"Очистка индекса" очищает только таблицы связанные с плагином. Она не повредит ваши записи и уже вставленные ссылки останутся на месте.</li>
+                <li>Реиндексация ссылок может занять значительное время, если на сайте тысячи и десятки тысяч публикаций (до нескольких минут), пожалуйста, не обновляйте страницу пока идет процесс.</li>
+                <li>После добавления/удаления/обновления записей или страниц не нужно каждый раз пересоздавать индекс - это происходит автоматически.</li>
+                </ol>
+      		    <div id="reindex_progress_text"></div>
 			    <progress id="reindex_progress"></progress>
 				<div class="submit" style="text-align:right">
-					<input type="submit" class="button button-cherry" name="truncate_all" value="<?php _e('Очистить базу данных', 'linkate_posts') ?>" />
-					<input type="submit" class="button button-download button-reindex" name="reindex_all" value="<?php _e('Сохранить и реиндексировать', 'linkate_posts') ?>" />
+					<input type="submit" class="button button-cherry" name="truncate_all" value="<?php _e('Очистить индекс', 'linkate_posts') ?>" />
+					<input type="submit" class="button button-download button-reindex" name="reindex_all" value="<?php _e('Пересоздать индекс', 'linkate_posts') ?>" />
 					<?php  if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 				</div>
 			</form>
