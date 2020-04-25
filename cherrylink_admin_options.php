@@ -225,7 +225,7 @@ function linkate_posts_output_block_options_subpage(){
             <?php if (is_plugin_active('cherrylink-related-block/cherrylink-related-block.php')): ?>
                 <div style="border: 3px dashed tomato; padding: 10px; font-size:20px;text-align: center;line-height: 25px;">Плагины <code>CherryLink</code> и <code>CRB</code> объединились. Удалите дополнение <code>CherryLink Related Block</code>, чтобы не возникало конфликтов. Все настройки останутся на месте.</div>
             <?php endif; ?>
-            <?php CRB_Admin_Area::output_admin_options(); ?>
+            <?php CL_RB_Admin_Area::output_admin_options(); ?>
         </div>
 		<?php link_cf_display_sidebar(); ?>
     </div>
@@ -259,7 +259,7 @@ function linkate_posts_index_options_subpage(){
 		$index_status_text = " найдено $index_rows записей.";
 		$index_status_class = "cherry_db_status_good";
 	} else {
-		$index_status_text = " база пустая (нужна реиндексация).";
+		$index_status_text = " статьи не найдены или нужна индексация (пересоздайте индекс).";
 		$index_status_class = "cherry_db_status_bad";
 	}
 	
@@ -268,7 +268,7 @@ function linkate_posts_index_options_subpage(){
 		$scheme_status_text = " найдено $scheme_rows ссылок.";
 		$scheme_status_class = "cherry_db_status_good";
 	} else {
-		$scheme_status_text = " база пустая (нужна реиндексация).";
+		$scheme_status_text = " ссылки не найдены (скорей всего нужно пересоздать индекс).";
 		$scheme_status_class = "cherry_db_status_bad";
 	}
 	
@@ -299,11 +299,11 @@ function linkate_posts_index_options_subpage(){
 				</table>
                 <h3>Полезные советы</h3>
                 <ol style="color:red;">
-                <li style="font-weight:bold">ВАЖНО! Перед манипуляциями с БД всегда лучше сделать бэкап. Безопасность прежде всего :)</li>
-                <li>Если плагин не предлагает ссылок или присутствуют дубликаты - пересоздайте индекс. </li>
-                <li>"Очистка индекса" очищает только таблицы связанные с плагином. Она не повредит ваши записи и уже вставленные ссылки останутся на месте.</li>
-                <li>Реиндексация ссылок может занять значительное время, если на сайте тысячи и десятки тысяч публикаций (до нескольких минут), пожалуйста, не обновляйте страницу пока идет процесс.</li>
-                <li>После добавления/удаления/обновления записей или страниц не нужно каждый раз пересоздавать индекс - это происходит автоматически.</li>
+                    <li>Если плагин не предлагает ссылок или присутствуют дубликаты - пересоздайте индекс. </li>
+                    <li>"Очистка индекса" очищает только таблицы связанные с плагином. Она не повредит ваши записи и уже вставленные ссылки останутся на месте.</li>
+                    <li>Реиндексация ссылок может занять значительное время, если на сайте тысячи и десятки тысяч публикаций (до нескольких минут), пожалуйста, не обновляйте страницу пока идет процесс.</li>
+                    <li>После добавления/удаления/обновления записей или страниц не нужно каждый раз пересоздавать индекс - это происходит автоматически.</li>
+                    <li style="font-weight:bold">Сайт большой и вы боитесь за сохранность данных? Рекомендую сделать бэкап базы перед любыми действиями.</li>
                 </ol>
       		    <div id="reindex_progress_text"></div>
 			    <progress id="reindex_progress"></progress>

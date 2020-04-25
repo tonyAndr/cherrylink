@@ -57,21 +57,21 @@ jQuery(document).ready(function ($) {
             if (meta_text.length > 0) {
                 meta_text = meta_text.split("\n");
                 let visual_content = '<p>Для данной записи выбраны ссылки:</p>';
-                if ($('#crb-meta-use-manual').prop('checked')) {
+                if ($('#crb-meta-use-manual').is(':checked')) {
                     meta_text.forEach(function (row) {
                         let split = row.split('[|]');
                         let row_id = split[0];
                         let row_title = split[1];
-                        let row_m_title = split[2];
-                        
-                        visual_content += "<div title='Намите, чтобы удалить из списка' class='crb-meta-visual-item' data-postid='" + row_id + "' data-title='" + row_title + "'><span>[ " + row_id + " ]</span><input type='text' class='crb-manual-input "+row_id+"' value='"+row_m_title+"' /></div>";
+                        let row_m_title = split[2] === undefined ? "" : split[2];
+
+                        visual_content += "<div title='Намите на крестик, чтобы удалить из списка' class='crb-meta-visual-item crb-editable' data-postid='" + row_id + "' data-title='" + row_title + "'><div class='crb-remove-item'></div><span class='crb-manual-id'>Задайте свой анкор к статье: [ID: " + row_id + "] <strong>" + row_title + "</strong></span><div><input type='text' class='crb-manual-input " + row_id + "' value='" + row_m_title + "' /></div></div>";
                     });
-                } else { 
+                } else {
                     meta_text.forEach(function (row) {
                         let split = row.split('[|]');
                         let row_id = split[0];
                         let row_title = split[1];
-                        visual_content += "<div title='Намите, чтобы удалить из списка' class='crb-meta-visual-item' data-postid='" + row_id + "' data-title='" + row_title + "'>[ " + row_id + " ] " + row_title + "</div>";
+                        visual_content += "<div title='Намите, чтобы удалить из списка' class='crb-meta-visual-item' data-postid='" + row_id + "' data-title='" + row_title + "'><div class='crb-remove-item'></div>[ " + row_id + " ] " + row_title + "</div>";
                     });
                 }
 
@@ -82,13 +82,16 @@ jQuery(document).ready(function ($) {
                 $('.crb-meta-visual').html(visual_content);
             }
         }
-        $('.crb-meta-visual-item').unbind().on('click', function (e) {
+        $('.crb-remove-item').unbind().on('click', function (e) {
             crb_remove_from_block($(this).attr('data-postid'));
         })
-        
-        $('.crb-manual-input').unbind().on('click', function (e) {
-            e.stopPropagation();
-        })
+
+        // $('.crb-manual-input').unbind().on('mousedown click mouseup', function (e) {
+        //     e.stopPropagation();
+        // })
+        // $('.crb-manual-id').unbind().on('mousedown click mouseup', function (e) {
+        //     e.stopPropagation();
+        // })
 
         $('.crb-manual-input').on('change', function (e) {
             let m_text = e.target.value;
@@ -98,9 +101,9 @@ jQuery(document).ready(function ($) {
             meta_links = meta_links.length > 0 ? meta_links.split("\n").map(x => {
                 let y = x.split("[|]");
                 if (y[0] === post_id) {
-                    return y[0] + "[|]" + y[1] + "[|]" + m_text +"[|]"+ y[3];
+                    return y[0] + "[|]" + y[1] + "[|]" + m_text + "[|]" + y[3];
                 } else {
-                    return y[0] + "[|]" + y[1] + "[|]" + y[2] +"[|]"+ y[3];
+                    return y[0] + "[|]" + y[1] + "[|]" + y[2] + "[|]" + y[3];
                 }
             }) : [];
 
@@ -115,35 +118,38 @@ jQuery(document).ready(function ($) {
         // let this_string = post_id + "[|]" + title;
         if (fcl_crb_metabox.length > 0) {
             let meta_links = $(fcl_crb_metabox).val();
-            if (meta_links.length > 0) {
+            let remIndex = crb_link_exist_in_metabox(meta_links, post_id);
+
+            if (remIndex !== false) {
                 meta_links = meta_links.split('\n');
-                let remIndex = false;
-
-                meta_links.some((x, i) => {
-                    if (x.includes(post_id+"[|]")) {
-                        remIndex = i;
-                        return true;
-                    }
-                    return false;
-                })
-
-                if (remIndex !== false) {
-                    meta_links.splice(remIndex, 1);
-                    meta_links = meta_links.join('\n');
-                    $(fcl_crb_metabox).val(meta_links).trigger('change');
-                }
-
-                // if (meta_links.includes(this_string)) {
-                //     var index = meta_links.indexOf(this_string);
-                //     if (index > -1) {
-                //         meta_links.splice(index, 1);
-                //     }
-                //     meta_links = meta_links.join('\n');
-                //     $(fcl_crb_metabox).val(meta_links).trigger('change');
-                // }
+                meta_links.splice(remIndex, 1);
+                meta_links = meta_links.join('\n');
+                $(fcl_crb_metabox).val(meta_links).trigger('change');
             }
+
         }
     }
+
+    function crb_link_exist_in_metabox(crb_textarea_text, post_id) {
+        if (crb_textarea_text.length > 0) {
+            let meta_links = crb_textarea_text.split('\n');
+            let remIndex = false;
+
+            meta_links.some((x, i) => {
+                if (x.includes(post_id + "[|]")) {
+                    remIndex = i;
+                    return true;
+                }
+                return false;
+            })
+            return remIndex;
+        }
+
+        return false;
+    }
+
+
+
 
     function crb_detect_show_options_edited() {
         if ($('#crb-meta-show').length > 0) {
@@ -314,7 +320,7 @@ jQuery(document).ready(function ($) {
                 // }
             });
         } else {
-            let host = window.location.href.replace(window.location.href.slice(window.location.href.indexOf('/wp-admin/') + 10), 'options-general.php?page=linkate-posts&subpage=scheme');
+            let host = window.location.href.replace(window.location.href.slice(window.location.href.indexOf('/wp-admin/') + 10), 'options-general.php?page=linkate-posts');
             $('#links-count-targets').html('<a style="font-weight:bold;color:white;" href="' + host + '" title="Нет данных, перейдите по ссылки для настройки">??</a>');
         }
 
@@ -333,7 +339,7 @@ jQuery(document).ready(function ($) {
                 ids.push(el[1])
             });
             ids = ids.join(",");
-            
+
 
             let ajax_data = {
                 'action': 'linkate_generate_csv_or_json_prettyfied',
@@ -349,7 +355,7 @@ jQuery(document).ready(function ($) {
                     if (cl_individual_stats === false)
                         cl_individual_stats = response;
                     else {
-                        cl_individual_stats = $.extend({}, cl_individual_stats,response);
+                        cl_individual_stats = $.extend({}, cl_individual_stats, response);
                     }
 
                     reLoad_when_data_received();
@@ -627,7 +633,7 @@ jQuery(document).ready(function ($) {
             $('.link-add-to-block').unbind().click(function () {
                 let post_id = $(this).parent().parent().find('div.linkate-link').attr('data-postid');
                 let title = $(this).parent().parent().find('div.linkate-link').attr('data-title');
-                let this_string = post_id + "[|]" + title;
+                let this_string = post_id + "[|]" + title + "[|]";
                 if (fcl_crb_metabox.length > 0) {
                     let meta_links = $(fcl_crb_metabox).val();
                     if (meta_links.length > 0) {
@@ -1159,11 +1165,11 @@ jQuery(document).ready(function ($) {
 
                     // check for related block
                     if (fcl_crb_metabox.length > 0 && !el.classList.contains('link-term')) { // if metabox exists (plugin activated)
-                        let this_string = el.getAttribute('data-postid') + "[|]" + el.getAttribute('data-title');
+
                         let meta_links = $(fcl_crb_metabox).val();
-                        // if (meta_links.length > 0) {
-                        meta_links = meta_links.split('\n');
-                        if (!meta_links.includes(this_string)) {
+                        let inDaBox = crb_link_exist_in_metabox(meta_links, el.getAttribute('data-postid'));
+
+                        if (inDaBox === false) {
                             // show add button
                             el.parentElement.querySelector(".link-add-to-block").classList.remove('btn-hidden');
                             el.parentElement.querySelector(".link-del-from-block").classList.add('btn-hidden');

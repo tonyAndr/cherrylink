@@ -381,7 +381,7 @@ function linkate_get_all_posts_count () {
 
 // WorkHorse
 add_action('wp_ajax_linkate_generate_csv_or_json_prettyfied', 'linkate_generate_csv_or_json_prettyfied');
-function linkate_generate_csv_or_json_prettyfied() {
+function linkate_generate_csv_or_json_prettyfied($is_custom_column = false, $custom_id = 0) {
 	// get rows from db
 	global $wpdb, $table_prefix;
 	$gutenberg_data = json_decode(file_get_contents('php://input'), true);
@@ -389,7 +389,9 @@ function linkate_generate_csv_or_json_prettyfied() {
 		$ids_query = $table_prefix."posts.ID IN (".$_POST['post_ids'].") AND ";
 	} else if (isset($gutenberg_data['post_ids'])) {
 		$ids_query = $table_prefix."posts.ID IN (".$gutenberg_data['post_ids'].") AND ";
-	} else {
+    } else if ($is_custom_column) {
+        $ids_query = $table_prefix."posts.ID IN (".$custom_id.") AND ";
+    } else {
 		$ids_query = "";
 	}
 
@@ -460,9 +462,14 @@ function linkate_generate_csv_or_json_prettyfied() {
 
 		$output_array = array_merge($output_array, linkate_queryresult_to_array($links_term, 1));
 		unset($links_term);
-	}
+    }
+    
+    // for posts list only, not ajax call
+    if ($is_custom_column) {
+        return $output_array;
+    }
 
-	if (isset($_POST["from_editor"]) || isset($gutenberg_data["from_editor"]) ) {
+	if (isset($_POST["from_editor"]) || isset($gutenberg_data["from_editor"])) {
         wp_send_json($output_array);
 	} else {
 		query_to_csv($output_array, 'cherrylink_stats_'.$_POST['stats_offset'].'.csv');
@@ -561,8 +568,7 @@ function linkate_generate_csv_or_json_prettyfied_backwards() {
 	wp_die();
 }
 function linkate_queryresult_to_array_backwards($links, $target_type) {
-    $include_types = array();
-	$include_types = $_POST['export_types'];
+	$include_types = $_POST['export_types'] ? $_POST['export_types'] : array();
 	$output_array = array();
 	//echo sizeof($links);
 	foreach ($links as $link) {
@@ -644,8 +650,7 @@ function linkate_queryresult_to_array_backwards($links, $target_type) {
 	return $output_array;
 }
 function linkate_queryresult_to_array($links, $source_type) {
-    $include_types = array();
-	$include_types = $_POST['export_types'];
+	$include_types = $_POST['export_types'] ? $_POST['export_types'] : array();
 	$from_editor = isset($_POST["from_editor"]) || isset($gutenberg_data["from_editor"]);
 	$output_array = array();
 	//echo sizeof($links);

@@ -19,6 +19,7 @@
     margin-top: 0px;
 	border-top: none;
     flex-grow: 3;
+    min-width: 500px;
 }
 
 .linkateposts-tabs-menu{
@@ -134,7 +135,8 @@
     padding: 1em;
     background: lavender;
     flex-grow:1;
-    max-width: 30%;
+    max-width: 300px;
+    min-width: 250px;
     border: 1px solid #dcdcdc;
     border-top: none;
 }
@@ -151,10 +153,12 @@
     padding: 10px;
     color: white;
     margin-right:20px;
+    border: 1px solid #dcdcdc;
 }
 .linkateposts-accessibility-good h2,
 .linkateposts-accessibility-warning h2 {
     color: white;
+    margin-top: 0;
 }
 .linkateposts-accessibility-good a,
 .linkateposts-accessibility-warning a {

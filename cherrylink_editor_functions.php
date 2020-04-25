@@ -487,6 +487,7 @@ function linkate_scheme_add_row($str, $post_id, $is_term) {
 	$values_string = '';
 	$prohibited = array('.jpg','.jpeg','.tiff','.bmp','.psd', '.png', '.gif','.webp', '.doc', '.docx', '.xlsx', '.xls', '.odt', '.pdf', '.ods','.odf', '.ppt', '.pptx', '.txt', '.rtf', '.mp3', '.mp4', '.wav', '.avi', '.ogg', '.zip', '.7z', '.tar', '.gz', '.rar', 'attachment');
 
+    $outgoing_count = 0;
 	// loop through all found items
 	foreach($result as $node) {
 		$href = $node->getAttribute('href');
@@ -521,10 +522,17 @@ function linkate_scheme_add_row($str, $post_id, $is_term) {
 			if (strpos($href, '#') !== false && strpos($href, 'http') !== true)
 				continue; // this is just our internal navigational links
 			$ext_url = esc_sql($href);
-		}
+        }
+        
+        // add count to update post meta with outgoing links
+        $outgoing_count++;
+
 		if (!empty($values_string)) $values_string .= ',';
 		$values_string .= "($post_id, $is_term, $target_id, $target_type, \"$ankor\", \"$ext_url\")";
-	}
+    }
+    
+    // for stats column
+    update_post_meta( (int) $post_id, "cherry_outgoing", $outgoing_count );
 
 	if (!empty($values_string))
 		$wpdb->query("INSERT INTO `$table_name` (source_id, source_type, target_id, target_type, ankor_text, external_url) VALUES $values_string");

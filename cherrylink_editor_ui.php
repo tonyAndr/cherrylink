@@ -1,12 +1,11 @@
 <?php
 
+// add_action ( 'init', 'cherrylink_gutenberg_assets');
 add_action ( 'admin_head', 'linkate_send_options_frontend');
 add_action('wp_ajax_getLinkateLinks', 'getLinkateLinks');
 add_action( 'admin_enqueue_scripts', 'hook_term_edit', 10);
-// add_action('enqueue_block_editor_assets', 'linkate_panel_gutenberg_js', 15 );
-// add_action('enqueue_block_editor_assets', 'linkate_panel_gutenberg_css', 15 );
 add_action('wp_ajax_cherrylink_gutenberg_panel', 'cherrylink_gutenberg_panel');
-
+add_action('enqueue_block_editor_assets', 'register_cherrylink_gutenberg_scripts');
 
 // Using linkateposts to get relevant results
 function getLinkateLinks() {
@@ -25,7 +24,8 @@ function getLinkateLinks() {
 
     $data =  linkate_posts("manual_ID=".$post_id."&is_term=".$is_term."&offset=".$offset."&mode=".$mode."&");
     wp_send_json($data);
-//    wp_die();
+    // echo json_encode( $data, JSON_HEX_QUOT); 
+    // wp_die();
 }
 
 
@@ -49,7 +49,7 @@ function hook_term_edit( $hook_suffix ) {
 	        add_action('media_buttons', 'add_linkate_button', 15);
 	        linkate_panel_tinymce_js();
 			linkate_snowball_js();
-        }
+        } 
 	}
 	return;
 }
@@ -109,16 +109,16 @@ function linkate_send_options_frontend() {
     cherrylink_options['wp_ver'] = <?php echo linkate_is_version_old('<', '4.9.6'); ?>;
     cherrylink_options['term_length_limit'] = <?php echo $options['term_length_limit']; ?>;
     cherrylink_options['templates'] = {
-        isH1: '<?php echo stripslashes(urldecode($options['output_template'])) === "{title}" ? 'true' : 'false'; ?>',
+        isH1: '<?php echo $options['output_template'] === "{title}" ? 'true' : 'false'; ?>',
         term: {
-            before: '<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['term_before'])))); ?>',
-            after: '<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['term_after'])))); ?>',
-            alt:'<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['term_temp_alt'])))); ?>',
+            before: '<?php echo base64_decode($options['term_before']); ?>',
+            after: '<?php echo base64_decode($options['term_after']); ?>',
+            alt:'<?php echo base64_decode($options['term_temp_alt']); ?>',
         }, 
         link: {
-            before:'<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['link_before'])))); ?>',
-            after:'<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['link_after'])))); ?>',
-            alt:'<?php echo str_replace("'", "\"", stripslashes(urldecode(base64_decode($options['link_temp_alt'])))); ?>',
+            before:'<?php echo base64_decode($options['link_before']); ?>',
+            after:'<?php echo base64_decode($options['link_after']); ?>',
+            alt:'<?php echo base64_decode($options['link_temp_alt']); ?>',
         }
     };
     
@@ -131,10 +131,10 @@ function linkate_is_version_old( $operator = '<', $version = '4.9.6' ) {
     return version_compare( $wp_version, $version, $operator ) ? 1 : 0;
 }
 
-function tinymce_plugin($init) {
-    $init['cherrylink_change'] = plugins_url( '/js/cherry-front.js', __FILE__ );
-    return $init;
-}
+// function tinymce_plugin($init) {
+//     $init['cherrylink_change'] = plugins_url( '/js/cherry-front.js', __FILE__ );
+//     return $init;
+// }
 
 function cherrylink_gutenberg_panel() {
     $options = (array) get_option('linkate-posts');

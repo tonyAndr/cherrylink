@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 1.6.20
+Version: 2.0.0
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -45,6 +45,11 @@ if (!defined('LP_ADMIN_SUBPAGES_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/ch
 if (!defined('LINKATE_TERMS_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_terms.php');
 if (!defined('LINKATE_INDEX_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_index.php');
 if (!defined('LINKATE_STOPWORDS_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_stopwords.php');
+
+if (!defined('LINKATE_STATS_COLUMN_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_stats_column.php');
+if (!defined('LINKATE_CRB_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/crb_main.php');
+
+if (!defined('LINKATE_GUTENBERG_ASSETS')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_gutenberg.php');
 
 if (!defined('DSEP')) define('DSEP', DIRECTORY_SEPARATOR);
 
@@ -209,7 +214,7 @@ class LinkatePosts {
 		}
 		switch($presentation_mode) {
 			case 'relevant_block':
-				return CherryLink_Related_Block::prepare_related_block($postid, $results, $option_key, $options);
+				return CL_Related_Block::prepare_related_block($postid, $results, $option_key, $options);
 				break;
 			case 'gutenberg':
 				return LinkatePosts::prepare_for_cherry_gutenberg($results, $option_key, $options);
@@ -224,6 +229,7 @@ class LinkatePosts {
 	static function prepare_for_cherry_gutenberg($results, $option_key, $options) {
 		
 		$output_template = '"data-url":"{url}","data-titleseo":"{title_seo}","data-title":"{title}","data-category":"{categorynames}","data-date":"{date}","data-author":"{author}","data-postid":"{postid}","data-imagesrc":"{imagesrc}","data-anons":"{anons}","data-suggestions":"{suggestions}"';
+		// $output_template = 'data-url:"{url}",data-titleseo:"{title_seo}",data-title:"{title}",data-category:"{categorynames}",data-date:"{date}",data-author:"{author}",data-postid:"{postid}",data-imagesrc:"{imagesrc}",data-anons:"{anons}",data-suggestions:"{suggestions}"';
 
 		$results_count = 0;
 		if ($results) {
@@ -252,7 +258,7 @@ class LinkatePosts {
 	static function prepare_for_cherrylink_panel($results, $option_key, $options) {
 
 		$add_to_related_block_btn = '';
-		if (class_exists('CherryLink_Related_Block')) {
+		if (class_exists('CL_Related_Block')) {
 			$add_to_related_block_btn = '<div class="link-add-to-block" title="Добавить в блок релевантных ссылок"></div><div class="link-del-from-block btn-hidden" title="Убрать из блока ссылок"></div>';
 		}
 
@@ -367,8 +373,10 @@ if ( is_admin()) {
 	if (!linkate_callDelay()) {
 		$r = linkate_checkNeededOption();
 	}
-	if ($r)
-		require(WP_PLUGIN_DIR . '/cherrylink/cherrylink_editor_ui.php');
+	if ($r) {
+        require(WP_PLUGIN_DIR . '/cherrylink/cherrylink_editor_ui.php');
+
+    }
 }
 
 function linkate_posts_wp_admin_style() {
@@ -438,7 +446,6 @@ function linkate_check_update(){
 linkate_check_update();
 add_action ('init', 'linkate_posts_init', 1);
 register_activation_hook(__FILE__, array('LinkatePosts', 'lp_activate'));
-
 
 function deactivate_crb_if_active() {
     if ( is_plugin_active('cherrylink-related-block/cherrylink-related-block.php') ) {

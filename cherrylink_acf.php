@@ -72,25 +72,47 @@ function link_cf_options_from_post($options, $args) {
 				}
 			}
 			break;
-		case 'age':
-			$options['age']['direction'] = $_POST['age-direction'];
-			$options['age']['length'] = link_cf_check_cardinal($_POST['age-length']);
-			$options['age']['duration'] = $_POST['age-duration'];
+        case 'age':
+            if (isset($_POST['age']) && is_array($_POST['age'])) {
+                $options['age']['direction'] = $_POST['age']['direction'];
+                $options['age']['length'] = link_cf_check_cardinal($_POST['age']['length']);
+                $options['age']['duration'] = $_POST['age']['duration'];
+            } else {
+                $options['age']['direction'] = $_POST['age-direction'];
+                $options['age']['length'] = link_cf_check_cardinal($_POST['age-length']);
+                $options['age']['duration'] = $_POST['age-duration'];
+            }
+        break;
+        case 'custom':
+            if (isset($_POST['custom']) && is_array($_POST['custom'])) {
+                $options['custom']['key'] = $_POST['custom']['key'];
+                $options['custom']['op'] = $_POST['custom']['op'];
+                $options['custom']['value'] = $_POST['custom']['value'];
+            } else {
+                $options['custom']['key'] = $_POST['custom-key'];
+                $options['custom']['op'] = $_POST['custom-op'];
+                $options['custom']['value'] = $_POST['custom-value'];
+            }
 			break;
-		case 'custom':
-			$options['custom']['key'] = $_POST['custom-key'];
-			$options['custom']['op'] = $_POST['custom-op'];
-			$options['custom']['value'] = $_POST['custom-value'];
-			break;
-		case 'sort':
-			$options['sort']['by1'] = $_POST['sort-by1'];
-			$options['sort']['order1'] = $_POST['sort-order1'];
+        case 'sort':
+            if (isset($_POST['sort']) && is_array($_POST['sort'])) {
+                $options['sort']['by1'] = $_POST['sort']['by1'];
+                $options['sort']['order1'] = $_POST['sort']['order1'];
+                $options['sort']['case1'] = $_POST['sort']['case1'];
+                $options['sort']['order2'] = $_POST['sort']['order2'];
+                $options['sort']['by2'] = $_POST['sort']['by2'];
+                $options['sort']['case2'] = $_POST['sort']['case2']; 
+            } else {
+                $options['sort']['by1'] = $_POST['sort-by1'];
+                $options['sort']['order1'] = $_POST['sort-order1'];
+                $options['sort']['case1'] = $_POST['sort-case1'];
+                $options['sort']['order2'] = $_POST['sort-order2'];
+                $options['sort']['by2'] = $_POST['sort-by2'];
+                $options['sort']['case2'] = $_POST['sort-case2'];
+            }
+            
 			if ($options['sort']['order1'] === 'SORT_ASC') $options['sort']['order1'] = SORT_ASC; else $options['sort']['order1'] = SORT_DESC; 
-			$options['sort']['case1'] = $_POST['sort-case1'];
-			$options['sort']['by2'] = $_POST['sort-by2'];
-			$options['sort']['order2'] = $_POST['sort-order2'];
 			if ($options['sort']['order2'] === 'SORT_ASC') $options['sort']['order2'] = SORT_ASC; else $options['sort']['order2'] = SORT_DESC; 
-			$options['sort']['case2'] = $_POST['sort-case2'];
 			if ($options['sort']['by1'] === '') {
 				$options['sort']['order1'] = SORT_ASC;
 				$options['sort']['case1'] = 'false';
@@ -118,7 +140,13 @@ function link_cf_options_from_post($options, $args) {
 		case 'num_terms':
 			$options['num_terms'] = $_POST['num_terms'];
 			if ($options['num_terms'] < 1) $options['num_terms'] = 50;
-			break;
+            break;
+            
+        case 'weight_title':
+        case 'weight_content':
+        case 'weight_tags':
+            $options[$arg] = round((double) $_POST[$arg], 2);
+            break;
 		case 'multilink':
 		case 'compare_seotitle':
 			if (isset($options[$arg])) {
@@ -784,9 +812,10 @@ function link_cf_display_sidebar() {
 	?>
 	<div class="linkateposts-admin-sidebar">
 <!-- 				<iframe width="480" height="270" src="https://www.youtube.com/embed/y3W6PGUJd28" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe> -->
-				<h2>О CherryLink</h2>
-				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_1.png"/>
-				<p>Плагин помогает при ручной перелинковке статей на сайте. <br><br>В его функции входит вывод наиболее релевантных статей, вставка ссылки по шаблону вокруг выделенного текста в 1 клик.<br><br>Дополнительно включены подсчет ссылок, проверка повторов, быстрый переход к ссылке в тексте, быстрый фильтр по найденным ссылкам и другое. </p>
+				<h2>CherryLink <?php echo LinkatePosts::get_linkate_version();?></h2>
+				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/cherry_side_top.png"/>
+                <p>В обновлении 2.0 добавлена поддержка редактора Gutenberg!</p>
+                <p>Подробности о новой версии на <a href="https://seocherry.ru/dev/cherrylink-2-0-perelinkovka-gutenberg/">официальном сайте</a>.</p>
 				<h2>Мануал</h2>
 				<a href="https://seocherry.ru/dev/cherrylink-manual/"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_2.png"/></a>
 				<p>На многие вопросы по использованию плагина может ответить <a href="https://seocherry.ru/dev/cherrylink-manual/">руководство пользователя</a> на моем сайте.</p>
@@ -796,9 +825,8 @@ function link_cf_display_sidebar() {
 				<h2>Техподдержка</h2>
 				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_4.png"/>
 				<p>Если есть вопросы о работе плагина, покупке или баг репорт (найденные ошибки) - пишите в <a href="https://t.me/joinchat/HCjIHgtC9ePAkJOP1V_cPg">телеграм-чат</a> или на почту <strong>mail@seocherry.ru</strong>. </p>
-				<h2>Увеличь доход рекламы в несколько раз!</h2>
-				<a href="https://seocherry.ru/ads/sticky-ads/"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_5.png"/></a>
-				<p>Плагин прилипающей рекламы StickyAds привлекает внимание юзера и повышает выхлоп с мобильной рекламы внутри статьи: <a href="https://www.youtube.com/watch?v=pZsMWiQzrHk&t=1s">Видео</a> | <a href="https://seocherry.ru/ads/sticky-ads/">Страница</a></p>
+				<p>Другие плагины разработчика можно найти <a href="https://seocherry.ru/buy-plugin/">на этой страничке</a>.</p>
+
 	</div>
 	<?php
 }

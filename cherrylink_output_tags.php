@@ -31,7 +31,8 @@ function linkate_otf_postid ($option_key, $result, $ext) {
 function linkate_otf_title ($option_key, $result, $ext) {
 	if (isset($result->manual_title))
 		return $result->manual_title; // return manual title for block links
-	$value = linkate_oth_truncate_text($result->post_title, $ext);
+    $value = linkate_oth_truncate_text($result->post_title, $ext);
+    $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); // for json
 	return apply_filters('the_title', $value, $result->ID);
 }
 
@@ -145,9 +146,11 @@ function linkate_otf_anons($option_key, $result, $ext) {
     if ($next_space_pos)
         $excerpt = mb_substr($excerpt, 0, $next_space_pos);
     $excerpt = trim(preg_replace( '/\s+/', ' ', $excerpt));
+    $excerpt = htmlspecialchars($excerpt, ENT_QUOTES, 'UTF-8'); // for json
     $excerpt = $excerpt.'...';
     return $excerpt;
 }
+
 function linkate_otf_suggestions($option_key, $result, $ext) {
 	global $wpdb, $table_prefix;
 	$table_name = $table_prefix.'linkate_posts';
