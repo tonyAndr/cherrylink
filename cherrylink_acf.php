@@ -811,7 +811,6 @@ function link_cf_display_scheme_export_options() {
 function link_cf_display_sidebar() {
 	?>
 	<div class="linkateposts-admin-sidebar">
-<!-- 				<iframe width="480" height="270" src="https://www.youtube.com/embed/y3W6PGUJd28" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe> -->
 				<h2>CherryLink <?php echo LinkatePosts::get_linkate_version();?></h2>
 				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/cherry_side_top.png"/>
                 <p>В обновлении 2.0 добавлена поддержка редактора Gutenberg!</p>
@@ -821,7 +820,8 @@ function link_cf_display_sidebar() {
 				<p>На многие вопросы по использованию плагина может ответить <a href="https://seocherry.ru/dev/cherrylink-manual/">руководство пользователя</a> на моем сайте.</p>
 				<h2>Где взять ключ?</h2>
 				<a href="http://seocherry.ru/dev/cherrylink" ><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_3.png"/></a>
-				<p>Вся информация о плагине и его покупке находится на официальном сайте по адресу: <a href="http://seocherry.ru/dev/cherrylink" >SeoCherry.ru</a>.</p>
+                <p>Вся информация о плагине и его покупке находится на официальном сайте по адресу: <a href="http://seocherry.ru/dev/cherrylink" >SeoCherry.ru</a>.</p>
+                <p>Справка по поводу <a href="https://seocherry.ru/perenos-licenzii-cherrylink-i-vozvrat-deneg/" target="_blank">переноса лицензии или возврата денежных средств</a>.</p>
 				<h2>Техподдержка</h2>
 				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_4.png"/>
 				<p>Если есть вопросы о работе плагина, покупке или баг репорт (найденные ошибки) - пишите в <a href="https://t.me/joinchat/HCjIHgtC9ePAkJOP1V_cPg">телеграм-чат</a> или на почту <strong>mail@seocherry.ru</strong>. </p>
