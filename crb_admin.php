@@ -348,10 +348,10 @@ class CL_RB_Admin_Area {
     }
 
     static function get_templates() {
-        $path = WP_PLUGIN_DIR . '/cherrylink-related-block/css/';
+        $path = WP_PLUGIN_DIR . '/cherrylink/css/';
         $files = array_diff(scandir($path), array('.', '..'));
         $files = array_filter($files, function ($v, $k) {
-            return !strpos($v, 'important') && !strpos($v, 'admin');
+            return strpos($v, 'template') && !strpos($v, 'important') && !strpos($v, 'admin');
         },ARRAY_FILTER_USE_BOTH);
         return $files;
     }
