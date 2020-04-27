@@ -40,7 +40,16 @@ function register_cherrylink_gutenberg_meta() {
 
 function register_cherrylink_gutenberg_scripts() {
     	// automatically load dependencies and version
-	// $asset_file = include( plugin_dir_path( __FILE__ ) . 'build/index.asset.php');
+    // $asset_file = include( plugin_dir_path( __FILE__ ) . 'build/index.asset.php');
+    
+    // mark.js
+	// wp_register_script(
+	// 	'cherry-mark-js',
+	// 	plugins_url( 'js/mark.es6.min.js', __FILE__ ),
+	// 	array()
+    // );
+    // wp_enqueue_script( 'cherry-mark-js' );
+
 
     $js_path = '';
     if (($_SERVER['HTTP_HOST']) === 'seoplugs') {
