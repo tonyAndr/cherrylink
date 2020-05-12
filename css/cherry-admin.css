@@ -311,6 +311,18 @@ input[id^="spoiler"]:checked + label + [class^="spoiler"]{
 .cherry-db-status {
     background: lavender;
     padding: 5px;
+    position: relative;
+}
+
+.cherry-db-status .cherry-adm-tooltip {
+    position: absolute;
+    right:0;
+    top:0;
+    margin:10px;
+}
+
+.cherry-db-status .cherry-adm-tooltip .tooltiptext {
+    bottom: -300px;
 }
 
 .cherry_db_status_good {
@@ -322,3 +334,13 @@ input[id^="spoiler"]:checked + label + [class^="spoiler"]{
     color:tomato;
     font-weight: bold;
 }
+
+code.bad-index {
+    background: #ffb630;
+    color: #4a4a4a;
+}
+code.good-index {
+    background: rgb(157, 230, 98);
+    color: #4a4a4a;
+}
+

@@ -355,6 +355,7 @@ function linkate_sp_mb_str_pad($text, $n, $c) {
 function linkate_sp_get_post_terms($text, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist) {
 	mb_regex_encoding('UTF-8');
 	mb_internal_encoding('UTF-8');
+	// $wordlist = array_unique(mb_split("\W+", linkate_sp_mb_clean_words($text)));
 	$wordlist = mb_split("\W+", linkate_sp_mb_clean_words($text));
     $stemms = '';
     $words = array();
@@ -366,7 +367,7 @@ function linkate_sp_get_post_terms($text, $min_len, $linkate_overusedwords, $ste
 			$stemm = $stemmer->stem_word($word);
 			if (!isset($linkate_overusedwords["black"][$stemm]))
 				if (mb_strlen($stemm) > 1)
-					$stemms .= linkate_sp_mb_str_pad($stemm, 4, '_') . ' ';
+					$stemms .= $stemm . ' ';
             if ($clean_suggestions_stoplist == 'false' || ($clean_suggestions_stoplist == 'true' && !isset($linkate_overusedwords["black"][$stemm])))
                 $words[] = $word;
 		}
@@ -387,7 +388,7 @@ function linkate_sp_get_title_terms( $text, $min_len, $linkate_overusedwords, $s
 		if ( mb_strlen($word) > $min_len || isset($linkate_overusedwords["white"][$word])) {
 			$stemm = $stemmer->stem_word($word);
 			if (!isset($linkate_overusedwords["black"][$stemm]))
-				$stemms .= linkate_sp_mb_str_pad($stemm, 4, '_') . ' ';
+				$stemms .= $stemm . ' ';
 			if ($clean_suggestions_stoplist == 'false' || ($clean_suggestions_stoplist == 'true' && !isset($linkate_overusedwords["black"][$stemm])))
                 $words[] = $word;
 
@@ -399,9 +400,6 @@ function linkate_sp_get_title_terms( $text, $min_len, $linkate_overusedwords, $s
 }
 
 function linkate_sp_get_suggestions_terms($text, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer) {
-	if ($clean_suggestions_stoplist == 'false') {
-		$linkate_overusedwords = array();
-	}
 	mb_regex_encoding('UTF-8');
 	mb_internal_encoding('UTF-8');
 	$wordlist = mb_split("\W+", linkate_sp_mb_clean_words($text));
@@ -412,13 +410,23 @@ function linkate_sp_get_suggestions_terms($text, $min_len, $linkate_overusedword
 	$words = '';
 	$exists = array();
 	foreach ($wordlist as $word) {
-		if (mb_strlen($word) > $min_len || isset($linkate_overusedwords["white"][$word])) {
-			$stemm = $stemmer->stem_word($word);
-			if (!isset($linkate_overusedwords["black"][$stemm]) && !in_array($word, $exists)) {
-				$exists[] = $word;
-				$words .= $word . ' ';
-			}
-		}
+        if ($clean_suggestions_stoplist == 'false') {
+            if (mb_strlen($word) > $min_len) {
+                $stemm = $stemmer->stem_word($word);
+                if (!in_array($word, $exists)) {
+                    $exists[] = $word;
+                    $words .= $word . ' ';
+                }
+            }
+        } else {
+            if (mb_strlen($word) > $min_len || isset($linkate_overusedwords["white"][$word])) {
+                $stemm = $stemmer->stem_word($word);
+                if (!isset($linkate_overusedwords["black"][$stemm]) && !in_array($word, $exists)) {
+                    $exists[] = $word;
+                    $words .= $word . ' ';
+                }
+            }
+        }
 	}
 	unset($exists);
 	unset($wordlist);
@@ -538,14 +546,93 @@ function linkate_scheme_add_row($str, $post_id, $is_term) {
 		$wpdb->query("INSERT INTO `$table_name` (source_id, source_type, target_id, target_type, ankor_text, external_url) VALUES $values_string");
 }
 
+function linkate_scheme_get_add_row_query($str, $post_id, $is_term) {
+	// quit if there is no content
+	if (empty($str) || $str === false)
+		return;
+	// set error level, get rid of some warnings
+	$internalErrors = libxml_use_internal_errors(true);
+	$doc = new DOMDocument('1.0', 'UTF-8');
+	$doc->loadHTML(mb_convert_encoding($str, 'HTML-ENTITIES', 'UTF-8'));
+	// Restore error level
+	libxml_use_internal_errors($internalErrors);
+	$selector = new DOMXPath($doc);
+	$result = $selector->query('//a'); //get all <a>
+
+	$target_id = 0;
+	$target_type = 0;
+	$values_string = '';
+	$prohibited = array('.jpg','.jpeg','.tiff','.bmp','.psd', '.png', '.gif','.webp', '.doc', '.docx', '.xlsx', '.xls', '.odt', '.pdf', '.ods','.odf', '.ppt', '.pptx', '.txt', '.rtf', '.mp3', '.mp4', '.wav', '.avi', '.ogg', '.zip', '.7z', '.tar', '.gz', '.rar', 'attachment');
+
+    $outgoing_count = 0;
+	// loop through all found items
+	foreach($result as $node) {
+        $href = $node->getAttribute('href');
+        if (empty($href)) continue; // no href - no need
+
+		// if its doc,file or img - skip
+		$is_doc = false;
+		foreach ($prohibited as $v) {
+			if (strpos($href, $v) !== false){
+				$is_doc = true;
+				break;
+			}
+		}
+
+		if ($is_doc) continue;
+
+		// remove some escaping stuff
+        $href = trim(str_replace("\"", "", str_replace("\\", "", $href)));
+        
+        if (empty($href)) continue; // no href - no need
+        if (strpos($href, '#') !== false && strpos($href, 'http') !== true) continue; // this is just our internal navigational links
+
+		$ext_url = '';
+        $ankor = esc_sql(trim($node->textContent));
+        $ankor = empty($ankor) ? "_NOT_FOUND_" : $ankor;
+		$target_id = url_to_postid($href); //post_id
+		$target_type = 0;
+		if ($target_id === 0) { // term_id
+			$target_id = linkate_get_term_id_from_slug($href);
+			$target_type = 1;
+		}
+		if ($target_id === 0) {	// target - external
+			$target_type = 2;
+
+			$ext_url = esc_sql($href);
+        }
+        
+        // add count to update post meta with outgoing links
+        $outgoing_count++;
+
+		if (!empty($values_string)) $values_string .= ',';
+        $values_string .= "($post_id, $is_term, $target_id, $target_type, \"$ankor\", \"$ext_url\")";
+        unset($href);
+    }
+    
+    // for stats column
+    update_post_meta( (int) $post_id, "cherry_outgoing", $outgoing_count );
+    wp_cache_delete( (int) $post_id, 'post_meta' );
+
+    unset($internalErrors);
+    libxml_clear_errors();
+    unset($doc);
+    unset($selector);
+    unset($result);
+    unset($prohibited);
+    
+    return $values_string;
+}
+
 function linkate_get_term_id_from_slug($url) {
 	$current_url = rtrim($url, "/");
 	$arr_current_url = explode("/", $current_url);
 	$thecategory = get_category_by_slug( end($arr_current_url) );
 	if (!$thecategory) {
+        unset($thecategory);
 		return 0;
 	} else {
-		$catid = $thecategory->term_id;
+        $catid = $thecategory->term_id;
 		return $catid;
 	}
 }

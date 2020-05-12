@@ -159,8 +159,14 @@ class CL_Related_Block {
         if (CL_Related_Block::scheme_table_exists()) {
             $tablename = $wpdb->prefix."linkate_scheme";
             $results = $wpdb->get_col("SELECT target_id FROM $tablename WHERE source_id = $post_id AND target_id > 0");
-            if ($results) return implode(",", $results);
-                else return '';
+            if ($results) {
+                $results = array_filter($results, function ($el) {
+                    return !empty(trim($el));
+                });
+                return implode(",", $results);
+            } else {
+                return '';
+            }
         }
         return '';
     }
@@ -183,7 +189,7 @@ class CL_Related_Block {
     static function fill_options($after_update = false) {
         $options = get_option('linkate-posts');
         if (!isset($options['crb_installed']) || isset($_POST['crb_defaults'])) {
-            $options['crb_show_after_content'] = "true";
+            $options['crb_show_after_content'] = "false";
             $options['crb_hide_existing_links'] = "true";
             $options['crb_show_for_pages'] = "false";
             $options['crb_show_latest'] = "false";
@@ -205,7 +211,7 @@ class CL_Related_Block {
 
         // on plugin update check existing options and add missing
         if ($after_update == true) {
-            $options['crb_show_after_content'] = isset($options['crb_show_after_content']) ? $options['crb_show_after_content'] : "true";
+            $options['crb_show_after_content'] = isset($options['crb_show_after_content']) ? $options['crb_show_after_content'] : "false";
             $options['crb_hide_existing_links'] =  isset($options['crb_hide_existing_links']) ? $options['crb_hide_existing_links'] : "true";
             $options['crb_show_for_pages'] = isset($options['crb_show_for_pages']) ? $options['crb_show_for_pages'] : "false";
             $options['crb_show_latest'] = isset($options['crb_show_latest']) ? $options['crb_show_latest'] : "false";
@@ -284,35 +290,6 @@ if (!function_exists("cherrylink_related_block")) {
             return '';
     }
 }
-
-// Configure updater
-// function crb_config_updater () {
-//     include('vendor/autoload.php');
-
-//     $update_checker = Puc_v4_Factory::buildUpdateChecker(
-//         'https://github.com/tonyAndr/cherrylink-related-block',
-//         __FILE__,
-//         'cherrylink-related-block'
-//     );
-
-//     $update_checker->setAuthentication('6d568422fc0119bba8ac68799afb87572e0f571e');
-//     $update_checker->setBranch('master');
-//     $update_checker->getVcsApi()->enableReleaseAssets();
-// }
-
-
-
-// function crb_upgrade_function( $upgrader_object, $options ) {
-//     $current_plugin_path_name = plugin_basename( __FILE__ );
-
-//     if ($options['action'] == 'update' && $options['type'] == 'plugin' ){
-//         foreach($options['plugins'] as $each_plugin){
-//             if ($each_plugin==$current_plugin_path_name){
-//                 CL_Related_Block::fill_options(true);
-//             }
-//         }
-//     }
-// }
 
 function _crb_init() {
     // Initial setup

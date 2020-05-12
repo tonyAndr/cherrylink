@@ -235,6 +235,7 @@ function linkate_posts_output_block_options_subpage(){
 function linkate_posts_index_options_subpage(){
 	global $wpdb, $table_prefix;
 	$options = get_option('linkate-posts');
+	$options_meta = get_option('linkate_posts_meta');
 	$table_index = $table_prefix."linkate_posts";
 	$table_scheme = $table_prefix."linkate_scheme";
 
@@ -270,23 +271,54 @@ function linkate_posts_index_options_subpage(){
 	} else {
 		$scheme_status_text = " ссылки не найдены (скорей всего нужно пересоздать индекс).";
 		$scheme_status_class = "cherry_db_status_bad";
-	}
+    }
+    
+    // Is there index, was it successful, is it in progress or crushed?
+    $index_process_status = isset($options_meta['indexing_process']) ? $options_meta['indexing_process'] : 'VALUE_NOT_EXIST';
+    $index_process_status_text = '';
+    switch($options_meta['indexing_process']) {
+        case 'VALUE_NOT_EXIST':
+            if ($index_rows || $scheme_rows) {
+                // probably we had index already, but not the option
+                $index_process_status_text = '';
+            } else {
+                $index_process_status_text = '<code class="bad-index">[Индекс не создан]</code>';
+            }
+        break;
+        case 'IN_PROGRESS': 
+            $index_process_status_text = '<code class="bad-index">[Создание индекса не закончено]</code>';
+        break;
+        case 'DONE':
+            $index_process_status_text = '<code class="good-index">[Индекс создан, все в порядке]</code>';
+        break;
+        default:
+            $index_process_status_text = '';
+        break;
+    }
 	
 	//php moved below for ajax
 	?>
 	<div class="linkateposts-admin-flex">
 		<div class="wrap linkateposts-tab-content">
 			<div class="cherry-db-status">
-				<h2>Статус индексирования</h2>
+				<h2>Статус индексирования <?php echo $index_process_status_text; ?></h2>
 				<ul>
 					<li>Количество записей:<span id="cherry_index_status" class="<?php echo $index_status_class; ?>"><?php echo $index_status_text; ?></span></li>
 					<li>Индекс перелинковки:<span id="cherry_scheme_status" class="<?php echo $scheme_status_class; ?>"><?php echo $scheme_status_text; ?></span></li>
-				</ul>
+                </ul>
+                
+                <?php link_cf_prepare_tooltip('
+                <p>Справа от заголовка "Статус индексирования" есть шильдик с одним из вариантов:</p><ul><li>[Индекс не создан]</li>
+                <li>[Создание индекса не закончено]</li><li>[Индекс создан]</li></ul>
+                <p>Текст "Создание индекса не закончено" обычно означает, что индексация не завершилась корректно. 
+                Рекомендуется пересоздать индекс. Эта же надпись появится, если вы создаете индекс прямо сейчас, например, в другой вкладке браузера.</p>
+                <p>Текст "Индекс не создан" говорит сам за себя. Необходимо его создать кнопкой "Пересоздать индекс".</p>
+                <p>Если [Индекс создан], или шильдика с надписью нет вообще, то никаких действий не требуется.</p>'); ?>
 			</div>
 
 			<form id="options_form" method="post" action="" onsubmit="return confirm('Вы точно хотите удалить все данные?');">
 			    <h2>Настройка индексирования</h2>
-			    <p>Изменение любых настроек на этой странице влияет на данные в БД для алгоритма релевантности ссылок, поэтому, при сохранении, будет произведена реиндексация всех записей и таксономий.</p>
+			    <p>Изменение любых настроек на этой странице влияет на данные в БД для алгоритма релевантности ссылок, поэтому, необходимо пересоздать индекс, чтобы изменения вступили в силу.</p>
 			    <hr>
 				<table class="optiontable form-table">
 					<?php

@@ -177,8 +177,8 @@ function link_cf_expand_template($result, $template, $translations, $option_key)
 		for ($i = 0; $i < $numtags; $i++) {
 			$fulltag = $translations['fulltags'][$i];
 			$act = $translations['acts'][$i];
-			$ext = $translations['exts'][$i];
-			$replacements[$fulltag] = $act($option_key, $result, $ext);
+            $ext = $translations['exts'][$i];
+            $replacements[$fulltag] = $act($option_key, $result, $ext);
 		}
 	}
 	// Replace every valid tag with its value

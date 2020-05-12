@@ -16,10 +16,14 @@ function linkate_ajax_call_reindex() {
 	$options = get_option('linkate-posts');
 	// Fill up the options with the values chosen...
 	$options = link_cf_options_from_post($options, array('term_extraction','term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors_src', 'suggestions_donors_join', 'compare_seotitle'));
-	
-	update_option('linkate-posts', $options);
+    update_option('linkate-posts', $options);
 
-	linkate_posts_save_index_entries ();
+    $options_meta = get_option('linkate_posts_meta');
+    $options_meta['indexing_process'] = 'IN_PROGRESS';
+    update_option('linkate_posts_meta', $options_meta);
+
+    linkate_posts_save_index_entries ();
+	wp_die();
 }
 
 add_action('wp_ajax_linkate_get_posts_count_reindex', 'linkate_get_posts_count_reindex');
@@ -27,14 +31,17 @@ function linkate_get_posts_count_reindex() {
 	global $wpdb;
 	$amount_of_db_rows = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item')");
 
-	echo $amount_of_db_rows;
+    echo $amount_of_db_rows;
+    // echo 10;
 	wp_die();
 }
 
 // sets up the index for the blog
 function linkate_posts_save_index_entries ($is_initial = false) {
+    $EXEC_TIME = microtime(true);
 	global $wpdb, $table_prefix;
     $options = get_option('linkate-posts');
+    $options_meta = get_option('linkate_posts_meta');
     
     if ($is_initial) {
         $amount_of_db_rows = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item')");
@@ -42,8 +49,9 @@ function linkate_posts_save_index_entries ($is_initial = false) {
             return false; 
     }
 
-	$batch = isset($_POST['batch_size']) ? $_POST['batch_size'] : 200;
-	$reindex_offset = isset($_POST['index_offset']) ? $_POST['index_offset'] : 0;
+	$batch = isset($_POST['batch_size']) ? (int)$_POST['batch_size'] : 200;
+    $reindex_offset = isset($_POST['index_offset']) ? (int)$_POST['index_offset'] : 0;
+    $index_posts_count = isset($_POST['index_posts_count']) ? (int)$_POST['index_posts_count'] : 0;
 
     require_once (WP_PLUGIN_DIR . "/cherrylink/cherrylink_stemmer_ru.php");
 
@@ -54,10 +62,8 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	$min_len = $options['term_length_limit'];
 
 	$words_table = $table_prefix."linkate_stopwords";
-	$black_words = $wpdb->get_col("SELECT stemm FROM $words_table WHERE is_white = 0 GROUP BY stemm");
-	$white_words = $wpdb->get_col("SELECT word FROM $words_table WHERE is_white = 1");
-	$black_words = array_filter($black_words);
-    $white_words = array_filter($white_words);
+	$black_words = array_filter($wpdb->get_col("SELECT stemm FROM $words_table WHERE is_white = 0 GROUP BY stemm"));
+	$white_words = array_filter($wpdb->get_col("SELECT word FROM $words_table WHERE is_white = 1"));
 	$linkate_overusedwords["black"] = array_flip($black_words);
 	$linkate_overusedwords["white"] = array_flip($white_words);
 
@@ -75,7 +81,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	// Reindex terms on first call ONLY
 	if ($reindex_offset == 0) {
 		$start = 0;
-		$terms_batch = 200;
+		$terms_batch = 50;
 		$amount_of_db_rows = $amount_of_db_rows + $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->terms");
 
 		while ($terms = $wpdb->get_results("SELECT `term_id`, `name` FROM $wpdb->terms LIMIT $start, $terms_batch", ARRAY_A)) {
@@ -83,58 +89,71 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 			foreach ($terms as $term) {
 				$termID = $term['term_id'];
 
-				$descr = '';
-				$descr .= term_description($termID); // standart 
-				// custom plugins sp-category && f-cattxt
-				$opt = get_option('category_'.$termID);
-				if ($opt && (function_exists('show_descr_top') || function_exists('contents_sp_category'))) {
-					$descr .= $opt['descrtop'] ? ' '.$opt['descrtop'] : '';  
-					$descr .= $opt['descrbottom'] ? ' '.$opt['descrbottom'] : '';  
-					$aio_title = $opt['title'];
+				$descr = term_description($termID); // standart 
+                // custom plugins sp-category && f-cattxt
+                $aio_title = '';
+				if (function_exists('show_descr_top') || function_exists('contents_sp_category')) {
+                    $opt = get_option('category_'.$termID);
+                    if ($opt) {
+                        $descr .= $opt['descrtop'] ? ' '.$opt['descrtop'] : '';  
+                        $descr .= $opt['descrbottom'] ? ' '.$opt['descrbottom'] : '';  
+                        $aio_title = $opt['title'];
+                    }
 				}
 
 				list($content, $content_sugg) = linkate_sp_get_post_terms($descr, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
 				//Seo title is more relevant, usually
 				//Extracting terms from the custom titles, if present
-				$seotitle = '';
-
-				$yoast_opt = get_option('wpseo_taxonomy_meta');
-				if ($yoast_opt && $yoast_opt['category'] && function_exists('wpseo_init')) {
-					$seotitle = $yoast_opt['category'][$termID]['wpseo_title'];
-				}
-				if (!$seotitle && $aio_title && function_exists('show_descr_top'))
-					$seotitle = $aio_title;
-
-				if (!empty($seotitle) && $seotitle !== $term['name']) {
-					$title = $term['name'] . " " . $seotitle;
-				} else {
-					$title = $term['name'];
-				}
+				$title = '';
+				if (function_exists('wpseo_init')) {
+                    $yoast_opt = get_option('wpseo_taxonomy_meta');
+                    if ($yoast_opt && $yoast_opt['category']) {
+                        $title = $yoast_opt['category'][$termID]['wpseo_title'];
+                    }
+                } else if ($aio_title && function_exists('show_descr_top')) {
+                    $title = $aio_title;
+                } 
+                
+				if ($title !== $term['name']) {
+					$title = $term['name'] . " " . $title;
+				} 
 
 				list($title, $title_sugg) = linkate_sp_get_title_terms( $title, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist );
 
 				// Extract ancor terms
 				$suggestions = linkate_sp_prepare_suggestions($title_sugg, $content_sugg, $suggestions_donors_src, $suggestions_donors_join);
 
-				$tags = "";
-				$wpdb->query("INSERT INTO `$table_name` (pID, content, title, tags, is_term, suggestions) VALUES ($termID, \"$content\", \"$title\", \"$tags\", 1, \"$suggestions\")");
-			}
+                $tags = "";
+                
+                // Create query
+                if (!empty($values_string)) $values_string .= ',';
+                $values_string .= "($termID, \"$content\", \"$title\", \"$tags\", 1, \"$suggestions\")";
+            }
+
+            $wpdb->query("INSERT INTO `$table_name` (pID, content, title, tags, is_term, suggestions) VALUES $values_string");
+            $values_string = '';
+
 			$start += $terms_batch;
 		}
-		unset($terms);
+        unset($terms);
+        $wpdb->flush();
 	}
-
 	// POSTS
 	$posts = $wpdb->get_results("SELECT `ID`, `post_title`, `post_content`, `post_type` 
 									FROM $wpdb->posts 
 									WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item') 
 									LIMIT $reindex_offset, $batch", ARRAY_A);
-	reset($posts);
+    reset($posts);
+    
+    $values_string = '';
+    // Save overused words TODO
+    if (isset($options['overused_words_temp'])) $common_words = $options['overused_words_temp'];
 
 	foreach ($posts as $post) {
-		$postID = $post['ID'];
+        $postID = $post['ID'];
+
 		list($content, $content_sugg) = linkate_sp_get_post_terms($post['post_content'], $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
-		
+
 		// convert broken symbols
 		$content = iconv("UTF-8", "UTF-8//IGNORE", $content); 
 		if (!$content)
@@ -157,8 +176,8 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 		}
 
 		list($title, $title_sugg) = linkate_sp_get_title_terms( $title, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist );
-		
-		// Extract ancor suggestions
+
+        // Extract ancor suggestions
 		$suggestions = linkate_sp_prepare_suggestions($title_sugg, $content_sugg, $suggestions_donors_src, $suggestions_donors_join);
 
 		// Tags (useless)
@@ -168,14 +187,6 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 		if (!empty($values_string)) $values_string .= ',';
 		$values_string .= "(".$postID.", \"".$content."\", \"".$title."\", \"".$tags."\", \"".$suggestions."\")";
 
-		// Insert into DB
-		$wpdb->query("INSERT INTO `$table_name` (pID, content, title, tags, suggestions) VALUES $values_string");
-
-		$values_string = '';
-
-		// Save overused words TODO
-		if (isset($options['overused_words_temp'])) 
-			$common_words = $options['overused_words_temp'];
 		$word = strtok($content, ' ');
 		while ($word !== false) {
             if(!array_key_exists($word,$common_words)){
@@ -183,20 +194,28 @@ function linkate_posts_save_index_entries ($is_initial = false) {
             }
             $common_words[$word] += 1;
             $word = strtok(' ');
-		}
-        arsort($common_words);
-        $common_words = array_slice($common_words, 0 , 100);
+        }
 
-		// Temporarely store overused words for the future 
-		$options['overused_words_temp'] = $common_words;
-		update_option( 'linkate-posts', $options );
-					
 		// fix memory leak
 		wp_cache_delete( $postID, 'post_meta' );
-
+        unset($content);
+        unset($title);
+        unset($seotitle);
+        unset($title_sugg);
+        unset($content_sugg);
+        unset($suggestions);
 	}
-	
-	unset($posts);
+
+    $wpdb->flush();
+    // Insert into DB
+    $wpdb->query("INSERT INTO `$table_name` (pID, content, title, tags, suggestions) VALUES $values_string");
+    $wpdb->flush();
+
+    arsort($common_words);
+    $common_words = array_slice($common_words, 0 , 100);
+    // Temporarely store overused words for the future 
+    $options['overused_words_temp'] = $common_words;
+    update_option( 'linkate-posts', $options );
 
 	// SCHEME
 	linkate_create_links_scheme($reindex_offset, $batch);
@@ -204,9 +223,30 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	// Output for frontend
 	$ajax_array = array();
 	$ajax_array['status'] = 'OK';
+    $time_elapsed_secs = microtime(true) - $EXEC_TIME;
+    $ajax_array['time'] = number_format($time_elapsed_secs, 5);
+    
+    if ($reindex_offset + $batch > $index_posts_count) {
+        $options_meta['indexing_process'] = 'DONE';
+        update_option('linkate_posts_meta', $options_meta);
+        $ajax_array['status'] = 'DONE';
+    }
+    unset($suggestions_donors_src);
+	unset($suggestions_donors_join);
+	unset($clean_suggestions_stoplist);
+	unset($min_len);
+    unset($posts);
+    unset($values_string);
+    unset($common_words);
+    unset($options);
+    unset($options_meta);
+    unset($black_words);
+    unset($white_words);
+    unset($linkate_overusedwords);
+    unset($stemmer);
 
-	echo json_encode($ajax_array);
-	wp_die();
+    echo json_encode($ajax_array);
+    unset($ajax_array);
 
 	return true;
 }
@@ -241,8 +281,10 @@ function linkate_last_index_overused_words() {
 		} 
 	}
 
+    unset($existing_blacklist);
+
 	// Remove temp words from options
-	$options['overused_words_temp'] = null;
+	unset($options['overused_words_temp']);
 	update_option( 'linkate-posts', $options );
 
 
@@ -271,7 +313,8 @@ function linkate_create_links_scheme($offset = 0, $batch = 200) {
 	if ($offset == 0) {
 		$amount_of_db_rows = $amount_of_db_rows + $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->terms");
 		//doing the same with terms (category, tag...)
-		$start = 0;
+        $start = 0;
+        $query_values = array();
 		while ($terms = $wpdb->get_results("SELECT `term_id` FROM $wpdb->terms LIMIT $start, $batch", ARRAY_A)) {
 			reset($terms);
 			foreach ($terms as $term) {
@@ -286,11 +329,20 @@ function linkate_create_links_scheme($offset = 0, $batch = 200) {
 					$descr .= $opt['descrbottom'] ? ' '.$opt['descrbottom'] : '';
 				}
 	
-				linkate_scheme_add_row($descr, $termID, 1);
-			}
+                // linkate_scheme_add_row($descr, $termID, 1);
+                $query_values[] = linkate_scheme_get_add_row_query($descr, $termID, 1);
+            }
+            $query_values = array_filter($query_values);
+
+            if (!empty($query_values)) {
+                $query_values = implode(",", $query_values);
+                $wpdb->query("INSERT INTO `$table_name_scheme` (source_id, source_type, target_id, target_type, ankor_text, external_url) VALUES $query_values");
+            }
+
 			$start += $batch;
 		}
-		unset($terms);
+        unset($terms);
+        $wpdb->flush();
 	}
 
 	$posts = $wpdb->get_results("SELECT `ID`, `post_content`, `post_type` 
@@ -299,12 +351,23 @@ function linkate_create_links_scheme($offset = 0, $batch = 200) {
 									LIMIT $offset, $batch", ARRAY_A);
 	reset($posts);
 
+    $query_values = array();
 	foreach($posts as $post) {
 		$postID = $post['ID'];
-		linkate_scheme_add_row($post['post_content'], $postID, 0);
-	}
-	
-	unset($posts);
+        $query_values[] = linkate_scheme_get_add_row_query($post['post_content'], $postID, 0);
+        // linkate_scheme_add_row($post['post_content'], $postID, 0);
+        
+    }
+    $query_values = array_filter($query_values);
+
+    if (!empty($query_values)) {
+        $query_values = implode(",", $query_values);
+        $wpdb->query("INSERT INTO `$table_name_scheme` (source_id, source_type, target_id, target_type, ankor_text, external_url) VALUES $query_values");
+    }
+    unset($options);
+	unset($query_values);
+    unset($posts);
+    $wpdb->flush();
 }
 
 function linkate_scheme_update_option_timestamp() {
@@ -384,10 +447,13 @@ add_action('wp_ajax_linkate_generate_csv_or_json_prettyfied', 'linkate_generate_
 function linkate_generate_csv_or_json_prettyfied($is_custom_column = false, $custom_id = 0) {
 	// get rows from db
 	global $wpdb, $table_prefix;
-	$gutenberg_data = json_decode(file_get_contents('php://input'), true);
+    $gutenberg_data = json_decode(file_get_contents('php://input'), true);
+    $from_editor = false;
 	if (isset($_POST['post_ids'])) {
+        $from_editor = true;
 		$ids_query = $table_prefix."posts.ID IN (".$_POST['post_ids'].") AND ";
 	} else if (isset($gutenberg_data['post_ids'])) {
+        $from_editor = true;
 		$ids_query = $table_prefix."posts.ID IN (".$gutenberg_data['post_ids'].") AND ";
     } else if ($is_custom_column) {
         $ids_query = $table_prefix."posts.ID IN (".$custom_id.") AND ";
@@ -437,10 +503,10 @@ function linkate_generate_csv_or_json_prettyfied($is_custom_column = false, $cus
 		, ARRAY_A); //
 
 	reset($links_post);
-	$output_array = linkate_queryresult_to_array($links_post, 0);
+	$output_array = linkate_queryresult_to_array($links_post, $from_editor, 0);
 	unset($links_post);
 
-	if (!(isset($_POST["from_editor"]) || isset($gutenberg_data["from_editor"])) && (isset($_POST['stats_offset']) && intval($_POST['stats_offset']) === 0)) {
+	if (!($from_editor) && (isset($_POST['stats_offset']) && intval($_POST['stats_offset']) === 0)) {
 		$links_term = $wpdb->get_results("
 		SELECT ".$table_prefix."terms.term_id as source_id, COALESCE(COUNT(scheme1.target_id), 0) AS count_targets, GROUP_CONCAT(scheme1.target_id SEPARATOR ';') AS targets, GROUP_CONCAT(scheme1.target_type SEPARATOR ';') AS target_types, GROUP_CONCAT(scheme1.ankor_text SEPARATOR ';') AS ankors, GROUP_CONCAT(scheme1.external_url SEPARATOR ';') AS ext_links, COALESCE(scheme2.count_sources, 0) AS count_sources
 		FROM
@@ -460,7 +526,7 @@ function linkate_generate_csv_or_json_prettyfied($is_custom_column = false, $cus
 
 	// echo json_encode($links_post);
 
-		$output_array = array_merge($output_array, linkate_queryresult_to_array($links_term, 1));
+		$output_array = array_merge($output_array, linkate_queryresult_to_array($links_term, $from_editor, 1));
 		unset($links_term);
     }
     
@@ -469,7 +535,7 @@ function linkate_generate_csv_or_json_prettyfied($is_custom_column = false, $cus
         return $output_array;
     }
 
-	if (isset($_POST["from_editor"]) || isset($gutenberg_data["from_editor"])) {
+	if ($from_editor) {
         wp_send_json($output_array);
 	} else {
 		query_to_csv($output_array, 'cherrylink_stats_'.$_POST['stats_offset'].'.csv');
@@ -613,7 +679,7 @@ function linkate_queryresult_to_array_backwards($links, $target_type) {
 			}
 			// check POST options
 			$buf_array = array();
-			if (isset($_POST["from_editor"])) {
+			if (isset($_POST["from_editor"]) && $_POST["from_editor"] == true) {
 			    if ($i > 0)
 			        break;
 				$buf_array[] = $link['count_targets'];
@@ -649,9 +715,8 @@ function linkate_queryresult_to_array_backwards($links, $target_type) {
 	}
 	return $output_array;
 }
-function linkate_queryresult_to_array($links, $source_type) {
+function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 	$include_types = $_POST['export_types'] ? $_POST['export_types'] : array();
-	$from_editor = isset($_POST["from_editor"]) || isset($gutenberg_data["from_editor"]);
 	$output_array = array();
 	//echo sizeof($links);
 	foreach ($links as $link) {
@@ -667,7 +732,8 @@ function linkate_queryresult_to_array($links, $source_type) {
 				$source_categories = wp_list_pluck( $post_categories, 'name' );
 			}
 		} elseif ($source_type == 1) { // term
-			$source_url = get_term_link((int)$link['source_id']);
+            $source_url = get_term_link((int)$link['source_id']);
+            // if ($source_url instanceof WP_Error) $source_url = $source_url->get_error_message();
 			$term_obj = get_term((int)$link['source_id']);
 			if ($term_obj == null || $term_obj instanceof WP_Error) {
 				$term_type = 'cat/tag';
@@ -696,7 +762,7 @@ function linkate_queryresult_to_array($links, $source_type) {
 			}
 			// check POST options
 			$buf_array = array();
-			if (isset($from_editor)) {
+			if (isset($from_editor) && $from_editor == true) {
 			    if ($i > 0)
 			        break;
 				$buf_array[] = $link['count_targets'];
@@ -764,7 +830,7 @@ function query_to_csv($array, $filename) {
 	{
 		mkdir(WP_PLUGIN_DIR.'/cherrylink/stats', 0755, true);
 	}
-
+    //////////////////
 	$fp = fopen(WP_PLUGIN_DIR.'/cherrylink/stats/'.$filename, 'w');
 
 	// output header row (if at least one row exists)
@@ -776,7 +842,22 @@ function query_to_csv($array, $filename) {
 		fputcsv_eol($fp, $row,',','"', "\r\n");
 	}
 
-	fclose($fp);
+    fclose($fp);
+    ///////////
+	// $fp = fopen(WP_PLUGIN_DIR.'/cherrylink/stats/'.$filename, 'w');
+    // fprintf($fp, chr(0xEF).chr(0xBB).chr(0xBF));
+
+    // fputcsv($fp, $headers, ";");
+	// foreach ($array as $row) {
+    //     foreach ($row as $k => $v) {
+    //         if ($v instanceof WP_Error) {
+    //             continue;
+    //         }
+    //     }
+    //     fputcsv($fp, $row, ";");
+	// }
+
+	// fclose($fp);
 }
 
 add_action('wp_ajax_linkate_merge_csv_files', 'linkate_merge_csv_files');

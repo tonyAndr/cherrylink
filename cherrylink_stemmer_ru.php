@@ -39,7 +39,11 @@ class LinguaStemRu
 	function m($s, $re)
 	{
 		return preg_match($re, $s);
-	}
+    }
+    
+    // function stem_word($word) {
+    //     return $word;
+    // }
 
 	function stem_word($word)
 	{

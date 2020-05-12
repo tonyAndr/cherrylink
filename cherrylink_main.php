@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.0.3
+Version: 2.0.4
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -93,7 +93,7 @@ class LinkatePosts {
 	// ========================================================================================= //
 	static function execute($args='', $default_output_template='<li>{link}</li>', $option_key='linkate-posts'){
 		global $table_prefix, $wpdb, $wp_version, $linkate_posts_current_ID;
-	
+
 		// Manually throws id of the current post if set
 		$arg_id = 0;
 		$is_term = 0;
@@ -207,18 +207,23 @@ class LinkatePosts {
 				$sql .= " LIMIT $limit";
 			} else {
 				$sql .= " ORDER BY score DESC LIMIT $limit";
-			}
-			$results = $wpdb->get_results($sql);
+            }
+            
+            $results = $wpdb->get_results($sql);
+
 		} else {
 			$results = false;
-		}
+        }
+        
 		switch($presentation_mode) {
 			case 'relevant_block':
 				return CL_Related_Block::prepare_related_block($postid, $results, $option_key, $options);
 				break;
-			case 'gutenberg':
-				return LinkatePosts::prepare_for_cherry_gutenberg($results, $option_key, $options);
-				break;
+            case 'gutenberg':
+				$prepared = LinkatePosts::prepare_for_cherry_gutenberg($results, $option_key, $options);
+
+                return $prepared;
+                break;
 			case 'classic':
 			default:
 				return LinkatePosts::prepare_for_cherrylink_panel($results, $option_key, $options);
@@ -233,11 +238,13 @@ class LinkatePosts {
 
 		$results_count = 0;
 		if ($results) {
-			$out_final = $output_template;
-			$translations = link_cf_prepare_template($out_final);
+            $out_final = $output_template;
+            $translations = link_cf_prepare_template($out_final);
+
 			foreach ($results as $result) {
 				$items[] = "{".link_cf_expand_template($result, $out_final, $translations, $option_key)."}";
-			}
+            }
+
 			if ($options['sort']['by1'] !== '') $items = link_cf_sort_items($options['sort'], $results, $option_key, $options['group_template'], $items);
 			$output = "[".implode(",", str_replace("\n", "", $items))."]"; 
 
@@ -387,10 +394,10 @@ function linkate_posts_wp_admin_style() {
 		wp_enqueue_style( 'cherrylink-css-admin-table' );
 
 		wp_register_script( 'cherrylink-js-admin', plugins_url( '/js/cherry-admin.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
-		wp_register_script( 'cherrylink-js-admin-index', plugins_url( '/js/cherry-admin-index.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
 		wp_register_script( 'cherrylink-js-admin-csv', plugins_url( '/js/cherry-admin-csv.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
 		wp_register_script( 'cherrylink-js-admin-table', plugins_url( '/js/tabulator.min.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
 		wp_register_script( 'cherrylink-js-admin-stopwords', plugins_url( '/js/cherry-admin-stopwords.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
+		wp_register_script( 'cherrylink-js-admin-index', plugins_url( '/js/cherry-admin-index.js', __FILE__ ), array( 'jquery', 'cherrylink-js-admin-stopwords' ), LinkatePosts::get_linkate_version() );
 
 		$options = (array) get_option('linkate-posts');
 		$scheme_exists = array("state" => $options['linkate_scheme_exists'] ? true : false);
