@@ -83,7 +83,7 @@ jQuery(document).ready(function ($) {
             }
         }
         $('.crb-remove-item').unbind().on('click', function (e) {
-            crb_remove_from_block($(this).attr('data-postid'));
+            crb_remove_from_block($(this).parent().attr('data-postid'));
         })
 
         // $('.crb-manual-input').unbind().on('mousedown click mouseup', function (e) {
