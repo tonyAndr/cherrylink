@@ -231,7 +231,7 @@ function fill_options($options) {
 	if (!isset($options['quickfilter_dblclick'])) $options['quickfilter_dblclick'] = "false"; // since 1.5.0
     if (!isset($options['singleword_suggestions'])) $options['singleword_suggestions'] = "true"; // since 1.6.0
     
-	if (!isset($options['debug_enabled'])) $options['debug_enabled'] = false; // since 2.0.6
+	if (!isset($options['debug_enabled'])) $options['debug_enabled'] = "false"; // since 2.0.6
 
 	update_option('linkate-posts', $options);
 	return $options;
