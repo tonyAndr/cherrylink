@@ -28,7 +28,8 @@ class CL_RB_Admin_Area {
                 'crb_choose_template',
                 'crb_css_override',
                 'crb_placeholder_path',
-                'crb_content_filter'
+                'crb_content_filter',
+                'debug_enabled'
             ));
             update_option('linkate-posts', $options);
             // Show a message to say we've done something
@@ -91,6 +92,7 @@ class CL_RB_Admin_Area {
                 CL_RB_Admin_Area::output_templates($options['crb_temp_before'],$options['crb_temp_link'],$options['crb_temp_after']);
                 CL_RB_Admin_Area::choose_template($options['crb_choose_template']);
                 CL_RB_Admin_Area::css_tuning($options['crb_css_tuning']);
+                CL_RB_Admin_Area::debug_enabled($options['debug_enabled']);
                 CL_RB_Admin_Area::css_override($options['crb_css_override']);
                 ?>
             </table>
@@ -217,6 +219,21 @@ class CL_RB_Admin_Area {
                 </select>
             </td>
             <td><?php link_cf_prepare_tooltip("Включите опцию !important в случае, если наложились стили от вашей темы и поехала верстка блоков."); ?></td>
+        </tr>
+        <?php
+    }
+
+    static function debug_enabled($debug_enabled) {
+        ?>
+        <tr valign="top">
+            <th scope="row"><label for="debug_enabled">Включить режим отладки</label></th>
+            <td>
+                <select name="debug_enabled" id="debug_enabled">
+                    <option <?php if($debug_enabled == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
+                    <option <?php if($debug_enabled == 'true') { echo 'selected="selected"'; } ?> value="true">Да</option>
+                </select>
+            </td>
+            <td><?php link_cf_prepare_tooltip("Опция для отладки. Не включайте, если не знаете что это."); ?></td>
         </tr>
         <?php
     }

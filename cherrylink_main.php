@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.0.5
+Version: 2.0.6
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -34,6 +34,8 @@ if ( ! defined( 'WP_PLUGIN_URL' ) )
 if ( ! defined( 'WP_PLUGIN_DIR' ) )
 	define( 'WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins' );
 
+
+if (!defined('LINKATE_DEBUG')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_debug.php');
 
 if (!defined('LINKATE_INSTALL_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_install.php');
 if (!defined('LINKATE_EF_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_editor_functions.php');
@@ -209,7 +211,9 @@ class LinkatePosts {
 				$sql .= " ORDER BY score DESC LIMIT $limit";
             }
             
+            _cherry_debug(__FUNCTION__, $sql, 'SQL query');
             $results = $wpdb->get_results($sql);
+            _cherry_debug(__FUNCTION__, count($results), 'Результат query');
 
             // remove duplicates
             $ids_list = array();
@@ -225,17 +229,18 @@ class LinkatePosts {
                 return !in_array($k, $duplicates);
             }, ARRAY_FILTER_USE_KEY );
 
+            _cherry_debug(__FUNCTION__, count($results), 'После фильтра дублей');
 		} else {
 			$results = false;
         }
         
+        _cherry_debug(__FUNCTION__, $presentation_mode, 'Как обработать?');
 		switch($presentation_mode) {
 			case 'relevant_block':
 				return CL_Related_Block::prepare_related_block($postid, $results, $option_key, $options);
 				break;
             case 'gutenberg':
 				$prepared = LinkatePosts::prepare_for_cherry_gutenberg($results, $option_key, $options);
-
                 return $prepared;
                 break;
 			case 'classic':

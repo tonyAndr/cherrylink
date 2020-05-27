@@ -44,12 +44,13 @@ class CL_Related_Block {
             $args = "manual_ID=".$post->ID."&is_term=".$is_term."&offset=".$offset."&relevant_block=1&excluded_posts=".$excluded."&limit_ajax=".$num_of_links."&";
         }
         
-
+        _cherry_debug(__FUNCTION__, explode("&", $args), 'Аргументы для query');
 
         if (!isset($options['crb_cache_minutes'])) $options['crb_cache_minutes'] = 1440;
         // Get relevant results
         if ( false === ( $output = get_transient( "crb__".$args ) ) ) {
             // It wasn't there, so regenerate the data and save the transient
+            _cherry_debug(__FUNCTION__, false, 'Релевантный поиск, в кэше не нашли');
             $output = linkate_posts($args);
             set_transient( "crb__".$args, $output, $options['crb_cache_minutes'] * MINUTE_IN_SECONDS );
         }
@@ -61,6 +62,7 @@ class CL_Related_Block {
             $args .= "ignore_relevance=true&show_pages=false&";
             if ( false === ( $output = get_transient( "non_rel_crb__".$args ) ) ) {
                 // It wasn't there, so regenerate the data and save the transient
+                _cherry_debug(__FUNCTION__, false, 'НЕ релевантный поиск, в кэше не нашли');
                 $output = linkate_posts($args);
                 set_transient( "non_rel_crb__".$args, $output, $options['crb_cache_minutes'] * MINUTE_IN_SECONDS );
             }
@@ -175,6 +177,7 @@ class CL_Related_Block {
     static function add_after_content( $content ) {
         global $post;
         $options = get_option('linkate-posts');
+        _cherry_debug(__FUNCTION__, $options, "Содержимое переменной options");
         if( (is_single() || ($options['crb_show_for_pages'] == 'true' && is_page()) ) && ! empty( $GLOBALS['post'] ) && in_the_loop() && is_main_query() ) {
             if ( $GLOBALS['post']->ID == get_the_ID()) {
                 if ($options['crb_show_after_content'] == 'true' && CL_RB_Metabox::get_custom_show(get_the_ID())) {
@@ -283,11 +286,18 @@ class CL_Related_Block {
 // Alias to use in theme templates
 if (!function_exists("cherrylink_related_block")) {
     function cherrylink_related_block() {
+        $options = get_option('linkate-posts');
+        _cherry_debug(__FUNCTION__, $options, 'Содержимое options в php/шорткоде');
         // check individual settings
-        if (CL_RB_Metabox::get_custom_show(get_the_ID()))
-            return CL_Related_Block::get_links();
-        else
-            return '';
+        $output = '';
+        $post_id = get_the_ID();
+        $custom_show = CL_RB_Metabox::get_custom_show($post_id);
+        _cherry_debug(__FUNCTION__, $custom_show, 'Вызов из php/шорткода. Результат get_custom_show для ID: ' . $post_id);
+        if ($custom_show) {
+            $output = CL_Related_Block::get_links();
+        } 
+        _cherry_debug(__FUNCTION__, $output, 'Переменная $output - готовый шаблон для вывода на экран');
+        return $output;
     }
 }
 

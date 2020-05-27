@@ -107,7 +107,7 @@ class CL_RB_Metabox {
     static function get_custom_show($post_id) {
         // Retrieves the stored value from the database
         $meta_value = get_post_meta( $post_id, 'crb-meta-show', true );
-
+        _cherry_debug(__FUNCTION__, $meta_value, 'post meta [crb-meta-show] для ID: ' . $post_id);
         // Checks and displays the retrieved value
         if( $meta_value === "checked" || empty($meta_value)) {
             return true;

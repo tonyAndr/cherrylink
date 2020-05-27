@@ -245,7 +245,9 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     unset($linkate_overusedwords);
     unset($stemmer);
 
-    echo json_encode($ajax_array);
+    if (!$is_initial)
+        echo json_encode($ajax_array);
+        
     unset($ajax_array);
 
 	return true;
