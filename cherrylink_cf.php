@@ -79,7 +79,10 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	if (!isset($arg['excluded_posts']) || empty($arg['excluded_posts'])) {
 		$arg['excluded_posts'] = stripslashes(@$options['excluded_posts']);
 	} else {
-		$arg['excluded_posts'] .= "," . stripslashes(@$options['excluded_posts']);
+        $excl_from_options = trim(stripslashes(@$options['excluded_posts']));
+        if (isset($excl_from_options) && !empty($excl_from_options)) {
+            $arg['excluded_posts'] .= "," . $excl_from_options;
+        }
 	}
 	
 	if (!isset($arg['included_posts'])) $arg['included_posts'] = stripslashes(@$options['included_posts']);
