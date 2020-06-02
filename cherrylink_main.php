@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.0.9
+Version: 2.0.10
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -421,7 +421,7 @@ function linkate_posts_wp_admin_style() {
 		wp_register_script( 'cherrylink-js-admin-index', plugins_url( '/js/cherry-admin-index.js', __FILE__ ), array( 'jquery', 'cherrylink-js-admin-stopwords' ), LinkatePosts::get_linkate_version() );
 
 		$options = (array) get_option('linkate-posts');
-		$scheme_exists = array("state" => $options['linkate_scheme_exists'] ? true : false);
+		$scheme_exists = array("state" => isset($options['linkate_scheme_exists']) ? true : false);
 		wp_localize_script('cherrylink-js-admin', 'scheme', $scheme_exists);
 
 		wp_enqueue_script( 'cherrylink-js-admin' );

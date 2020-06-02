@@ -90,14 +90,14 @@ function linkate_send_options_frontend() {
     $current_id = 0;
     if ($post)
         $current_id = $post->ID;
-    $scheme_exists = $options['linkate_scheme_exists'] ? true : false;
+    $scheme_exists = isset($options['linkate_scheme_exists']) ? true : false;
 //	$cats = linkate_get_all_categories();
     ?>
     <script>
     var cherrylink_options = [];
     cherrylink_options['suggestions_click'] = <?php echo '"'. $options['suggestions_click'] . '"'; ?>;
     cherrylink_options['suggestions_join'] = <?php echo '"'. $options['suggestions_join'] . '"'; ?>;
-    cherrylink_options['suggestions_donors'] = <?php echo '"'. $options['suggestions_donors'] . '"'; ?>;
+    cherrylink_options['suggestions_donors_src'] = <?php echo '"'. $options['suggestions_donors_src'] . '"'; ?>;
     cherrylink_options['suggestions_switch_action'] = <?php echo '"'. $options['suggestions_switch_action'] . '"'; ?>;
     cherrylink_options['no_selection_action'] = <?php echo '"'. $options['no_selection_action'] . '"'; ?>;
     cherrylink_options['get_data_limit'] = <?php echo '"'. $options['limit_ajax'] . '"'; ?>;

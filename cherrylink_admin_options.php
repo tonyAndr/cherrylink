@@ -272,7 +272,7 @@ function linkate_posts_index_options_subpage(){
 		$scheme_status_text = " найдено $scheme_rows ссылок.";
 		$scheme_status_class = "cherry_db_status_good";
 	} else {
-		$scheme_status_text = " ссылки не найдены (скорей всего нужно пересоздать индекс).";
+		$scheme_status_text = " ссылки не найдены.";
 		$scheme_status_class = "cherry_db_status_bad";
     }
     

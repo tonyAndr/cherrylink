@@ -317,8 +317,9 @@ function linkate_create_links_scheme($offset = 0, $batch = 200) {
 		// $amount_of_db_rows = $amount_of_db_rows + $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->terms");
 		//doing the same with terms (category, tag...)
         $start = 0;
-        $query_values = array();
+        
 		while ($terms = $wpdb->get_results("SELECT `term_id` FROM $wpdb->terms LIMIT $start, $batch", ARRAY_A)) {
+            $query_values = array();
 			reset($terms);
 			foreach ($terms as $term) {
 				$termID = $term['term_id'];
@@ -719,7 +720,7 @@ function linkate_queryresult_to_array_backwards($links, $target_type) {
 	return $output_array;
 }
 function linkate_queryresult_to_array($links, $from_editor, $source_type) {
-	$include_types = $_POST['export_types'] ? $_POST['export_types'] : array();
+	$include_types = isset($_POST['export_types']) ? $_POST['export_types'] : array();
 	$output_array = array();
 	//echo sizeof($links);
 	foreach ($links as $link) {

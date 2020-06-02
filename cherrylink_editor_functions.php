@@ -202,6 +202,7 @@ function linkate_sp_prepare_suggestions($title, $content, $suggestions_donors_sr
     if (empty($array))
         return '';
 
+    $array = array_values($array);
     if (sizeof($array) === 1) {
         return implode(' ', array_unique($array[0]));
     }

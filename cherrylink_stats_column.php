@@ -39,7 +39,7 @@ function linkate_post_stats_column_values($column_name, $post_id) {
         $stats = linkate_generate_csv_or_json_prettyfied(true, $post_id);
         $incoming = 0;
         foreach($stats as $v) {
-            $incoming =  (int) $v[1];
+            if (!empty($v)) $incoming =  (int) $v[1];
         }
 
         update_post_meta($post_id, "cherry_income", $incoming);
@@ -132,5 +132,5 @@ function linkate_add_custom_column_do_sortable( $query ) {
 	// 	);
 	// }
 
-	return $vars;
+	// return $vars;
 }
