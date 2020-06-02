@@ -246,7 +246,10 @@ function linkate_posts_index_options_subpage(){
 		// Remove scheme
 		unset($options['linkate_scheme_exists']);
 		unset($options['linkate_scheme_time']);
-		update_option('linkate-posts', $options);
+        update_option('linkate-posts', $options);
+        
+        unset($options_meta['indexing_process']);
+        update_option('linkate_posts_meta', $options_meta);
 		$wpdb->query("TRUNCATE `$table_scheme`");
 		// Remove index
 		$wpdb->query("TRUNCATE `$table_index`");
@@ -276,7 +279,7 @@ function linkate_posts_index_options_subpage(){
     // Is there index, was it successful, is it in progress or crushed?
     $index_process_status = isset($options_meta['indexing_process']) ? $options_meta['indexing_process'] : 'VALUE_NOT_EXIST';
     $index_process_status_text = '';
-    switch($options_meta['indexing_process']) {
+    switch($index_process_status) {
         case 'VALUE_NOT_EXIST':
             if ($index_rows || $scheme_rows) {
                 // probably we had index already, but not the option

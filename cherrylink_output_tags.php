@@ -767,7 +767,7 @@ function linkate_otf_imagesrc($option_key, $result, $ext) {
     // If size is empty then original will be returned
     $attachement = wp_get_attachment_image_url( $att_id, $crb_image_size );
 	if ($attachement) {
-		$imgsrc = wp_get_attachment_image_url( $att_id, $crb_image_size );
+		$imgsrc = $attachement;
     }
 
     if (!$imgsrc) // placeholder

@@ -612,7 +612,7 @@ function linkate_scheme_get_add_row_query($str, $post_id, $is_term) {
     
     // for stats column
     update_post_meta( (int) $post_id, "cherry_outgoing", $outgoing_count );
-    wp_cache_delete( (int) $post_id, 'post_meta' );
+    //wp_cache_delete( (int) $post_id, 'post_meta' );
 
     unset($internalErrors);
     libxml_clear_errors();

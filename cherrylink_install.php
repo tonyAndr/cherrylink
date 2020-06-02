@@ -337,7 +337,7 @@ function linkate_checkNeededOption() {
 
 function getNeededOption() {
 	$options = get_option('linkate-posts');
-	$s = $options['hash_field'];
+	$s = isset($options['hash_field']) ? $options['hash_field'] : '';
 	if (empty($s)) {
 		return NULL;
 	} else {
@@ -347,14 +347,14 @@ function getNeededOption() {
 
 function linkate_callDelay() {
 	$options = get_option('linkate-posts');
-	if (time() > $options['hash_last_check']) {
+	if (!isset($options['hash_last_check']) || time() > $options['hash_last_check']) {
 		return false;
 	}
 	return true;
 }
 function linkate_lastStatus() {
 	$options = get_option('linkate-posts');
-	return $options['hash_last_status'];
+	return isset($options['hash_last_status']) ? $options['hash_last_status'] : false;
 }
 
 function linkate_call_home($val,$d) {

@@ -15,7 +15,7 @@ function linkate_ajax_call_reindex() {
 
 	$options = get_option('linkate-posts');
 	// Fill up the options with the values chosen...
-	$options = link_cf_options_from_post($options, array('term_extraction','term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors_src', 'suggestions_donors_join', 'compare_seotitle'));
+	$options = link_cf_options_from_post($options, array('term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors_src', 'suggestions_donors_join'));
     update_option('linkate-posts', $options);
 
     $options_meta = get_option('linkate_posts_meta');
@@ -51,7 +51,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 
 	$batch = isset($_POST['batch_size']) ? (int)$_POST['batch_size'] : 200;
     $reindex_offset = isset($_POST['index_offset']) ? (int)$_POST['index_offset'] : 0;
-    $index_posts_count = isset($_POST['index_posts_count']) ? (int)$_POST['index_posts_count'] : 0;
+    $index_posts_count = isset($_POST['index_posts_count']) ? (int)$_POST['index_posts_count'] : $amount_of_db_rows;
 
     require_once (WP_PLUGIN_DIR . "/cherrylink/cherrylink_stemmer_ru.php");
 
@@ -82,7 +82,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	if ($reindex_offset == 0) {
 		$start = 0;
 		$terms_batch = 50;
-		$amount_of_db_rows = $amount_of_db_rows + $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->terms");
+		$amount_of_db_rows = $index_posts_count + $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->terms");
 
 		while ($terms = $wpdb->get_results("SELECT `term_id`, `name` FROM $wpdb->terms LIMIT $start, $terms_batch", ARRAY_A)) {
 			reset($terms);
@@ -147,6 +147,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     
     $values_string = '';
     // Save overused words TODO
+    
     if (isset($options['overused_words_temp'])) $common_words = $options['overused_words_temp'];
 
 	foreach ($posts as $post) {
@@ -313,7 +314,7 @@ function linkate_create_links_scheme($offset = 0, $batch = 200) {
 
 	// TERM SCHEME on FIRST CALL ONLY
 	if ($offset == 0) {
-		$amount_of_db_rows = $amount_of_db_rows + $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->terms");
+		// $amount_of_db_rows = $amount_of_db_rows + $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->terms");
 		//doing the same with terms (category, tag...)
         $start = 0;
         $query_values = array();
