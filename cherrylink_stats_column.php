@@ -38,8 +38,8 @@ function linkate_post_stats_column_values($column_name, $post_id) {
         // else echo $val;
         $stats = linkate_generate_csv_or_json_prettyfied(true, $post_id);
         $incoming = 0;
-        foreach($stats as $v) {
-            if (!empty($v)) $incoming =  (int) $v[1];
+        if ($stats) {
+            $incoming =  (int) $stats;
         }
 
         update_post_meta($post_id, "cherry_income", $incoming);
@@ -62,12 +62,6 @@ function linkate_add_custom_column_make_sortable( $columns ) {
 
 	return $columns;
 }
-
-// Add custom column sort request to post list page
-// add_action( 'load-edit.php', 'linkate_add_custom_column_sort_request' );
-// function linkate_add_custom_column_sort_request() {
-	
-// }
 
 // Handle the custom column sorting
 function linkate_add_custom_column_do_sortable( $query ) {
@@ -109,28 +103,4 @@ function linkate_add_custom_column_do_sortable( $query ) {
         $query->set( 'orderby', 'meta_value_num' );
     }
 
-	// check if sorting has been applied
-	// if ( isset( $vars['orderby'] ) && 'cherry_outgoing' == $vars['orderby'] ) {
-
-	// 	// apply the sorting to the post list
-	// 	$vars = array_merge(
-	// 		$vars,
-	// 		array(
-	// 			'orderby' => 'cherry_outgoing'
-	// 		)
-	// 	);
-    // }
-    
-    // if ( isset( $vars['orderby'] ) && 'cherry_income' == $vars['orderby'] ) {
-
-	// 	// apply the sorting to the post list
-	// 	$vars = array_merge(
-	// 		$vars,
-	// 		array(
-	// 			'orderby' => 'post_modified'
-	// 		)
-	// 	);
-	// }
-
-	// return $vars;
 }

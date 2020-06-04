@@ -151,7 +151,6 @@ function fill_options($options) {
 
 	if (!isset($options['append_on'])) $options['append_on'] = 'false';
 	if (!isset($options['append_priority'])) $options['append_priority'] = '10';
-	if (!isset($options['append_parameters'])) $options['append_parameters'] = 'prefix=<h3>'.__('Linkate Posts', 'linkate-posts').':</h3><ul class="linkate-posts">&suffix=</ul>';
 	if (!isset($options['append_condition'])) $options['append_condition'] = 'is_single()';
 	if (!isset($options['limit'])) $options['limit'] = 1000;
 	if (!isset($options['limit_ajax'])) $options['limit_ajax'] = 50; // since 1.4.0
@@ -296,9 +295,8 @@ function linkate_checkNeededOption() {
 	$final = false;
 	$status = '';
 	if ($arr != NULL) {
-		$k = base64_decode('c2hhMjU2');
 		$d = isset($_SERVER['HTTP_HOST']) ?  $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
-		$h = hash($k,$d);
+		$h = hash('sha256',$d);
 		for ($i = 0; $i < sizeof($arr); $i++) {
 			$a = base64_decode($arr[$i]);
 			if ($h == $a) {
@@ -318,7 +316,7 @@ function linkate_checkNeededOption() {
 			$status = $resp[1];
         } else {
 			$final = false;
-			$status = 'Не найдена библиотека curl. Плагин не может быть активирован (обратитесь к техподдержке хостинга).';
+			$status = 'Нет связи с сервером лицензий. Плагин не может быть активирован (обратитесь в техподдержку).';
 			echo $status;
 		}
 	}

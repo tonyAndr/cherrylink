@@ -64,47 +64,6 @@ function linkate_sp_terms_by_freq_ankor($content) {
 	return $terms;
 }
 
-// Convert an UTF-8 encoded string to a single-byte string suitable for
-// functions such as levenshtein.
-// 
-// The function simply uses (and updates) a tailored dynamic encoding
-// (in/out map parameter) where non-ascii characters are remapped to
-// the range [128-255] in order of appearance.
-//
-// Thus it supports up to 128 different multibyte code points max over
-// the whole set of strings sharing this encoding.
-//
-function utf8_to_extended_ascii($str, &$map)
-{
-    // find all multibyte characters (cf. utf-8 encoding specs)
-    $matches = array();
-    if (!preg_match_all('/[\xC0-\xF7][\x80-\xBF]+/', $str, $matches))
-        return $str; // plain ascii string
-    
-    // update the encoding map with the characters not already met
-    foreach ($matches[0] as $mbc)
-        if (!isset($map[$mbc]))
-            $map[$mbc] = chr(128 + count($map));
-    
-    // finally remap non-ascii characters
-    return strtr($str, $map);
-}
-
-// Didactic example showing the usage of the previous conversion function but,
-// for better performance, in a real application with a single input string
-// matched against many strings from a database, you will probably want to
-// pre-encode the input only once.
-//
-function levenshtein_utf8($s1, $s2)
-{
-    $charMap = array();
-    $s1 = utf8_to_extended_ascii($s1, $charMap);
-    $s2 = utf8_to_extended_ascii($s2, $charMap);
-    
-    return levenshtein($s1, $s2);
-}
-
-
 // Update post index
 
 function linkate_sp_save_index_entry($postID) {
@@ -344,15 +303,6 @@ function linkate_sp_mb_clean_words($text) {
 	return 	$text;
 }
 
-function linkate_sp_mb_str_pad($text, $n, $c) {
-//	mb_internal_encoding('UTF-8');
-//	$l = mb_strlen($text);
-//	if ($l > 0 && $l < $n) {
-//		$text .= str_repeat($c, $n-$l);
-//	}
-	return $text;
-}
-
 function linkate_sp_get_post_terms($text, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist) {
 	mb_regex_encoding('UTF-8');
 	mb_internal_encoding('UTF-8');
@@ -400,41 +350,6 @@ function linkate_sp_get_title_terms( $text, $min_len, $linkate_overusedwords, $s
 	return array($stemms, $words);
 }
 
-function linkate_sp_get_suggestions_terms($text, $min_len, $linkate_overusedwords, $clean_suggestions_stoplist, $stemmer) {
-	mb_regex_encoding('UTF-8');
-	mb_internal_encoding('UTF-8');
-	$wordlist = mb_split("\W+", linkate_sp_mb_clean_words($text));
-	$wordlist = array_count_values($wordlist);
-	arsort($wordlist);
-	$wordlist = array_slice($wordlist, 0, 20);
-	$wordlist = array_keys($wordlist);
-	$words = '';
-	$exists = array();
-	foreach ($wordlist as $word) {
-        if ($clean_suggestions_stoplist == 'false') {
-            if (mb_strlen($word) > $min_len) {
-                $stemm = $stemmer->stem_word($word);
-                if (!in_array($word, $exists)) {
-                    $exists[] = $word;
-                    $words .= $word . ' ';
-                }
-            }
-        } else {
-            if (mb_strlen($word) > $min_len || isset($linkate_overusedwords["white"][$word])) {
-                $stemm = $stemmer->stem_word($word);
-                if (!isset($linkate_overusedwords["black"][$stemm]) && !in_array($word, $exists)) {
-                    $exists[] = $word;
-                    $words .= $word . ' ';
-                }
-            }
-        }
-	}
-	unset($exists);
-	unset($wordlist);
-	
-	return trim($words);
-}
-
 function linkate_sp_get_tag_terms($ID) {
 	global $wpdb;
 	if (!function_exists('get_object_term_cache')) return '';
@@ -445,7 +360,7 @@ function linkate_sp_get_tag_terms($ID) {
 
 			mb_internal_encoding('UTF-8');
 			foreach ($tags as $tag) {
-				$newtags[] = linkate_sp_mb_str_pad(mb_strtolower(str_replace('"', "'", $tag)), 4, '_');
+				$newtags[] = mb_strtolower(str_replace('"', "'", $tag));
 			}
 
 		$newtags = str_replace(' ', '_', $newtags);
@@ -479,69 +394,8 @@ function linkate_scheme_add_row($str, $post_id, $is_term) {
 	global $wpdb, $table_prefix;
 	$table_name = $table_prefix . 'linkate_scheme';
 
-	// quit if there is no content
-	if (empty($str) || $str === false)
-		return;
-	// set error level, get rid of some warnings
-	$internalErrors = libxml_use_internal_errors(true);
-	$doc = new DOMDocument('1.0', 'UTF-8');
-	$doc->loadHTML(mb_convert_encoding($str, 'HTML-ENTITIES', 'UTF-8'));
-	// Restore error level
-	libxml_use_internal_errors($internalErrors);
-	$selector = new DOMXPath($doc);
-	$result = $selector->query('//a'); //get all <a>
 
-	$target_id = 0;
-	$target_type = 0;
-	$values_string = '';
-	$prohibited = array('.jpg','.jpeg','.tiff','.bmp','.psd', '.png', '.gif','.webp', '.doc', '.docx', '.xlsx', '.xls', '.odt', '.pdf', '.ods','.odf', '.ppt', '.pptx', '.txt', '.rtf', '.mp3', '.mp4', '.wav', '.avi', '.ogg', '.zip', '.7z', '.tar', '.gz', '.rar', 'attachment');
-
-    $outgoing_count = 0;
-	// loop through all found items
-	foreach($result as $node) {
-		$href = $node->getAttribute('href');
-
-		// if its doc,file or img - skip
-		$is_doc = false;
-		foreach ($prohibited as $v) {
-			if (strpos($href, $v) !== false){
-				$is_doc = true;
-				break;
-			}
-		}
-
-		if ($is_doc)
-			continue;
-
-		// remove some escaping stuff
-		$href = str_replace("\"", "", str_replace("\\", "", $href));
-
-		$ext_url = '';
-		$ankor = esc_sql($node->textContent);
-		$target_id = url_to_postid($href); //post_id
-		$target_type = 0;
-		if ($target_id === 0) { // term_id
-			$target_id = linkate_get_term_id_from_slug($href);
-			$target_type = 1;
-		}
-		if ($target_id === 0) {	// target - external
-			$target_type = 2;
-			if (empty($href))
-				continue; // no href - no need
-			if (strpos($href, '#') !== false && strpos($href, 'http') !== true)
-				continue; // this is just our internal navigational links
-			$ext_url = esc_sql($href);
-        }
-        
-        // add count to update post meta with outgoing links
-        $outgoing_count++;
-
-		if (!empty($values_string)) $values_string .= ',';
-		$values_string .= "($post_id, $is_term, $target_id, $target_type, \"$ankor\", \"$ext_url\")";
-    }
-    
-    // for stats column
-    update_post_meta( (int) $post_id, "cherry_outgoing", $outgoing_count );
+    $values_string = linkate_scheme_get_add_row_query($str, $post_id, $is_term);
 
 	if (!empty($values_string))
 		$wpdb->query("INSERT INTO `$table_name` (source_id, source_type, target_id, target_type, ankor_text, external_url) VALUES $values_string");
@@ -558,7 +412,17 @@ function linkate_scheme_get_add_row_query($str, $post_id, $is_term) {
 	// Restore error level
 	libxml_use_internal_errors($internalErrors);
 	$selector = new DOMXPath($doc);
-	$result = $selector->query('//a'); //get all <a>
+    $result = $selector->query('//a'); //get all <a>
+    
+    if (!$result || count($result) === 0) {
+        unset($internalErrors);
+        libxml_clear_errors();
+        unset($doc);
+        unset($selector);
+        unset($result);
+        unset($prohibited);
+        return '';
+    }
 
 	$target_id = 0;
 	$target_type = 0;

@@ -1021,29 +1021,6 @@ function link_cf_display_custom($custom) {
 	<?php
 }
 
-function link_cf_display_append($options) {
-	?>
-	<tr valign="top">
-		<th scope="row"><?php _e('Вывод после записи:', 'post_plugin_library') ?></th>
-		<td>
-			<table>
-			<tr><td style="border-bottom-width: 0"><label for="append_on">Activate</label></td><td style="border-bottom-width: 0"><label for="append_priority">Priority</label></td><td style="border-bottom-width: 0"><label for="append_parameters">Parameters</label></td><td style="border-bottom-width: 0"><label for="append_condition">Condition</label></td></tr>
-			<tr>
-			<td style="border-bottom-width: 0">			
-				<select name="append_on" id="append_on">
-				<option <?php if($options['append_on'] == 'false') { echo 'selected="selected"'; } ?> value="false">No</option>
-				<option <?php if($options['append_on'] == 'true') { echo 'selected="selected"'; } ?> value="true">Yes</option>
-				</select>
-			</td>
-			<td style="border-bottom-width: 0"><input name="append_priority" type="number" id="append_priority" style="width: 60px;" value="<?php echo $options['append_priority']; ?>" size="3" /></td>
-			<td style="border-bottom-width: 0"><textarea name="append_parameters" id="append_parameters" rows="4" cols="38"><?php echo htmlspecialchars(stripslashes($options['append_parameters'])); ?></textarea></td>
-			<td style="border-bottom-width: 0"><textarea name="append_condition" id="append_condition" rows="4" cols="20"><?php echo htmlspecialchars(stripslashes($options['append_condition'])); ?></textarea></td>
-			</tr></table>
-		</td> 
-	</tr>
-	<?php
-}
-
 function link_cf_display_content_filter($content_filter) {
 	?>
 	<tr valign="top">

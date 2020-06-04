@@ -8,36 +8,7 @@
 
 define('LINKATE_TERMS_LIBRARY', true);
 
-//echo hierarchical_term_tree();
-
-// def attrs just for info
-$get_terms_default_attributes = array (
-            'taxonomy' => 'category', //empty string(''), false, 0 don't work, and return empty array
-            'orderby' => 'name',
-            'order' => 'ASC',
-            'hide_empty' => true, //can be 1, '1' too
-            'include' => 'all', //empty string(''), false, 0 don't work, and return empty array
-            'exclude' => 'all', //empty string(''), false, 0 don't work, and return empty array
-            'exclude_tree' => 'all', //empty string(''), false, 0 don't work, and return empty array
-            'number' => false, //can be 0, '0', '' too
-            'offset' => '',
-            'fields' => 'all',
-            'name' => '',
-            'slug' => '',
-            'hierarchical' => true, //can be 1, '1' too
-            'search' => '',
-            'name__like' => '',
-            'description__like' => '',
-            'pad_counts' => false, //can be 0, '0', '' too
-            'get' => '',
-            'child_of' => false, //can be 0, '0', '' too
-            'childless' => false,
-            'cache_domain' => 'core',
-            'update_term_meta_cache' => true, //can be 1, '1' too
-            'meta_query' => '',
-            'meta_key' => array(),
-            'meta_value'=> '',
-    );
+/* ====== CLASSIC ====== */
 
 // Get terms, including tags and custom
 // Creates hierarchical list for CherryLink panel
@@ -122,7 +93,6 @@ function linkate_get_all_categories($category = 0, $level = 0) {
 function linkate_gutenberg_hierarchical_terms($category = 0, $taxonomy = array()) {
     $r = array(); // tax item
 
-    // get all terms from DB
     $args = array( 
         'parent' => $category,
         'taxonomy' => $taxonomy, // if not empty - looking for children
@@ -141,16 +111,11 @@ function linkate_gutenberg_hierarchical_terms($category = 0, $taxonomy = array()
             if ($taxonomy != $cat->taxonomy) { // if next type of taxonomy - add header/divider
                 $taxonomy = $cat->taxonomy;
                 $label = is_object(get_taxonomy($cat->taxonomy)) ? get_taxonomy($cat->taxonomy)->label : $cat->taxonomy;
-                // $r .= str_replace('{taxonomy}', $label, $output_tepmlate_devider);
                 $r[] = array(
                     "name" => $label,
                     "is_divider" => "yes"
                 );
             }
-            // $r .= str_replace(  // item template with values
-            //         array('{url}','{title}','{taxonomy}'),
-            //         array(get_term_link($cat),$cat->name,$cat->taxonomy),
-            //         $output_template_item_prefix) .  $cat->name . ' ('.$cat->count.')' . $output_template_item_suffix;
 
             $r[] = array(
                 "url" => get_term_link($cat),
@@ -161,7 +126,6 @@ function linkate_gutenberg_hierarchical_terms($category = 0, $taxonomy = array()
                 "children" => []
             ); 
 
-            // $r .= $cat->term_id !== 0 ? linkate_gutenberg_hierarchical_terms($cat->term_id, $taxonomy) : null; // check children
 
 			if ($cat->term_id !== 0) {
 				$r[sizeof($r)-1]['children'] = linkate_gutenberg_hierarchical_terms($cat->term_id, $taxonomy);
@@ -173,6 +137,7 @@ function linkate_gutenberg_hierarchical_terms($category = 0, $taxonomy = array()
 
     return $r;
 }
+
 //, returns json
 function linkate_gutenberg_hierarchical_terms_json() {
     $cats = linkate_gutenberg_hierarchical_terms();
@@ -217,32 +182,3 @@ function linkate_get_all_categories_json() {
     wp_die();
 }
 add_action('wp_ajax_linkate_get_all_categories_json', 'linkate_get_all_categories_json');
-//$str = "[
-//	{\"cat\": \"name\",
-//		\"sub\": [
-//			{\"cat\": \"name\"},
-//			{\"cat\": \"name\"},
-//			{\"cat\": \"name\",
-//				\"sub\": [
-//					{\"cat\": \"name\"}
-//				]
-//			}
-//
-//		]
-//	},
-//	{\"cat\": \"name\",
-//		\"sub\": [
-//			{\"cat\": \"name\"},
-//			{\"cat\": \"name\"},
-//			{\"cat\": \"name\",
-//				\"sub\": [
-//					{\"cat\": \"name\"}
-//				]
-//			}
-//
-//		]
-//	}
-//]";
-//
-//$data = json_decode($str, true);
-//exit();

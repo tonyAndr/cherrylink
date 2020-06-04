@@ -506,7 +506,17 @@ function linkate_generate_csv_or_json_prettyfied($is_custom_column = false, $cus
 		.$bounds // LIMIT X,Y
 		, ARRAY_A); //
 
-	reset($links_post);
+    reset($links_post);
+    
+    if ($is_custom_column) {
+        if (is_array($links_post) && !empty($is_custom_column)) {
+            if (isset($links_post[0]["count_sources"])) {
+                return $links_post[0]["count_sources"];
+            }
+        }
+        return false;
+    }
+
 	$output_array = linkate_queryresult_to_array($links_post, $from_editor, 0);
 	unset($links_post);
 
@@ -847,21 +857,6 @@ function query_to_csv($array, $filename) {
 	}
 
     fclose($fp);
-    ///////////
-	// $fp = fopen(WP_PLUGIN_DIR.'/cherrylink/stats/'.$filename, 'w');
-    // fprintf($fp, chr(0xEF).chr(0xBB).chr(0xBF));
-
-    // fputcsv($fp, $headers, ";");
-	// foreach ($array as $row) {
-    //     foreach ($row as $k => $v) {
-    //         if ($v instanceof WP_Error) {
-    //             continue;
-    //         }
-    //     }
-    //     fputcsv($fp, $row, ";");
-	// }
-
-	// fclose($fp);
 }
 
 add_action('wp_ajax_linkate_merge_csv_files', 'linkate_merge_csv_files');
@@ -873,7 +868,6 @@ function linkate_merge_csv_files() {
 	$first_file = true;
 	// Process each CSV file inside root directory
 	foreach(glob($directory) as $file) {
-
 		$data = []; // Empty Data
 
 		// Allow only CSV files
@@ -904,20 +898,14 @@ function linkate_merge_csv_files() {
 					}
 				
 				}
-
-			// } else {
-			// 	echo "[$file] file contains no record to process.";
 			}
 			$first_file = false;
 		}
-
 	}
 
 	// Close master CSV file 
 	fclose($masterCSVFile);
-
 	linkate_stats_remove_old(true);
-
 	$response = array();
 	$response['status'] = 'OK';
 	$response['url'] = WP_PLUGIN_URL.'/cherrylink/stats/cherrylink_stats.csv';

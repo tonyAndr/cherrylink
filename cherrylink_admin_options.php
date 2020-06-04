@@ -27,9 +27,8 @@ function linkate_posts_options_page(){
 	$m->add_subpage('Релевантность', 'relevance', 'linkate_posts_relevance_options_subpage');
 	$m->add_subpage('Блок ссылок', 'output_block', 'linkate_posts_output_block_options_subpage');
 	$m->add_subpage('Экспорт и сброс', 'accessibility', 'linkate_posts_accessibility_options_subpage');
-	// $m->add_subpage('TEST', 'test', 'linkate_posts_test_options_subpage');
 	$m->display();
-	add_action('in_admin_footer', 'linkate_posts_admin_footer');
+	// add_action('in_admin_footer', 'linkate_posts_admin_footer');
 }
 
 function linkate_posts_license_field() {
@@ -64,10 +63,6 @@ function linkate_posts_license_field() {
 	</div>
 	<?php
 
-}
-
-function linkate_posts_admin_footer() {
-	//link_cf_admin_footer(str_replace('-admin', '', __FILE__), "linkate-posts");
 }
 
 // ========================================================================================= //
@@ -489,47 +484,6 @@ function linkate_posts_accessibility_options_subpage(){
 		echo $str;
 		exit();
 	}
-}
-
-function linkate_posts_test_options_subpage(){
-	global $wpdb, $wp_version, $table_prefix;
-	$table_name = $table_prefix.'linkate_posts';
-	$result = $wpdb->get_var("SELECT title FROM $table_name WHERE pID = 2350");
-	$text = 'помещения алгоритм согласования работ квартире местах общего пользования ';
-	$options = get_option('linkate-posts');
-	$linkate_overusedwords = file(WP_PLUGIN_DIR.'/cherrylink/stopwords.txt', FILE_IGNORE_NEW_LINES);
-	if(is_array($linkate_overusedwords)) {
-		if (!empty($options['custom_stopwords'])) {
-			$customwords = explode("\n", str_replace("\r", "", $options['custom_stopwords']));
-			$linkate_overusedwords = array_merge($linkate_overusedwords, $customwords);
-		}
-		$linkate_overusedwords = array_flip($linkate_overusedwords);
-	}
-	mb_regex_encoding('UTF-8');
-	mb_internal_encoding('UTF-8');
-	$wordlist = mb_split("\W+", linkate_sp_mb_clean_words($text));
-	$words = '';
-	$exists = array();
-	foreach ($wordlist as $word) {
-		if (!isset($linkate_overusedwords[$word]) && mb_strlen($word) > 1 && !in_array($word, $exists)) {
-			$words .= $word . ' ';
-			$exists[] = $word;
-		}
-	}
-
-	//now we drop into html to display the option page form
-	?>
-	<div class="wrap linkateposts-tab-content">
-		<pre>
-		<?php 
-		echo PHP_EOL;
-			echo $result . PHP_EOL;
-			echo $words . PHP_EOL;
-			echo print_r($linkate_overusedwords);
-		?>	
-		</pre>
-	</div>
-	<?php
 }
 
 function linkate_posts_suggestions_options_subpage(){
