@@ -250,6 +250,10 @@ class CL_Related_Block {
 
     static function meta_assets_override() {
         $options = get_option('linkate-posts');
+        $template = isset($options['crb_choose_template']) ? $options['crb_choose_template'] : 'crb-template-simple.css';;
+        if (!$template || $template == 'none')
+            return false; // don't load any
+
         wp_register_style( 'crb-template-override', plugins_url( '/css/crb-template-admin-options.css', __FILE__ ), '', CL_Related_Block::get_version() );
         wp_enqueue_style ('crb-template-override');
 
