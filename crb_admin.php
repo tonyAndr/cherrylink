@@ -198,9 +198,9 @@ class CL_RB_Admin_Area {
         if (!isset($crb_cache_minutes)) $crb_cache_minutes = 1440;
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_cache_minutes">Частота обновления кэша</label></th>
+            <th scope="row"><label for="crb_cache_minutes">Время хранения кэша</label></th>
             <td>
-                <input type="number" name="crb_cache_minutes" id="crb_cache_minutes" min="0" value="<?php echo intval($crb_cache_minutes); ?>"> - в минутах (1440 минут = 24 часа)
+                <input type="number" name="crb_cache_minutes" id="crb_cache_minutes" min="0" value="<?php echo intval($crb_cache_minutes); ?>"> - в минутах (1440 минут = обновление каждые 24 часа) / <strong>0 - отключить кэш</strong>
             </td>
             <td><input type="submit" id="clear_cache" name="clear_cache" class="button button-download" value="<?php _e('Сбросить кэш', 'linkate_posts') ?>" /></td>
         </tr>

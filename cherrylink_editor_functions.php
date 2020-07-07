@@ -66,11 +66,12 @@ function linkate_sp_terms_by_freq_ankor($content) {
 
 // Update post index
 
-function linkate_sp_save_index_entry($postID) {
+function linkate_sp_save_index_entry($postID, $postObj, $updated) {
+    if ($postObj->post_type === 'revision') return $postID;
 	global $wpdb, $table_prefix;
 	$table_name = $table_prefix . 'linkate_posts';
-	$post = $wpdb->get_row("SELECT post_content, post_title, post_type FROM $wpdb->posts WHERE ID = $postID", ARRAY_A);
-	if ($post['post_type'] === 'revision') return $postID;
+    // $post = $wpdb->get_row("SELECT post_content, post_title, post_type FROM $wpdb->posts WHERE ID = $postID", ARRAY_A);
+    
 	$options = get_option('linkate-posts');
 	require_once (WP_PLUGIN_DIR . "/cherrylink/cherrylink_stemmer_ru.php");
 	$stemmer = new Stem\LinguaStemRu();
@@ -79,7 +80,7 @@ function linkate_sp_save_index_entry($postID) {
 	// wp_linkate_scheme, create new scheme for this post
 	if ($options['linkate_scheme_exists']) {
 		linkate_scheme_delete_record($postID, 0);
-		linkate_scheme_add_row($post['post_content'], $postID, 0); 
+		linkate_scheme_add_row($postObj->post_content, $postID, 0); 
 		$options['linkate_scheme_time'] = time();
 		update_option('linkate-posts', $options);
 	}
@@ -92,12 +93,10 @@ function linkate_sp_save_index_entry($postID) {
     $words_table = $table_prefix."linkate_stopwords";
     $black_words = $wpdb->get_col("SELECT stemm FROM $words_table WHERE is_white = 0 GROUP BY stemm");
     $white_words = $wpdb->get_col("SELECT word FROM $words_table WHERE is_white = 1");
-    $black_words = array_filter($black_words);
-    $white_words = array_filter($white_words);
-    $linkate_overusedwords["black"] = array_flip($black_words);
-    $linkate_overusedwords["white"] = array_flip($white_words);
+    $linkate_overusedwords["black"] = array_flip(array_filter($black_words));
+    $linkate_overusedwords["white"] = array_flip(array_filter($white_words));
 
-	list($content, $content_sugg) = linkate_sp_get_post_terms($post['post_content'], $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
+	list($content, $content_sugg) = linkate_sp_get_post_terms($postObj->post_content, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
     $content = iconv("UTF-8", "UTF-8//IGNORE", $content); // convert broken symbols
 	// Seo title is more relevant, usually
 	// Extracting terms from the custom titles, if present
@@ -112,10 +111,10 @@ function linkate_sp_save_index_entry($postID) {
     // anti-memory leak
     wp_cache_delete( $postID, 'post_meta' );
 
-    if (!empty($seotitle) && $seotitle !== $post['post_title']) {
-        $title = $post['post_title'] . " " . $seotitle;
+    if (!empty($seotitle) && $seotitle !== $postObj->post_title) {
+        $title = $postObj->post_title . " " . $seotitle;
     } else {
-        $title = $post['post_title'];
+        $title = $postObj->post_title;
     }
     list($title, $title_sugg) = linkate_sp_get_title_terms( $title, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist );
 

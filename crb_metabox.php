@@ -132,9 +132,11 @@ function _crb_metabox_pages() {
     $options = get_option('linkate-posts');
     $screens = array();
 
-    if (isset($options['show_pages']) && ($options['show_pages'] === 'true' || $options['show_pages'] === 'but'))
-        $screens[] = 'page';
+    // if (isset($options['crb_show_for_pages']) && $options['crb_show_for_pages'] === 'true')
+    // Выведем для страниц в любом случае (будет работать при ручном и авто-показе блока ссылок)
+    $screens[] = 'page';
 
+    // Проверим какие есть произвольные типы в основных настроках фильтрации
     if (isset($options['show_customs']))
         $screens = array_merge($screens, explode(",",$options['show_customs']));
 
@@ -143,6 +145,7 @@ function _crb_metabox_pages() {
             add_action( 'add_meta_boxes_'.$type, array('CL_RB_Metabox','crb_meta_box'));
         }
     }
+    // always add for single post type
     add_action( 'add_meta_boxes_post', array('CL_RB_Metabox','crb_meta_box'));
 }
 

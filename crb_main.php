@@ -47,12 +47,22 @@ class CL_Related_Block {
         _cherry_debug(__FUNCTION__, explode("&", $args), 'Аргументы для query');
 
         if (!isset($options['crb_cache_minutes'])) $options['crb_cache_minutes'] = 1440;
+        $cache_delay_time = $options['crb_cache_minutes'];
+        // To disable cache or convert to minutes
+        if ($options['crb_cache_minutes'] === 0) {
+            $cache_delay_time = 0; // check later
+        } else {
+            $cache_delay_time = $options['crb_cache_minutes'] * MINUTE_IN_SECONDS;
+        }
+
         // Get relevant results
         if ( false === ( $output = get_transient( "crb__".$args ) ) ) {
             // It wasn't there, so regenerate the data and save the transient
             _cherry_debug(__FUNCTION__, false, 'Релевантный поиск, в кэше не нашли');
             $output = linkate_posts($args);
-            set_transient( "crb__".$args, $output, $options['crb_cache_minutes'] * MINUTE_IN_SECONDS );
+            if ($cache_delay_time !== 0) {
+                set_transient( "crb__".$args, $output, $cache_delay_time );
+            }
         }
 
 //        $output = linkate_posts($args);
@@ -64,7 +74,9 @@ class CL_Related_Block {
                 // It wasn't there, so regenerate the data and save the transient
                 _cherry_debug(__FUNCTION__, false, 'НЕ релевантный поиск, в кэше не нашли');
                 $output = linkate_posts($args);
-                set_transient( "non_rel_crb__".$args, $output, $options['crb_cache_minutes'] * MINUTE_IN_SECONDS );
+                if ($cache_delay_time !== 0) {
+                    set_transient( "non_rel_crb__".$args, $output, $cache_delay_time );
+                }
             }
         }
         return $output;
