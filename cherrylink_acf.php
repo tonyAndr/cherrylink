@@ -149,11 +149,12 @@ function link_cf_options_from_post($options, $args) {
             break;
 		case 'multilink':
 		case 'compare_seotitle':
-			if (isset($options[$arg])) {
+			if (isset($_POST[$arg])) {
 				$options[$arg] = 'checked';
 			} else {
 				$options[$arg] = '';
 			}
+			break;
 		case 'link_before':
 		case 'link_after':		
 		case 'term_before':
