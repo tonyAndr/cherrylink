@@ -143,7 +143,8 @@ function linkate_posts_output_options_subpage(){
 												array('output_template', 
 													'link_before',
 													'link_after', 
-													'link_temp_alt', 
+                                                    'link_temp_alt', 
+                                                    'template_image_size',
 													'no_selection_action',
 													'term_before',
 													'term_after', 
@@ -182,7 +183,8 @@ function linkate_posts_output_options_subpage(){
 		        	<?php
 			        link_cf_display_anons_len($options['anons_len']);
 			        link_cf_display_multilink($options['multilink'], $options['no_selection_action'], $options['relative_links']);
-			        link_cf_display_suggestions_switch_action($options['suggestions_switch_action']);
+                    link_cf_display_suggestions_switch_action($options['suggestions_switch_action']);
+                    link_cf_template_image_size($options['template_image_size'])
 			        ?>
 	        	</table>
                 <p style="color:red"><strong>Изменения шаблона не повлияют на уже вставленные ссылки в статьях!</strong></p>

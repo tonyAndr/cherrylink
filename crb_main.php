@@ -122,6 +122,8 @@ class CL_Related_Block {
         $output_template_item_suffix = isset($options['crb_temp_after']) ? stripslashes(urldecode(base64_decode($options['crb_temp_after']))) : self::TEMP_AFTER;
         $item_template = isset($options['crb_temp_link']) ? stripslashes(urldecode(base64_decode($options['crb_temp_link']))) : self::TEMP_LINK;
 
+        $item_template = str_replace('imagesrc', 'imagesrc:crb', $item_template);
+
         if ($results) {
             // IF CUSTOM MANUAL ANKORS - REPLACE {title} or {title_seo} with them HERE
             $use_manual_titles = get_post_meta( $postid, "crb-meta-use-manual", true);

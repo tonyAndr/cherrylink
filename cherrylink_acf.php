@@ -649,6 +649,27 @@ function link_cf_display_suffix($suffix) {
 	<?php
 }
 
+function link_cf_template_image_size($template_image_size) {
+    $sizes = CL_RB_Admin_Area::get_image_sizes();
+    ?>
+    <tr valign="top">
+        <th scope="row"><label for="template_image_size">Размер изображения для тега {imagesrc} для шаблонов</label></th>
+        <td>
+            <select name="template_image_size" id="template_image_size">
+                <option <?php if (empty($template_image_size)) { echo 'selected="selected"'; } ?> value="">Оригинальный размер</option>
+            <?php
+                foreach ($sizes as $k => $arr) {
+                    ?>
+                    <option <?php if ($template_image_size == $k) echo "selected='selected'"; ?> value='<?php echo $k; ?>'><?php echo $k. " (" . $arr['width'] . "x" . $arr['height'] .")"; ?></option>
+                    <?php
+                }
+            ?>
+            </select>
+        </td>
+        <td><?php link_cf_prepare_tooltip("Выберите размер изображения из доступных вариантов для тега {imagesrc}."); ?></td>
+    </tr>
+    <?php
+}
 
 function link_cf_display_output_template($output_template) {
 	?>

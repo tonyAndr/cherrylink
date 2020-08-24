@@ -205,11 +205,14 @@ function linkate_otf_imagesrc($option_key, $result, $ext) {
 	$options = get_option($option_key);
 	$url_option = $options['relative_links'];
 	$crb_image_size = $options['crb_image_size'];
+	$template_image_size = $options['template_image_size'];
 	$crb_placeholder_path = empty($options['crb_placeholder_path']) ? WP_PLUGIN_URL . '/cherrylink/img/imgsrc_placeholder.jpg' : $options['crb_placeholder_path'];
-	$crb_content_filter = $options['crb_content_filter'] == 1;
+    $crb_content_filter = $options['crb_content_filter'] == 1;
+    
+    $size_to_use = ($ext && $ext === 'crb') ? $crb_image_size : $template_image_size;
 
     // Check Featured Image first
-    $imgsrc = get_the_post_thumbnail_url($result->ID, $crb_image_size);
+    $imgsrc = get_the_post_thumbnail_url($result->ID, $size_to_use ? $size_to_use : '');
 
     if ($imgsrc) {
         // $featured_src = linkate_get_featured_src($result->ID);
@@ -258,7 +261,7 @@ function linkate_otf_imagesrc($option_key, $result, $ext) {
 
 	// Now lets try to get needed size
     // If size is empty then original will be returned
-    $attachement = wp_get_attachment_image_url( $att_id, $crb_image_size );
+    $attachement = wp_get_attachment_image_url( $att_id, $size_to_use ? $size_to_use : '' );
 	if ($attachement) {
 		$imgsrc = $attachement;
     }
