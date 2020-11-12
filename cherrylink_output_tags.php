@@ -93,7 +93,7 @@ function linkate_otf_authorurl($option_key, $result, $ext) {
 
 function linkate_otf_date($option_key, $result, $ext) {
 	if ($ext === 'raw') return $result->post_date;
-	else return linkate_oth_format_date($result->post_date, $ext);
+	else return linkate_oth_format_date($result->post_date, $ext, $result->ID);
 }
 
 function linkate_otf_anons($option_key, $result, $ext) {
@@ -376,10 +376,10 @@ function linkate_oth_truncate_text($text, $ext) {
 	}
 }	
 	
-function linkate_oth_format_date($date, $fmt) {
+function linkate_oth_format_date($date, $fmt, $id) {
 	if (!$fmt) $fmt = get_option('date_format');
 	$d = mysql2date($fmt, $date);
-	$d = apply_filters('get_the_time', $d, $fmt);
+	$d = apply_filters('get_the_time', $d, $fmt, $id);
 	return apply_filters('the_time', $d, $fmt);
 }
 

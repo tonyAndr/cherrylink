@@ -253,14 +253,6 @@ jQuery(document).ready(function ($) {
         $('.lds-ellipsis').removeClass('lds-ellipsis-hide');
         $('.load-more-text').addClass('lds-ellipsis-hide');
         jQuery.post(ajax_obj.ajaxurl, ajax_data, function (response) {
-            // $.ajax({
-            //     type: "POST",
-            //     url: ajax_obj.ajaxurl,
-            //     data: ajax_data,
-            //     datatype: 'json',
-            //     success: function(response) {
-            //         response = JSON.parse(response);
-            // console.log(response);
             // append if we have result, decide when to append 'not found' text
             if (response['count'] === 0) {
                 if (fcl_get_data_offset === 0)
@@ -280,14 +272,19 @@ jQuery(document).ready(function ($) {
 
             // reload listeners and stuff
             reLoad_when_data_received();
+
+            // }
+        }).fail(function (errorObject, textStatus, errorThrown) {
+            $('#linkate-links-list').append("<p>Произошла ошибка при загрузке ссылок, подробности для разработчика плагина ниже: </p><hr>")
+            $('#linkate-links-list').append(errorObject.responseText)
+            console.log(errorObject);
+            
+        }).always(function () {
             // hide loading css
             $('.lds-ellipsis').addClass('lds-ellipsis-hide');
             $('.load-more-text').removeClass('lds-ellipsis-hide');
-            // }
         });
-        // $.post(ajax_obj.ajaxurl, ajax_data, function(response) {
-        //
-        // })
+
     }
     // Incoming links stats
     function fcl_toggle_links_stats() {

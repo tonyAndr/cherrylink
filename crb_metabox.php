@@ -26,7 +26,7 @@ class CL_RB_Metabox {
         ?>
 
         <p>
-            <label for="crb-meta-show" class="row-title"><?php _e( 'Вывести блок ссылок после статьи?', 'linkate-posts' )?></label>
+            <label for="crb-meta-show" class="row-title"><?php _e( 'Показывать блок ссылок для этой статьи?', 'linkate-posts' )?></label>
             <input type="checkbox" name="crb-meta-show" id="crb-meta-show" value="crb-meta-show" <?php if ( isset ( $crb_stored_meta['crb-meta-show'] ) ) echo $crb_stored_meta[ 'crb-meta-show' ][0]; else echo 'checked' ?>>
         </p>
         <p style="display: none;">

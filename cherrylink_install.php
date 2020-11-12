@@ -293,7 +293,8 @@ function linkate_checkNeededOption() {
 	$options = get_option('linkate-posts');
 	$arr = getNeededOption();
 	$final = false;
-	$status = '';
+    $status = '';
+    $actLeft = false;
 	if ($arr != NULL) {
 		$d = isset($_SERVER['HTTP_HOST']) ?  $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
 		$h = hash('sha256',$d);
@@ -309,11 +310,13 @@ function linkate_checkNeededOption() {
 		if (function_exists('curl_init')) {
 			$resp = explode(',',linkate_call_home(base64_encode(implode(',',$arr)), $d));
 			$final = $resp[0] == 'true' ? true : false; // new
-			$status = $resp[1];
+            $status = $resp[1];
+            $actLeft = isset($resp[2]) ? $resp[2] : false;
 		} elseif (function_exists('wp_remote_post')) {
 			$resp = explode(',',linkate_call_home_nocurl(base64_encode(implode(',',$arr)), $d));
 			$final = $resp[0] == 'true' ? true : false; // new
-			$status = $resp[1];
+            $status = $resp[1];
+            $actLeft = isset($resp[2]) ? $resp[2] : false;
         } else {
 			$final = false;
 			$status = 'Нет связи с сервером лицензий. Плагин не может быть активирован (обратитесь в техподдержку).';
@@ -327,7 +330,12 @@ function linkate_checkNeededOption() {
 	} else {
 		$options['hash_last_check'] = 0;
 		$options['hash_last_status'] = false;
-	}
+    }
+    
+    if ($actLeft) {
+        $options['activations_left'] = intval($actLeft);
+    }
+
 	update_option('linkate-posts', $options);
 	//echo $status;
 	return $final;
@@ -363,9 +371,12 @@ function linkate_call_home($val,$d) {
     curl_setopt($curl, CURLOPT_POST, 1);
     curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 1);
+    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 1);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($curl, CURLOPT_TIMEOUT, 2);
     $response = curl_exec($curl);
+    $error = curl_error($curl);
     $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     if(curl_errno($curl)){
     	return 'true,curl_error';
@@ -377,7 +388,7 @@ function linkate_call_home($val,$d) {
     return $response;
 }
 
-function linkate_call_home_nocurl ($val,$d) {
+function linkate_call_home_nocurl ($val, $d) {
 	$data = array('key' => $val, 'action' => 'getInfo', 'domain' =>$d);
 	$url = 'https://seocherry.ru/plugins-license/';
 	$response = wp_remote_post( $url, array(

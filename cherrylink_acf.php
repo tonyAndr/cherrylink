@@ -831,6 +831,14 @@ function link_cf_display_scheme_export_options() {
 	<?php
 }
 function link_cf_display_sidebar() {
+    $options = get_option('linkate-posts');
+    $actLeft = '';
+    if (isset($options['hash_last_status']) 
+        && $options['hash_last_status'] 
+        && isset($options['activations_left']) 
+        && $options['activations_left'] > 0) {
+        $actLeft = '<hr><p>Оставшееся количество активаций на вашем ключе: <strong>' . $options['activations_left'] . '</strong>.</p>';
+    }
 	?>
 	<div class="linkateposts-admin-sidebar">
 				<h2>CherryLink <?php echo LinkatePosts::get_linkate_version();?></h2>
@@ -848,6 +856,7 @@ function link_cf_display_sidebar() {
 				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_4.png"/>
 				<p>Если есть вопросы о работе плагина, покупке или баг репорт (найденные ошибки) - пишите в <a href="https://t.me/joinchat/HCjIHgtC9ePAkJOP1V_cPg">телеграм-чат</a> или на почту <strong>mail@seocherry.ru</strong>. </p>
 				<p>Другие плагины разработчика можно найти <a href="https://seocherry.ru/buy-plugin/">на этой страничке</a>.</p>
+                <?= $actLeft; ?>
 
 	</div>
 	<?php

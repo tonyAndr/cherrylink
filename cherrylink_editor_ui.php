@@ -4,8 +4,10 @@
 add_action ( 'admin_head', 'linkate_send_options_frontend');
 add_action('wp_ajax_getLinkateLinks', 'getLinkateLinks');
 add_action( 'admin_enqueue_scripts', 'hook_term_edit', 10);
-add_action('wp_ajax_cherrylink_gutenberg_panel', 'cherrylink_gutenberg_panel');
-add_action('enqueue_block_editor_assets', 'register_cherrylink_gutenberg_scripts');
+if (function_exists('register_cherrylink_gutenberg_scripts')) {
+    add_action('wp_ajax_cherrylink_gutenberg_panel', 'cherrylink_gutenberg_panel');
+    add_action('enqueue_block_editor_assets', 'register_cherrylink_gutenberg_scripts');
+}
 
 // Using linkateposts to get relevant results
 function getLinkateLinks() {

@@ -15,8 +15,8 @@ add_action('admin_menu', 'linkate_posts_option_menu', 1);
 
 function linkate_posts_options_page(){
 	echo '<div class="wrap"><h2>';
-	_e('CherryLink - Внутренняя перелинковка', 'linkate_posts');
-	echo '</h2></div>';
+	_e('CherryLink - Настройки', 'linkate_posts');
+	echo '</h2></div><hr>';
 
 	linkate_posts_license_field();
 
@@ -41,25 +41,48 @@ function linkate_posts_license_field() {
 		update_option('linkate-posts', $options);
 		// Show a message to say we've done something
 		echo '<div class="updated settings-error notice"><p>' . __('<b>Обновление ключа</b>', 'linkate_posts') . '</p></div>';
-	}
+    }
+    if (isset($_POST['remove_license'])) {
+		check_admin_referer('linkate-posts-update-options');
+		if (defined('POC_CACHE_4')) poc_cache_flush();
+		// Fill up the options with the values chosen...
+        $options['hash_last_check'] = 0;
+        $options['hash_last_status'] = false;
+        $options['hash_field'] = '';
+        unset($options['activations_left']);
+
+		update_option('linkate-posts', $options);
+		// Show a message to say we've done something
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Ключ сброшен</b>', 'linkate_posts') . '</p></div>';
+    }
+
 
 	$info = linkate_checkNeededOption();
 	if ($info) {
 		$license_class = "linkateposts-accessibility-good";
-		$license_header = "<h2>Плагин активирован!</h2>";
+		$license_header = "<h2>Лицензия активирована!</h2>";
 	} else {
 		$license_class = "linkateposts-accessibility-warning";
-		$license_header = "<h2>Плагин не активирован!</h2><p>Для получения ключа посетите страницу плагина: [<strong><a href=\"https://seocherry.ru/dev/cherrylink\">SeoCherry.ru</a></strong>].</p>";
-	}
+		$license_header = "<h2>Введите действительный ключ лицензии!</h2><p>Для получения ключа посетите страницу плагина: [<strong><a href=\"https://seocherry.ru/dev/cherrylink\">SeoCherry.ru</a></strong>].</p>";
+    }
+
 	?>
 	<div class="<?php echo $license_class;?>">
 		<?php echo $license_header; ?>
+        <?php if ($info): ?>
+        <p>Действует лицензия на текущий домен, ключ скрыт в целях безопасности.</p>
+        <form method="post" action="">
+			<input type="submit" class="button button-cherry" name="remove_license" value="<?php _e('Сбросить лицензию', 'linkate_posts') ?>" />
+			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
+		</form>
+        <?php else: ?>
 		<form method="post" action="">
 			<label for="hash_field"><?php _e('Ваш ключ:', 'linkate_posts') ?></label>
 			<input type="text" size="100" name="hash_field" id="hash_field" value="<?php echo htmlspecialchars(stripslashes($options['hash_field'])); ?>">
 			<input type="submit" class="button button-cherry" name="update_license" value="<?php _e('Сохранить', 'linkate_posts') ?>" />
 			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 		</form>
+        <?php endif; ?>
 	</div>
 	<?php
 
@@ -352,7 +375,7 @@ function linkate_posts_index_options_subpage(){
 
 			<div class="spoiler_stop">
 				<h2>Стоп-слова</h2>
-				<p>Список стоп-слов индивидуальный для вашего сайта. В плагин уже строены самые распространенные слова из русского языка, которые не учитываются в поиске схожести. Если их требуется расширить - используйте данное поле.</p> <p>Слова нужно вводить без знаков препинания, каждое слово с новой строки. По умолчанию, все слова состоящие из 3 и меньше букв автоматически <strong>не учитывается алгоритмом</strong>. </p><p>Необходимо вписать все возможные словоформы (пример: узнать, узнал, узнала, узнают, узнавать и тд.) </p>
+				<p>Список стоп-слов индивидуальный для вашего сайта. В плагин уже встроены самые распространенные слова из русского языка, которые не учитываются в поиске схожести. Если их требуется расширить - используйте поле справа от таблицы.</p> <p>Слова нужно вводить без знаков препинания, каждое слово с новой строки. По умолчанию, все слова состоящие из 3 и меньше букв автоматически <strong>не учитывается алгоритмом</strong>. </p><p>Необходимо вписать все возможные словоформы (пример: узнать, узнал, узнала, узнают, узнавать и тд.) </p>
 				<hr>
 				<div style="display:flex;flex-flow: row;width: 100%;flex-wrap:nowrap;justify-content: space-between">
 					<div style="flex-grow: 1; flex-shrink: 0; flex-basis: 0">
