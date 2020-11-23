@@ -16,17 +16,30 @@ class CL_Related_Block {
         return $plugin_data['version'];
     }
 
-    static function get_links() {
+    static function get_links($offset = false, $num_links = false, $rel_type = false) {
         if (!function_exists('linkate_posts'))
             return 'Не найден плагин CherryLink';
         global $post;
            
         $options = get_option('linkate-posts');
         $is_term = 0;
-        $offset=0;
+        
         $hide_existing = $options['crb_hide_existing_links'] == 'true' ? 1 : 0;
-        $show_latest = $options['crb_show_latest'] == 'true' ? 1 : 0;
-        $num_of_links = intval($options['crb_num_of_links_to_show']);
+
+        // might come from options or shortcode/func
+        if ($offset === false) {
+            if (isset($options['crb_default_offset'])) {
+                $offset = intval($options['crb_default_offset']);
+            } else {
+                $offset = 0;
+            }
+        }
+        if ($num_links === false) {
+            $num_of_links = intval($options['crb_num_of_links_to_show']);
+        } else {
+            $num_of_links = $num_links;
+        }
+        // only posts to include, if set
         $excluded = '';
         if ($post) {
             $included_posts = CL_RB_Metabox::get_custom_posts($post->ID);
@@ -34,9 +47,23 @@ class CL_Related_Block {
                 $excluded = CL_Related_Block::get_posts_to_exclude($post->ID);
             }
         }
+        // show latest if has args provided from func
+        $show_latest = 0;
+        if ($rel_type === false) {
+            $show_latest = $options['crb_show_latest'] == 'true' ? 1 : 0;
+        } else if ($rel_type === 'new') {
+            $show_latest = 1;
+            $included_posts = false;
+        } else {
+            $show_latest = 0;
+        }
+
         $args = '';
         if ($included_posts) { // if custom selection
             $args = "manual_ID=" . $post->ID . "&is_term=" . $is_term . "&offset=" . $offset . "&relevant_block=1&included_posts=" . $included_posts . "&ignore_relevance=true&";
+            if ($num_links !== false) {
+                $args .= "&limit_ajax=".$num_of_links."&";
+            }
         } else if (!$included_posts && $show_latest) { // show latest
             $ids = self::get_latest_posts_ids($post->ID, $options, $num_of_links);
             $args = "manual_ID=" . $post->ID . "&is_term=" . $is_term . "&offset=" . $offset . "&relevant_block=1&included_posts=" . $ids . "&ignore_relevance=true&";
@@ -212,6 +239,7 @@ class CL_Related_Block {
             $options['crb_show_latest'] = "false";
             $options['crb_css_tuning'] = "default";
             $options['crb_num_of_links_to_show'] = 5;
+            $options['crb_default_offset'] = 0;
             $options['crb_cache_minutes'] = 1440;
             $options['crb_temp_before'] = base64_encode(urlencode(self::TEMP_BEFORE));
             $options['crb_temp_link'] = base64_encode(urlencode(self::TEMP_LINK));
@@ -234,6 +262,7 @@ class CL_Related_Block {
             $options['crb_show_latest'] = isset($options['crb_show_latest']) ? $options['crb_show_latest'] : "false";
             $options['crb_css_tuning'] = isset($options['crb_css_tuning']) ? $options['crb_css_tuning'] : "default";
             $options['crb_num_of_links_to_show'] = isset($options['crb_num_of_links_to_show']) ? $options['crb_num_of_links_to_show'] : 5;
+            $options['crb_default_offset'] = isset($options['crb_default_offset']) ? $options['crb_default_offset'] : 0;
             $options['crb_cache_minutes'] = isset($options['crb_cache_minutes']) ? $options['crb_cache_minutes'] : 1440;
             $options['crb_temp_before'] = isset($options['crb_temp_before']) ? $options['crb_temp_before'] : base64_encode(urlencode(self::TEMP_BEFORE));
             $options['crb_temp_link'] = isset($options['crb_temp_link']) ? $options['crb_temp_link'] : base64_encode(urlencode(self::TEMP_LINK));
@@ -303,7 +332,7 @@ class CL_Related_Block {
 
 // Alias to use in theme templates
 if (!function_exists("cherrylink_related_block")) {
-    function cherrylink_related_block() {
+    function cherrylink_related_block($atts = []) {
         $options = get_option('linkate-posts');
         _cherry_debug(__FUNCTION__, $options, 'Содержимое options в php/шорткоде');
         // check individual settings
@@ -312,11 +341,26 @@ if (!function_exists("cherrylink_related_block")) {
         $custom_show = CL_RB_Metabox::get_custom_show($post_id);
         _cherry_debug(__FUNCTION__, $custom_show, 'Вызов из php/шорткода. Результат get_custom_show для ID: ' . $post_id);
         if ($custom_show) {
-            $output = CL_Related_Block::get_links();
+            // normalize attribute keys, lowercase
+            $atts = array_change_key_case( (array) $atts, CASE_LOWER );
+ 
+            // override default attributes with user attributes
+            $short_atts = shortcode_atts(
+                array(
+                    'offset' => false,
+                    'num_links' => false,
+                    'rel_type' => false
+                ), $atts
+            );
+            $output = CL_Related_Block::get_links($short_atts['offset'], $short_atts['num_links'], $short_atts['rel_type']);
         } 
         _cherry_debug(__FUNCTION__, $output, 'Переменная $output - готовый шаблон для вывода на экран');
         return $output;
     }
+}
+
+function cherrylink_related_block_shortcode ($atts = [], $content = null, $tag = '') {
+    return cherrylink_related_block($atts);
 }
 
 function _crb_init() {
@@ -328,7 +372,7 @@ function _crb_init() {
     
 
     // Register shortcode
-    add_shortcode( 'crb_show_block', 'cherrylink_related_block' );
+    add_shortcode( 'crb_show_block', 'cherrylink_related_block_shortcode' );
 
     // Include styles & scripts
 	add_action('wp_enqueue_scripts', array('CL_Related_Block','meta_assets'), 100);

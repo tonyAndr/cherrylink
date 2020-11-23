@@ -120,7 +120,8 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	$arg['crb_show_after_content'] = @$options['crb_show_after_content'];
 	$arg['crb_hide_existing_links'] = @$options['crb_hide_existing_links'];
 	$arg['crb_show_for_pages'] = @$options['crb_show_for_pages'];
-	$arg['crb_num_of_links_to_show'] = @$options['crb_num_of_links_to_show'];
+	$arg['crb_num_of_links_to_show'] = @$options['crb_num_of_links_to_show']; 
+	$arg['crb_default_offset'] = @$options['crb_default_offset']; 
 	$arg['crb_temp_before'] = @$options['crb_temp_before'];
 	$arg['crb_temp_link'] = @$options['crb_temp_link'];
 	$arg['crb_temp_after'] = @$options['crb_temp_after'];

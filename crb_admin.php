@@ -18,6 +18,7 @@ class CL_RB_Admin_Area {
                 'crb_show_for_pages',
                 'crb_hide_existing_links',
                 'crb_num_of_links_to_show',
+                'crb_default_offset',
                 'crb_temp_before',
                 'crb_temp_link',
                 'crb_temp_after',
@@ -62,41 +63,80 @@ class CL_RB_Admin_Area {
         }
         ?>
         <h2>Настройки вывода для блока релевантных ссылок</h2>
-
         <div class="crb-admin-info">
-            <p>Для вывода блока ссылок в коде PHP прямо в файлах темы используйте код:</p>
-            <code>if (function_exists('cherrylink_related_block')) echo cherrylink_related_block();</code>
-            <p>Также ссылки можно вывести с помощью шорткода:</p>
-            <code>[crb_show_block]</code>
-            <p>Совет: выбрать ссылки или вкл/откл вывод блока можно индивидуально для каждой статьи при ее редактировании.</p>
-        </div>
-        <hr>
+            <h3>Ручной вывод</h3>
+                <p>Для вывода блока ссылок в коде PHP прямо в файлах темы используйте код:</p>
+                <code>if (function_exists('cherrylink_related_block')) echo cherrylink_related_block();</code>
+                <p>Также ссылки можно вывести с помощью шорткода:</p>
+                <code>[crb_show_block]</code>
+                <br>
+                <br>
+                <input type="checkbox"  id="spoiler_block" />
+                <label for="spoiler_block" id="label_spoiler_block" >Вывод нескольких блоков с разными ссылками</label>
+
+                <div class="spoiler_block">
+                            <p>Используйте дополнительные параметры для вывода разных ссылок в блоках:</p>
+                <code>if (function_exists('cherrylink_related_block')) echo cherrylink_related_block(array(<strong>'offset' => 2</strong>,<strong>'num_links' => 3</strong>,<strong>'rel_type' => 'new'</strong> ));</code>
+                <p>или так:</p>
+                <code>
+                [crb_show_block offset=2 num_links=3 rel_type="new"]</code> - берем свежие записи, перые 2 пропускаем и показываем всего 3 ссылки
+                <ul>
+                <li><strong>offset</strong> - отступ от начала, т.е. пропускаем заданное количество ссылок [по умолчанию 0];</li>
+                <li><strong>num_links</strong> - максимальное количество ссылок в блоке (может быть меньше или вообще ничего, если плагин ничего релевантного не нашел, учитывая offset) [если не задано берется из настроек].</li>
+                <li><strong>rel_type</strong> - значения: вывести похожие - <strong>rel</strong>; вывести новые записи - <strong>new</strong> [по умолчанию rel].</li>
+                </ul>
+                <p>Пример: чтобы вывести 3 блока и у каждого было по 3 разные ссылки, берем 3 шорткода с такими параметрами:</p>
+                <code>
+                [crb_show_block num_links=3] // берем первые 3 ссылки<br>
+                 [crb_show_block offset=3 num_links=3] // отступаем 3 ссылки<br>
+                 [crb_show_block offset=6 num_links=3] // отступаем 6 ссылок
+                </code>
+                <p>Вставьте эти шорткоды в нужное место в теле статьи.</p>
+                </div>
+
+                <p><strong>Совет</strong>: выбрать ссылки или вкл/откл вывод блоков можно индивидуально для каждой статьи при ее редактировании.</p>
+            </div>
+            <hr>
         <form method="post" action="">
-            <h3>Основные опции</h3>
+            <h3>Автоматический вывод</h3>
             <table class="optiontable form-table">
                 <?php
-                CL_RB_Admin_Area::cache_setup($options['crb_cache_minutes']);
                 CL_RB_Admin_Area::show_after_content($options['crb_show_after_content']);
                 CL_RB_Admin_Area::show_for_pages($options['crb_show_for_pages']);
-                CL_RB_Admin_Area::hide_existing_links($options['crb_hide_existing_links']);
-                CL_RB_Admin_Area::show_latest($options['crb_show_latest']);
-                CL_RB_Admin_Area::image_size($options['crb_image_size']);
-                CL_RB_Admin_Area::placeholder_path($options['crb_placeholder_path']);
-                CL_RB_Admin_Area::content_filter($options['crb_content_filter']);
                 ?>
             </table>
             <h3>Параметры отображения</h3>
             <table class="optiontable form-table">
                 <?php
                 CL_RB_Admin_Area::num_of_links_to_show($options['crb_num_of_links_to_show']);
+                CL_RB_Admin_Area::hide_existing_links($options['crb_hide_existing_links']);
+                CL_RB_Admin_Area::show_latest($options['crb_show_latest']);
+                CL_RB_Admin_Area::image_size($options['crb_image_size']);
+                ?>
+            </table>
+            <h3>Настройка шаблона</h3>
+            <table class="optiontable form-table">
+                <?php
                 CL_RB_Admin_Area::output_templates($options['crb_temp_before'],$options['crb_temp_link'],$options['crb_temp_after']);
                 CL_RB_Admin_Area::choose_template($options['crb_choose_template']);
+                
+                ?>
+            </table>
+            <h3>Дополнительные параметры</h3>
+            <table class="optiontable form-table">
+                <?php
                 CL_RB_Admin_Area::css_tuning($options['crb_css_tuning']);
+                CL_RB_Admin_Area::default_offset($options['crb_default_offset']);
+                CL_RB_Admin_Area::placeholder_path($options['crb_placeholder_path']);
+                CL_RB_Admin_Area::content_filter($options['crb_content_filter']);
                 CL_RB_Admin_Area::debug_enabled($options['debug_enabled']);
+                CL_RB_Admin_Area::cache_setup($options['crb_cache_minutes']);
                 CL_RB_Admin_Area::css_override($options['crb_css_override']);
                 ?>
             </table>
+
             <hr>
+            
             <h3>Превью блоков</h3>
             <p>Так будут выглядеть блоки на вашем сайте.</p>
 <!--            <label for="preview_width"><strong>Ширина контейнера</strong></label><br>-->
@@ -115,7 +155,7 @@ class CL_RB_Admin_Area {
     static function show_after_content($crb_show_after_content) {
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_show_after_content">Выводить блок ссылок после статьи</label></th>
+            <th scope="row"><label for="crb_show_after_content">Показывать блок после текста записи</label></th>
             <td>
                 <select name="crb_show_after_content" id="crb_show_after_content">
                     <option <?php if($crb_show_after_content == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -128,7 +168,7 @@ class CL_RB_Admin_Area {
     static function hide_existing_links($crb_hide_existing_links) {
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_hide_existing_links">Не показывать ссылки, которые уже есть в тексте</label></th>
+            <th scope="row"><label for="crb_hide_existing_links">Скрыть ссылки, которые уже есть в тексте</label></th>
             <td>
                 <select name="crb_hide_existing_links" id="crb_hide_existing_links">
                     <option <?php if($crb_hide_existing_links == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -142,7 +182,7 @@ class CL_RB_Admin_Area {
         if (!isset($crb_show_latest)) $crb_show_latest = 'false';
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_show_latest">Вывести последние опубликованные статьи (игнорировать релевантность)</label></th>
+            <th scope="row"><label for="crb_show_latest">Вывести свежие записи вместо релевантных</label></th>
             <td>
                 <select name="crb_show_latest" id="crb_show_latest">
                     <option <?php if($crb_show_latest == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -155,7 +195,7 @@ class CL_RB_Admin_Area {
     static function show_for_pages($crb_show_for_pages) {
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_show_for_pages">Включить авто-вывод блока для страниц?</label></th>
+            <th scope="row"><label for="crb_show_for_pages">Показывать блок после текста страницы</label></th>
             <td>
                 <select name="crb_show_for_pages" id="crb_hide_existing_links">
                     <option <?php if($crb_show_for_pages == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -168,10 +208,22 @@ class CL_RB_Admin_Area {
     static function num_of_links_to_show($crb_num_of_links_to_show) {
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_num_of_links_to_show">Количество ссылок</label></th>
+            <th scope="row"><label for="crb_num_of_links_to_show">Макс. количество ссылок в блоке</label></th>
             <td>
                 <input type="number" name="crb_num_of_links_to_show" id="crb_num_of_links_to_show" min="0" value="<?php echo intval($crb_num_of_links_to_show); ?>">
             </td>
+            <td><?php link_cf_prepare_tooltip("Значение игнорируется, если ссылки заданы для статьи вручную в редакторе, или, если количество указано в шорткоде/функции."); ?></td>
+        </tr>
+        <?php
+    }
+    static function default_offset($crb_default_offset) {
+        ?>
+        <tr valign="top">
+            <th scope="row"><label for="crb_default_offset">Пропустить N ссылок с начала (отступ, он же offset)</label></th>
+            <td>
+                <input type="number" name="crb_default_offset" id="crb_default_offset" min="0" value="<?php echo intval($crb_default_offset); ?>">
+            </td>
+            <td><?php link_cf_prepare_tooltip("Значение игнорируется, если отступ указан в шорткоде/функции."); ?></td>
         </tr>
         <?php
     }
@@ -210,7 +262,7 @@ class CL_RB_Admin_Area {
         if (!isset($crb_css_tuning) || $crb_css_tuning == 'no') $crb_css_tuning = 'default';
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_css_tuning">Проблемы со стилями? Включи опцию !important</label></th>
+            <th scope="row"><label for="crb_css_tuning">Едет верстка блоков? Включи опцию !important</label></th>
             <td>
                 <select name="crb_css_tuning" id="crb_css_tuning">
 <!--                    <option --><?php //if($crb_css_tuning == 'no') { echo 'selected="selected"'; } ?><!-- value="no">Нет загружать</option>-->
@@ -243,7 +295,7 @@ class CL_RB_Admin_Area {
         if (empty($crb_choose_template)) $crb_choose_template = 'crb-template-simple.css';
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_choose_template">Стиль блоков</label></th>
+            <th scope="row"><label for="crb_choose_template">Стиль блоков (см. превью ниже)</label></th>
             <td>
                 <select name="crb_choose_template" id="crb_choose_template">
                     <option <?php if ($crb_choose_template == 'none') { echo 'selected="selected"'; } ?> value="none">Не загружать стили</option>
@@ -256,6 +308,7 @@ class CL_RB_Admin_Area {
                     ?>
                 </select>
             </td>
+            <td><?php link_cf_prepare_tooltip("Применяется только если вы используете стандартные классы в шаблоне. Вы можете задать свои стили в файле темы и любой произвольный шаблон на ваше усмотрение."); ?></td>
         </tr>
         <?php
     }
@@ -264,7 +317,7 @@ class CL_RB_Admin_Area {
         $sizes = CL_RB_Admin_Area::get_image_sizes();
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_image_size">Размер изображения</label></th>
+            <th scope="row"><label for="crb_image_size">Размер изображения миниатюр</label></th>
             <td>
                 <select name="crb_image_size" id="crb_image_size">
                     <option <?php if (empty($crb_image_size)) { echo 'selected="selected"'; } ?> value="">Оригинальный размер</option>
