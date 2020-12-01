@@ -1685,12 +1685,12 @@ jQuery(document).ready(function ($) {
         }
 
         function fcl_levenshtein_similar(a, b) {
-            if (a.length === 0) return b.length
-            if (b.length === 0) return a.length
-            if (a === b) return 0;
+            if (a.length === 0) return false
+            if (b.length === 0) return false
+            if (a === b) return true;
             var min_len = Math.min(a.length, b.length)
-            if (min_len < 4) return 999; // one of the words is too short
-            if (Math.abs(a.length - b.length) > koef) return 999; // too big diff in length
+            if (min_len < 4) return false; // one of the words is too short
+            if (Math.abs(a.length - b.length) > koef) return false; // too big diff in length
             var koef = min_len < 7 ? 1 : 2;
             var matrix = []
 
