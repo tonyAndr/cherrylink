@@ -26,7 +26,8 @@ function linkate_posts_options_page(){
 	$m->add_subpage('Фильтрация', 'general', 'linkate_posts_filter_options_subpage');
 	$m->add_subpage('Релевантность', 'relevance', 'linkate_posts_relevance_options_subpage');
 	$m->add_subpage('Блок ссылок', 'output_block', 'linkate_posts_output_block_options_subpage');
-	$m->add_subpage('Экспорт и сброс', 'accessibility', 'linkate_posts_accessibility_options_subpage');
+    $m->add_subpage('Экспорт и сброс', 'accessibility', 'linkate_posts_accessibility_options_subpage');
+    $m->add_subpage('Статистика', 'statistics', 'linkate_posts_statistics_options_subpage');
 	$m->display();
 	// add_action('in_admin_footer', 'linkate_posts_admin_footer');
 }
@@ -286,10 +287,10 @@ function linkate_posts_index_options_subpage(){
 		$index_status_text = " статьи не найдены или нужна индексация (пересоздайте индекс).";
 		$index_status_class = "cherry_db_status_bad";
 	}
-	
+
 	$scheme_rows = $wpdb->get_var("SELECT COUNT(*) FROM $table_scheme");
 	if ($scheme_rows) {
-		$scheme_status_text = " найдено $scheme_rows ссылок.";
+		$scheme_status_text = " найдено $scheme_rows ссылок (<a href=\"/wp-admin/options-general.php?page=linkate-posts&subpage=statistics\">поиск проблем</a>).";
 		$scheme_status_class = "cherry_db_status_good";
 	} else {
 		$scheme_status_text = " ссылки не найдены.";
@@ -301,12 +302,13 @@ function linkate_posts_index_options_subpage(){
     $index_process_status_text = '';
     switch($index_process_status) {
         case 'VALUE_NOT_EXIST':
-            if ($index_rows || $scheme_rows) {
-                // probably we had index already, but not the option
-                $index_process_status_text = '';
-            } else {
-                $index_process_status_text = '<code class="bad-index">[Индекс не создан]</code>';
-            }
+            // if ($index_rows || $scheme_rows) {
+            //     // probably we had index already, but not the option
+            //     $index_process_status_text = '';
+            // } else {
+            //     $index_process_status_text = '<code class="bad-index">[Индекс не создан]</code>';
+            // }
+            $index_process_status_text = '<code class="bad-index">[Индекс не создан]</code>';
         break;
         case 'IN_PROGRESS': 
             $index_process_status_text = '<code class="bad-index">[Создание индекса не закончено]</code>';
@@ -420,6 +422,58 @@ function linkate_posts_index_options_subpage(){
 	</div>
 	<?php
 }
+
+function linkate_posts_statistics_options_subpage(){
+	global $wpdb, $table_prefix;
+	$options = get_option('linkate-posts');
+	$options_meta = get_option('linkate_posts_meta');
+	$table_index = $table_prefix."linkate_posts";
+	$table_scheme = $table_prefix."linkate_scheme";
+	
+	$scheme_rows = $wpdb->get_var("SELECT COUNT(*) FROM $table_scheme");
+	if ($scheme_rows) {
+		$scheme_status_text = " найдено $scheme_rows ссылок.";
+		$scheme_status_class = "cherry_db_status_good";
+	} else {
+		$scheme_status_text = " ссылки не найдены.";
+		$scheme_status_class = "cherry_db_status_bad";
+    }
+	
+	//php moved below for ajax
+	?>
+	<div class="linkateposts-admin-flex">
+		<div class="wrap linkateposts-tab-content">
+			<div class="cherry-db-status">
+				<h2>Поиск проблем с перелинковкой</h2>
+                <p>Нажмите на кнопку "Проверить перелинковку", чтобы найти записи, в которых:</p>
+                    <ol>
+                        <li>Есть повторяющиеся ссылки;</li>
+                        <li>Нет входящих ссылок;</li>
+                        <li>Нет исходящих ссылок.</li>
+                    </ol>
+                <p>Подробную статистику по перелинковке вы можете скачать в формате CSV с помощью инструмента Экспорт перелинковки на вкладке "Индекс ссылок".</p>
+                <p>Всего на сайте обнаружено <strong><?php echo $scheme_rows; ?></strong> ссылок.</p>
+
+                <?php link_cf_prepare_tooltip(''); ?>
+			</div>
+            <form id="form_generate_stats" method="post" action="" >
+					<?php link_cf_display_scheme_statistics_options(); ?>
+					<progress id="csv_progress"></progress>
+					<div class="submit">
+                        <input id="generate_preview" type="submit" class="button button-cherry" name="generate_preview" value="<?php _e('Проверить перелинковку', 'linkate_posts') ?>" />  
+                    </div>
+				</form>
+            <br>
+            <div id="cherry_preview_stats_container">
+            </div>
+            
+		    <!--  We save and update index using ajax call, see function linkate_ajax_call_reindex below -->
+		</div>
+		<?php link_cf_display_sidebar(); ?>
+	</div>
+	<?php
+}
+
 
 function linkate_posts_accessibility_options_subpage(){
 	global $wpdb, $wp_version;

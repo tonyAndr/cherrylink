@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.1.2
+Version: 2.1.3
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -25,16 +25,6 @@ $linkate_posts_current_ID = -1;
 
 define('CHERRYLINK_INITIAL_LIMIT', 200);
 
-if ( ! defined( 'WP_CONTENT_URL' ) )
-	define( 'WP_CONTENT_URL', get_site_url() . '/wp-content' );
-if ( ! defined( 'WP_CONTENT_DIR' ) )
-	define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
-if ( ! defined( 'WP_PLUGIN_URL' ) )
-	define( 'WP_PLUGIN_URL', WP_CONTENT_URL. '/plugins' );
-if ( ! defined( 'WP_PLUGIN_DIR' ) )
-	define( 'WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins' );
-
-
 if (!defined('LINKATE_DEBUG')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_debug.php');
 
 if (!defined('LINKATE_INSTALL_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_install.php');
@@ -46,6 +36,7 @@ if (!defined('LP_OT_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_out
 if (!defined('LP_ADMIN_SUBPAGES_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_admin_subpages.php');
 if (!defined('LINKATE_TERMS_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_terms.php');
 if (!defined('LINKATE_INDEX_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_index.php');
+if (!defined('LINKATE_STATISTICS_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_statistics.php');
 if (!defined('LINKATE_STOPWORDS_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_stopwords.php');
 
 if (!defined('LINKATE_STATS_COLUMN_LIBRARY')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_stats_column.php');
@@ -55,8 +46,6 @@ global $wp_version;
 if ( version_compare( $wp_version, '5.0', '>=' ) ) {
     if (!defined('LINKATE_GUTENBERG_ASSETS')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_gutenberg.php');
 }
-
-if (!defined('DSEP')) define('DSEP', DIRECTORY_SEPARATOR);
 
 
 // ========================================================================================= //

@@ -53,6 +53,9 @@ class lp_admin_subpages {
 		$base .= '?page=' . $this->parent_page . '&subpage=';
 		$this->current_page = (isset($_GET['subpage']))?$this->page_from_slug($_GET['subpage']):$this->page_from_slug(false);
 		foreach($this->pages as $page) {
+            if ($page['slug'] === 'statistics') {
+                continue;
+            }
 			if($page === $this->current_page) {
 				echo "<li style=\"display: inline\"><a href=\"$base{$page['slug']}\" class=\"current\" style=\"display: inline\">{$page['title']}</a></li>\n";
 			} else {

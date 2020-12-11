@@ -830,6 +830,51 @@ function link_cf_display_scheme_export_options() {
 	<p>Если возникнут затруднения с экспортом/импортом в эксель - посмотрите <a href="https://seocherry.ru/dev/statistika-vnutrennej-perelinkovki-v-cherrylink-jeksport-iz-plagina-i-import-v-excel/">этот пост</a>.</p>
 	<?php
 }
+function link_cf_display_scheme_statistics_options() {
+	$hide_types = array ('attachment','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset', 'sticky_ad', 'post_format', 'nav_menu', 'link_category','tablepress_table');
+	?>
+	<h2>Опции поиска</h2>
+	<div style="display: flex">
+		<div>
+		<p><strong>Типы записей</strong></p>
+				<table class="linkateposts-inner-table">	
+				<?php 
+					$types = get_post_types('','names');
+					if ($types) {
+						echo "\n\t<tr valign=\"top\"><td colspan=\"2\"><strong>Типы публикаций</strong></td></tr>";
+						foreach ($types as $type) {
+							if (false === in_array($type, $hide_types)) {
+								echo "\n\t<tr valign=\"top\"><td>$type</td><td><input type=\"checkbox\" name=\"export_types[]\" value=\"$type\" checked /></td></tr>";
+							}
+						}
+					}	
+					$statuses =get_post_statuses();
+					if ($statuses) {
+						echo "\n\t<tr valign=\"top\"><td colspan=\"2\"><strong>Статус публикаций</strong></td></tr>";
+						foreach ($statuses as $k => $status) {
+                            $checked = $k === 'publish' ? "checked" : "";
+							echo "\n\t<tr valign=\"top\"><td>$status</td><td><input type=\"checkbox\" name=\"export_status[]\" value=\"$k\" ". $checked ." /></td></tr>";
+						}
+					}	
+				?>
+				</table>
+		</div>
+		<div style="display:none">
+		<p><strong>Поля данных</strong></p>
+            <input name="source_id" type="checkbox" value="cb_source_id" checked>ID источника</input><br>
+            <input name="source_type" type="checkbox" value="cb_source_type" checked>Тип источника</input><br>
+            <input name="source_cats" type="checkbox" value="cb_source_cats" checked>Рубрики</input><br>
+            <input name="source_url" type="checkbox" value="cb_source_url" checked>URL источника</input><br>
+            <input name="target_url" type="checkbox" value="cb_target_url" checked>URL цели</input><br>
+			<input name="ankor" type="checkbox" value="cb_ankor" checked>Анкор</input><br>
+			<input name="count_out" type="checkbox" value="cb_count_out" checked>Кол-во исходящих ссылок</input><br>
+			<input name="count_in" type="checkbox" value="cb_count_in" checked>Кол-во входящих ссылок</input><br>
+			<input name="duplicate_fields" type="checkbox" value="cb_duplicate_fields" checked>Дублировать поля (id, тип, ...)</input><br>
+
+		</div>
+	</div>
+	<?php
+}
 function link_cf_display_sidebar() {
     $options = get_option('linkate-posts');
     $actLeft = '';

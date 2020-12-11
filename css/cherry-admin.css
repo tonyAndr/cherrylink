@@ -344,3 +344,19 @@ code.good-index {
     color: #4a4a4a;
 }
 
+.cherry-stats-preview-table {
+    width:100%;
+}
+
+.cherry-stats-preview-table td {
+    overflow-wrap: anywhere;
+    border: 1px solid lightgrey;
+    padding: 5px;
+    min-width: 80px;
+}
+
+.cherry-stats-preview-table td:first-child,
+.cherry-stats-preview-table td:last-child {
+    width:80px;
+    text-align: center;
+}

@@ -35,7 +35,8 @@ function register_cherrylink_gutenberg_meta() {
 		'show_in_rest' => true,
 		'single' => true,
 		'type' => 'string',
-	) );
+    ) );
+    
 }
 
 function register_cherrylink_gutenberg_scripts() {
