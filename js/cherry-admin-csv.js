@@ -135,6 +135,27 @@ jQuery(document).ready(function ($) {
     }
 
     // Stats preview
+
+    function create_preview_summary (posts_obj) {
+        let output = '';
+        let no_inc = posts_obj.no_incoming.length;
+        let no_out = posts_obj.no_outgoing.length;
+        let has_rep = posts_obj.has_repeats.length;
+        let links_count = $("#cherry_preview_stats_summary").attr('data-linkscount');
+        output += '<p>Было проверено <strong>' + stats_posts_count + '</strong> записей. Всего ссылок найдено: <strong>' + links_count + '</strong>.</p>';
+        output += '<ol>';
+        output += '<li>Записи с повторами ссылок: <strong>' + (has_rep > 0 ? has_rep : 'Не обнаружены') + '</strong></li>';
+        output += '<li>Записи без входящих ссылок: <strong>' + (no_inc > 0 ? no_inc : 'Не обнаружены') + '</strong></li>';
+        output += '<li>Записи без исходящих ссылок: <strong>' + (no_out > 0 ? no_out : 'Не обнаружены') + '</strong></li>';
+        output += '</ol>';
+        if (no_inc > 0 || no_out.length > 0 || has_rep.length > 0) {
+            output += '<p>Ниже представлен подробный отчет:</p>';
+        } else {
+            output += '<p>Похоже, что с вашей перелинковкой все в порядке :). </p>';
+        }
+        $("#cherry_preview_stats_summary").html(output);
+    }
+
     function create_preview_html () {
         let output = "";
         let posts = {
@@ -158,6 +179,9 @@ jQuery(document).ready(function ($) {
             }
         }
 
+        create_preview_summary(posts);
+
+        let open_spoiler_id = false;
         let out_repeats = '';
         if (posts.has_repeats.length > 0) {
             out_repeats = posts.has_repeats.map((v, k) => {
@@ -171,25 +195,46 @@ jQuery(document).ready(function ($) {
                 repeats = "<ol>" + repeats + "</ol>";
                 return `<tr><td>${v.id}</td><td><a href="${v.url}" target="_blank">${v.url}</a></td><td>${repeats}</td><td><a href="/wp-admin/post.php?post=${v.id}&action=edit" target="_blank">В редактор</a></td></tr>`;
             }).join('\n');
-            out_repeats = "<h3>Найдены повторы ("+posts.has_repeats.length+")</h3><table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Ссылается на (количество)</th><th>Действия</th></tr></thead><tbody>" + out_repeats + "</tbody></table>"; 
+            // out_repeats = "<h3>Найдены повторы ("+posts.has_repeats.length+")</h3>; 
+            $("#label_spoiler_has_repeats").html("Найдены повторы ("+posts.has_repeats.length+")");
+            $("div.spoiler_has_repeats").html("<table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Ссылается на (количество)</th><th>Действия</th></tr></thead><tbody>" + out_repeats + "</tbody></table>")
+            open_spoiler_id = "#label_spoiler_has_repeats";
+        } else {
+            $("#label_spoiler_has_repeats").hide()
+            $("div.spoiler_has_repeats").hide()
         }
+        
         let out_incoming = '';
         if (posts.no_incoming.length > 0) {
             out_incoming = posts.no_incoming.map((v, k) => {
                 return `<tr><td>${v.id}</td><td><a href="${v.url}" target="_blank">${v.url}</a></td><td><a href="/wp-admin/post.php?post=${v.id}&action=edit" target="_blank">В редактор</a></td></tr>`;
             }).join('\n');
-            out_incoming = "<h3>Статьи без входящих ссылок ("+posts.no_incoming.length+")</h3><table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Действия</th></tr></thead><tbody>" + out_incoming + "</tbody></table>"; 
+            // out_incoming = "<h3>Статьи без входящих ссылок ("+posts.no_incoming.length+")</h3>"; 
+            $("#label_spoiler_no_incoming").html("Статьи без входящих ссылок ("+posts.no_incoming.length+")");
+            $("div.spoiler_no_incoming").html("<table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Действия</th></tr></thead><tbody>" + out_incoming + "</tbody></table>");
+            if (!open_spoiler_id) open_spoiler_id = "#label_spoiler_no_incoming";
+        } else {
+            $("#label_spoiler_no_incoming").hide()
+            $("div.spoiler_no_incoming").html("Повторы ссылок не обнаружены")
         }
         let out_outgoing = '';
         if (posts.no_outgoing.length > 0) {
             out_outgoing = posts.no_outgoing.map((v, k) => {
                 return `<tr><td>${v.id}</td><td><a href="${v.url}" target="_blank">${v.url}</a></td><td><a href="/wp-admin/post.php?post=${v.id}&action=edit" target="_blank">В редактор</a></td></tr>`;
             }).join('\n');
-            out_outgoing = "<h3>Статьи, которые никуда не ссылаются ("+posts.no_outgoing.length+")</h3><table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Действия</th></tr></thead><tbody>" + out_outgoing + "</tbody></table>"; 
+            // out_outgoing = "<h3>Статьи, которые никуда не ссылаются ("+posts.no_outgoing.length+")</h3>"; 
+            $("#label_spoiler_no_outgoing").html("Статьи, которые никуда не ссылаются ("+posts.no_outgoing.length+")");
+            $("div.spoiler_no_outgoing").html("<table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Действия</th></tr></thead><tbody>" + out_outgoing + "</tbody></table>");
+            if (!open_spoiler_id) open_spoiler_id = "#label_spoiler_no_outgoing";
+        } else {
+            $("#label_spoiler_no_outgoing").hide()
+            $("div.spoiler_no_outgoing").hide()
         }
-        output = [out_repeats, out_incoming, out_outgoing].join("<br><hr>");
+        // output = [out_repeats, out_incoming, out_outgoing].join("<br><hr>");
 
-        $("#cherry_preview_stats_container").html(output);
+        $("#form_generate_stats").hide();
+        $("#cherry_preview_stats_container").show();
+        $(open_spoiler_id).click();
     }
 
     function handle_errors (error_msg, error_details) {

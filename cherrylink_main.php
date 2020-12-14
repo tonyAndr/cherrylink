@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.1.3
+Version: 2.1.4
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -366,18 +366,37 @@ function linkate_redirectToUpdatePlugin() {
 
 
 function cherrylink_activation_notice(){
+    $options_meta = get_option('linkate_posts_meta');
+    $index_process_status = isset($options_meta['indexing_process']) ? $options_meta['indexing_process'] : 'VALUE_NOT_EXIST';
+
 
     /* Check transient, if available display notice */
     if( get_transient( 'cherry-manual-indexation-needed' ) ){
         ?>
-        <div class="notice notice-warning is-dismissible">
+        <div class="notice notice-warning is-dismissable">
 			<p><strong>CherryLink</strong> установлен!</p>
 			<p>Для начала работы с ним <strong>необходимо создать индекс статей</strong>.</p>
-			<p>Перейдите в настройки плагина на вкладку <a href="<?php echo site_url() . '/wp-admin/options-general.php?page=linkate-posts&subpage=other'; ?>">Индекс ссылок</a>, и нажмите на кнопку "<strong>Сохранить и реиндексировать</strong>".</p>
+			<p>Перейдите в настройки плагина на вкладку <a href="<?php echo site_url() . '/wp-admin/options-general.php?page=linkate-posts&subpage=other'; ?>">Индекс ссылок</a>, и нажмите на кнопку "<strong>Создать индекс</strong>".</p>
         </div>
         <?php
         /* Delete transient, only display this notice once. */
         delete_transient( 'cherry-manual-indexation-needed' );
+    } else if ($index_process_status === 'VALUE_NOT_EXIST') {
+        ?>
+        <div class="notice notice-warning is-dismissable">
+			<p><strong>CherryLink</strong>: не обнаружен индекс статей!</p>
+			<p>Плагин может работать некорректно или не находить релевантные ссылки, <strong>необходимо создать индекс статей</strong>.</p>
+			<p>Перейдите в настройки плагина на вкладку <a href="<?php echo site_url() . '/wp-admin/options-general.php?page=linkate-posts&subpage=other'; ?>">Индекс ссылок</a>, и нажмите на кнопку "<strong>Создать индекс</strong>".</p>
+        </div>
+        <?php
+    } else if ($index_process_status === 'IN_PROGRESS') {
+        ?>
+        <div class="notice notice-warning is-dismissable">
+			<p><strong>CherryLink</strong>: создание индекса не завершено!</p>
+			<p>Плагин может работать некорректно или не находить релевантные ссылки, <strong>необходимо завершить создание индекса</strong>.</p>
+			<p>Перейдите в настройки плагина на вкладку <a href="<?php echo site_url() . '/wp-admin/options-general.php?page=linkate-posts&subpage=other'; ?>">Индекс ссылок</a>, и нажмите на кнопку "<strong>Пересоздать индекс</strong>".</p>
+        </div>
+        <?php
     }
 }
 

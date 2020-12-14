@@ -366,7 +366,7 @@ function linkate_posts_index_options_subpage(){
 			    <progress id="reindex_progress"></progress>
 				<div class="submit" style="text-align:right">
 					<input type="submit" class="button button-cherry" name="truncate_all" value="<?php _e('Очистить индекс', 'linkate_posts') ?>" />
-					<input type="submit" class="button button-download button-reindex" name="reindex_all" value="<?php _e('Пересоздать индекс', 'linkate_posts') ?>" />
+					<input type="submit" class="button button-download button-reindex" name="reindex_all" value="<?php _e($index_process_status === 'VALUE_NOT_EXIST' ? 'Создать индекс' : 'Пересоздать индекс', 'linkate_posts') ?>" />
 					<?php  if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 				</div>
 			</form>
@@ -431,13 +431,6 @@ function linkate_posts_statistics_options_subpage(){
 	$table_scheme = $table_prefix."linkate_scheme";
 	
 	$scheme_rows = $wpdb->get_var("SELECT COUNT(*) FROM $table_scheme");
-	if ($scheme_rows) {
-		$scheme_status_text = " найдено $scheme_rows ссылок.";
-		$scheme_status_class = "cherry_db_status_good";
-	} else {
-		$scheme_status_text = " ссылки не найдены.";
-		$scheme_status_class = "cherry_db_status_bad";
-    }
 	
 	//php moved below for ajax
 	?>
@@ -452,11 +445,9 @@ function linkate_posts_statistics_options_subpage(){
                         <li>Нет исходящих ссылок.</li>
                     </ol>
                 <p>Подробную статистику по перелинковке вы можете скачать в формате CSV с помощью инструмента Экспорт перелинковки на вкладке "Индекс ссылок".</p>
-                <p>Всего на сайте обнаружено <strong><?php echo $scheme_rows; ?></strong> ссылок.</p>
-
-                <?php link_cf_prepare_tooltip(''); ?>
+                <?php //link_cf_prepare_tooltip(''); ?>
 			</div>
-            <form id="form_generate_stats" method="post" action="" >
+            <form id="form_generate_stats" method="post" action="">
 					<?php link_cf_display_scheme_statistics_options(); ?>
 					<progress id="csv_progress"></progress>
 					<div class="submit">
@@ -464,7 +455,22 @@ function linkate_posts_statistics_options_subpage(){
                     </div>
 				</form>
             <br>
-            <div id="cherry_preview_stats_container">
+            <div id="cherry_preview_stats_summary" data-linkscount="<?= $scheme_rows ?>"></div>
+            <div id="cherry_preview_stats_container" style="display:none">
+                <input type="checkbox"  id="spoiler_has_repeats" />
+                <label for="spoiler_has_repeats" id="label_spoiler_has_repeats"></label>
+                <div class="spoiler_has_repeats">
+                </div>
+                <br>
+                <input type="checkbox"  id="spoiler_no_incoming" />
+                <label for="spoiler_no_incoming" id="label_spoiler_no_incoming"></label>
+                <div class="spoiler_no_incoming">
+                </div>
+                <br>
+                <input type="checkbox"  id="spoiler_no_outgoing" />
+                <label for="spoiler_no_outgoing" id="label_spoiler_no_outgoing"></label>
+                <div class="spoiler_no_outgoing">
+                </div>
             </div>
             
 		    <!--  We save and update index using ajax call, see function linkate_ajax_call_reindex below -->

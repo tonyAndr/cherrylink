@@ -167,7 +167,7 @@ function linkate_generate_csv_or_json_prettyfied($is_custom_column = false, $cus
     $ids_query = "";
     $bounds = "";
     $post_status = "";
-    $types = $table_prefix."posts.post_type NOT IN ('attachment', 'nav_menu_item', 'revision')";
+    $types = $table_prefix."posts.post_type NOT IN ('attachment', 'nav_menu_item', 'revision', 'wp_block)";
 
     if (isset($_POST['admin_preview_stats'])) $admin_preview_stats = true;
 
@@ -261,7 +261,7 @@ function linkate_generate_csv_or_json_prettyfied_backwards() {
 	global $wpdb, $table_prefix;
 	$ids_query = ""; // keep it for now, only useful for forward-way stats
     $bounds = "";
-    $types = $table_prefix."posts.post_type NOT IN ('attachment', 'nav_menu_item', 'revision')";
+    $types = $table_prefix."posts.post_type NOT IN ('attachment', 'nav_menu_item', 'revision', 'wp_block)";
 
 	if (isset($_POST['stats_offset'])) {
 		$bounds = " LIMIT ".  $_POST['stats_offset'] .",". $_POST['stats_limit'];

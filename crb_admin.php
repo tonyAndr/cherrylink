@@ -122,19 +122,23 @@ class CL_RB_Admin_Area {
                 
                 ?>
             </table>
-            <h3>Дополнительные параметры</h3>
-            <table class="optiontable form-table">
-                <?php
-                CL_RB_Admin_Area::css_tuning($options['crb_css_tuning']);
-                CL_RB_Admin_Area::default_offset($options['crb_default_offset']);
-                CL_RB_Admin_Area::placeholder_path($options['crb_placeholder_path']);
-                CL_RB_Admin_Area::content_filter($options['crb_content_filter']);
-                CL_RB_Admin_Area::debug_enabled($options['debug_enabled']);
-                CL_RB_Admin_Area::cache_setup($options['crb_cache_minutes']);
-                CL_RB_Admin_Area::css_override($options['crb_css_override']);
-                ?>
-            </table>
+            <!-- <h3>Дополнительные параметры</h3> -->
+            <input type="checkbox"  id="spoiler_block_more" />
+            <label for="spoiler_block_more" id="label_spoiler_block_more" >Дополнительные параметры, кэш</label>
 
+            <div class="spoiler_block_more">
+                <table class="optiontable form-table">
+                    <?php
+                    CL_RB_Admin_Area::css_tuning($options['crb_css_tuning']);
+                    CL_RB_Admin_Area::default_offset($options['crb_default_offset']);
+                    CL_RB_Admin_Area::placeholder_path($options['crb_placeholder_path']);
+                    CL_RB_Admin_Area::content_filter($options['crb_content_filter']);
+                    CL_RB_Admin_Area::debug_enabled($options['debug_enabled']);
+                    CL_RB_Admin_Area::cache_setup($options['crb_cache_minutes']);
+                    CL_RB_Admin_Area::css_override($options['crb_css_override']);
+                    ?>
+                </table>
+            </div>
             <hr>
             
             <h3>Превью блоков</h3>
@@ -250,12 +254,12 @@ class CL_RB_Admin_Area {
         if (!isset($crb_cache_minutes)) $crb_cache_minutes = 1440;
         ?>
         <tr valign="top">
-            <th scope="row"><label for="crb_cache_minutes">Время хранения кэша</label></th>
+            <th scope="row"><label for="crb_cache_minutes">Время хранения кэша, в минутах </label></th>
             <td>
-                <input type="number" name="crb_cache_minutes" id="crb_cache_minutes" min="0" value="<?php echo intval($crb_cache_minutes); ?>"> - в минутах (1440 минут = обновление каждые 24 часа) / <strong>0 - отключить кэш</strong>
+                <input type="number" name="crb_cache_minutes" id="crb_cache_minutes" min="0" value="<?php echo intval($crb_cache_minutes); ?>"> (1440 минут = 24 часа) / <strong>0 - отключить кэш</strong>
             </td>
-            <td><input type="submit" id="clear_cache" name="clear_cache" class="button button-download" value="<?php _e('Сбросить кэш', 'linkate_posts') ?>" /></td>
         </tr>
+        <tr valign="top"><td colspan=3><input type="submit" id="clear_cache" name="clear_cache" class="button button-download" value="<?php _e('Сбросить кэш', 'linkate_posts') ?>" /></td></tr>
         <?php
     }
     static function css_tuning($crb_css_tuning) {

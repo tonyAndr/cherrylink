@@ -478,7 +478,7 @@ function link_cf_display_show_pages($show_pages) {
 }
 
 function link_cf_display_show_custom_posts($show_customs) {
-	$hide_types = array ('post','page','attachment','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset');
+	$hide_types = array ('post','page','attachment', 'wp_block','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset');
 	?>
 	<tr valign="top">
 		<th scope="row"><?php _e('Включить в список произвольные типы записей?', 'post_plugin_library') ?></th>
@@ -769,7 +769,7 @@ function link_cf_display_scheme_info($exists, $time) {
 
 }
 function link_cf_display_scheme_export_options() {
-	$hide_types = array ('attachment','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset', 'sticky_ad', 'post_format', 'nav_menu', 'link_category','tablepress_table');
+	$hide_types = array ('attachment', 'wp_block','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset', 'sticky_ad', 'post_format', 'nav_menu', 'link_category','tablepress_table');
 	?>
 	<h2>Опции экспорта</h2>
 	<div style="display: flex">
@@ -831,33 +831,34 @@ function link_cf_display_scheme_export_options() {
 	<?php
 }
 function link_cf_display_scheme_statistics_options() {
-	$hide_types = array ('attachment','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset', 'sticky_ad', 'post_format', 'nav_menu', 'link_category','tablepress_table');
+	$hide_types = array ('attachment', 'wp_block','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset', 'sticky_ad', 'post_format', 'nav_menu', 'link_category','tablepress_table');
 	?>
 	<h2>Опции поиска</h2>
 	<div style="display: flex">
-		<div>
-		<p><strong>Типы записей</strong></p>
-				<table class="linkateposts-inner-table">	
-				<?php 
-					$types = get_post_types('','names');
-					if ($types) {
-						echo "\n\t<tr valign=\"top\"><td colspan=\"2\"><strong>Типы публикаций</strong></td></tr>";
-						foreach ($types as $type) {
-							if (false === in_array($type, $hide_types)) {
-								echo "\n\t<tr valign=\"top\"><td>$type</td><td><input type=\"checkbox\" name=\"export_types[]\" value=\"$type\" checked /></td></tr>";
-							}
-						}
-					}	
-					$statuses =get_post_statuses();
-					if ($statuses) {
-						echo "\n\t<tr valign=\"top\"><td colspan=\"2\"><strong>Статус публикаций</strong></td></tr>";
-						foreach ($statuses as $k => $status) {
-                            $checked = $k === 'publish' ? "checked" : "";
-							echo "\n\t<tr valign=\"top\"><td>$status</td><td><input type=\"checkbox\" name=\"export_status[]\" value=\"$k\" ". $checked ." /></td></tr>";
-						}
-					}	
-				?>
-				</table>
+		<div style="display: inline-flex;">
+            <!-- <table class="linkateposts-inner-table">	 -->
+            <?php 
+                $types = get_post_types('','names');
+                if ($types) {
+                    echo "\n\t<table class=\"linkateposts-inner-table\"><tr valign=\"top\"><td colspan=\"2\"><strong>Типы публикаций</strong></td></tr>";
+                    foreach ($types as $type) {
+                        if (false === in_array($type, $hide_types)) {
+                            echo "\n\t<tr valign=\"top\"><td>$type</td><td><input type=\"checkbox\" name=\"export_types[]\" value=\"$type\" checked /></td></tr>";
+                        }
+                    }
+                    echo '</table>';
+                }	
+                $statuses =get_post_statuses();
+                if ($statuses) {
+                    echo "\n\t<table class=\"linkateposts-inner-table\"><tr valign=\"top\"><td colspan=\"2\"><strong>Статус публикаций</strong></td></tr>";
+                    foreach ($statuses as $k => $status) {
+                        $checked = $k === 'publish' ? "checked" : "";
+                        echo "\n\t<tr valign=\"top\"><td>$status</td><td><input type=\"checkbox\" name=\"export_status[]\" value=\"$k\" ". $checked ." /></td></tr>";
+                    }
+                    echo '</table>';
+                }	
+            ?>
+            <!-- </table> -->
 		</div>
 		<div style="display:none">
 		<p><strong>Поля данных</strong></p>
