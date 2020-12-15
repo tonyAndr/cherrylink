@@ -16,9 +16,9 @@ jQuery(document).ready(function ($) {
             paginationSize: 25,
             addRowPos: "top",          //when adding a new row, add it to the top of the table
             history: true,
-            initialSort: [
-                { column: "id", dir: "asc" }, //sort by this first
-            ],
+            // initialSort: [
+            //     { column: "id", dir: "asc" }, //sort by this first
+            // ],
             columnHeaderSortMulti: true,
             responsiveLayout: "collapse",
             paginationSizeSelector: [25, 100, 250, 1000],

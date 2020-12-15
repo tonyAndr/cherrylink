@@ -262,7 +262,7 @@ function linkate_posts_index_options_subpage(){
 
 
 	if (isset($_POST['truncate_all'])) {
-		check_admin_referer('linkate-posts-update-options');
+		// check_admin_referer('linkate-posts-update-options');
 		if (defined('POC_CACHE_4')) poc_cache_flush();
 		// Remove scheme
 		unset($options['linkate_scheme_exists']);
@@ -276,12 +276,12 @@ function linkate_posts_index_options_subpage(){
 		$wpdb->query("TRUNCATE `$table_index`");
 
 		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Базы данных почищены.</b>', 'linkate_posts') . '</p></div>';
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Базы данных плагина очищены.</b>', 'linkate_posts') . '</p></div>';
 	}
 
 	$index_rows = $wpdb->get_var("SELECT COUNT(*) FROM $table_index");
 	if ($index_rows) {
-		$index_status_text = " найдено $index_rows записей.";
+		$index_status_text = " найдено $index_rows записей (и таксономий).";
 		$index_status_class = "cherry_db_status_good";
 	} else {
 		$index_status_text = " статьи не найдены или нужна индексация (пересоздайте индекс).";
@@ -367,7 +367,7 @@ function linkate_posts_index_options_subpage(){
 				<div class="submit" style="text-align:right">
 					<input type="submit" class="button button-cherry" name="truncate_all" value="<?php _e('Очистить индекс', 'linkate_posts') ?>" />
 					<input type="submit" class="button button-download button-reindex" name="reindex_all" value="<?php _e($index_process_status === 'VALUE_NOT_EXIST' ? 'Создать индекс' : 'Пересоздать индекс', 'linkate_posts') ?>" />
-					<?php  if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
+					<?php  if (function_exists('wp_nonce_field')) //wp_nonce_field('linkate-posts-update-options'); ?>
 				</div>
 			</form>
 			<hr>	

@@ -29,7 +29,7 @@ function linkate_ajax_call_reindex() {
 add_action('wp_ajax_linkate_get_posts_count_reindex', 'linkate_get_posts_count_reindex');
 function linkate_get_posts_count_reindex() {
 	global $wpdb;
-	$amount_of_db_rows = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item')");
+	$amount_of_db_rows = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item', 'wp_block')");
 
     echo $amount_of_db_rows;
     // echo 10;
@@ -44,7 +44,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     $options_meta = get_option('linkate_posts_meta');
     
     if ($is_initial) {
-        $amount_of_db_rows = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item')");
+        $amount_of_db_rows = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item', 'wp_block')");
         if ($amount_of_db_rows > CHERRYLINK_INITIAL_LIMIT)   
             return false; 
     }
@@ -141,7 +141,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	// POSTS
 	$posts = $wpdb->get_results("SELECT `ID`, `post_title`, `post_content`, `post_type` 
 									FROM $wpdb->posts 
-									WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item') 
+									WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item', 'wp_block') 
 									LIMIT $reindex_offset, $batch", ARRAY_A);
     reset($posts);
     
@@ -227,7 +227,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     $time_elapsed_secs = microtime(true) - $EXEC_TIME;
     $ajax_array['time'] = number_format($time_elapsed_secs, 5);
     
-    if ($reindex_offset + $batch > $index_posts_count) {
+    if ($reindex_offset + $batch >= $index_posts_count) {
         $options_meta['indexing_process'] = 'DONE';
         update_option('linkate_posts_meta', $options_meta);
         $ajax_array['status'] = 'DONE';

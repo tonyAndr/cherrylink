@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.1.5
+Version: 2.1.6
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: linkate-posts
@@ -367,7 +367,7 @@ function linkate_redirectToUpdatePlugin() {
 
 function cherrylink_activation_notice(){
     $options_meta = get_option('linkate_posts_meta');
-    $index_process_status = isset($options_meta['indexing_process']) ? $options_meta['indexing_process'] : 'VALUE_NOT_EXIST';
+    $index_process_status = (isset($options_meta['indexing_process']) && !empty($options_meta['indexing_process'])) ? $options_meta['indexing_process'] : 'VALUE_NOT_EXIST';
 
 
     /* Check transient, if available display notice */
@@ -421,13 +421,16 @@ if ( is_admin()) {
 function linkate_posts_wp_admin_style() {
 	if (LinkatePosts::linkate_is_plugin_admin_page('settings')) {
 		wp_register_style( 'cherrylink-css-admin', plugins_url('', __FILE__) . '/css/cherry-admin.css', false, LinkatePosts::$version );
-		wp_register_style( 'cherrylink-css-admin-table', plugins_url('', __FILE__) . '/css/tabulator.min.css', false, LinkatePosts::$version );
+		wp_register_style( 'cherrylink-css-admin-table', plugins_url('', __FILE__) . '/css/tabulator.css', false, LinkatePosts::$version );
 		wp_enqueue_style( 'cherrylink-css-admin' );
 		wp_enqueue_style( 'cherrylink-css-admin-table' );
 
 		wp_register_script( 'cherrylink-js-admin', plugins_url( '/js/cherry-admin.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
-		wp_register_script( 'cherrylink-js-admin-csv', plugins_url( '/js/cherry-admin-csv.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
-		wp_register_script( 'cherrylink-js-admin-table', plugins_url( '/js/tabulator.min.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
+        wp_register_script( 'cherrylink-js-admin-csv', plugins_url( '/js/cherry-admin-csv.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
+        
+        wp_register_script( 'cherrylink-js-admin-table', plugins_url( '/js/tabulator.min.js', __FILE__ ), array( 'jquery'), LinkatePosts::get_linkate_version() );
+        // wp_register_script( 'cherrylink-js-admin-table-wrapper', plugins_url( '/js/jquery_wrapper.js', __FILE__ ), array( 'jquery', 'cherrylink-js-admin-table' ), LinkatePosts::get_linkate_version() );
+        
 		wp_register_script( 'cherrylink-js-admin-stopwords', plugins_url( '/js/cherry-admin-stopwords.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
 		wp_register_script( 'cherrylink-js-admin-index', plugins_url( '/js/cherry-admin-index.js', __FILE__ ), array( 'jquery', 'cherrylink-js-admin-stopwords' ), LinkatePosts::get_linkate_version() );
 
