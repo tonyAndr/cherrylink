@@ -181,6 +181,7 @@ jQuery(document).ready(function ($) {
 
         create_preview_summary(posts);
 
+        let table_limit = 50;
         let open_spoiler_id = false;
         let out_repeats = '';
         if (posts.has_repeats.length > 0) {
@@ -206,12 +207,16 @@ jQuery(document).ready(function ($) {
         
         let out_incoming = '';
         if (posts.no_incoming.length > 0) {
-            out_incoming = posts.no_incoming.map((v, k) => {
+            out_incoming = posts.no_incoming.slice(0,table_limit).map((v, k) => {
                 return `<tr><td>${v.id}</td><td><a href="${v.url}" target="_blank">${v.url}</a></td><td><a href="/wp-admin/post.php?post=${v.id}&action=edit" target="_blank">В редактор</a></td></tr>`;
             }).join('\n');
             // out_incoming = "<h3>Статьи без входящих ссылок ("+posts.no_incoming.length+")</h3>"; 
             $("#label_spoiler_no_incoming").html("Статьи без входящих ссылок ("+posts.no_incoming.length+")");
-            $("div.spoiler_no_incoming").html("<table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Действия</th></tr></thead><tbody>" + out_incoming + "</tbody></table>");
+            out_incoming = "<table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Действия</th></tr></thead><tbody>" + out_incoming + "</tbody></table>";
+            if (posts.no_incoming.length > table_limit) {
+                out_incoming += "<p>Показано только 50 первых результатов.</p>";
+            }
+            $("div.spoiler_no_incoming").html(out_incoming);
             if (!open_spoiler_id) open_spoiler_id = "#label_spoiler_no_incoming";
         } else {
             $("#label_spoiler_no_incoming").hide()
@@ -219,12 +224,16 @@ jQuery(document).ready(function ($) {
         }
         let out_outgoing = '';
         if (posts.no_outgoing.length > 0) {
-            out_outgoing = posts.no_outgoing.map((v, k) => {
+            out_outgoing = posts.no_outgoing.slice(0,table_limit).map((v, k) => {
                 return `<tr><td>${v.id}</td><td><a href="${v.url}" target="_blank">${v.url}</a></td><td><a href="/wp-admin/post.php?post=${v.id}&action=edit" target="_blank">В редактор</a></td></tr>`;
             }).join('\n');
             // out_outgoing = "<h3>Статьи, которые никуда не ссылаются ("+posts.no_outgoing.length+")</h3>"; 
             $("#label_spoiler_no_outgoing").html("Статьи, которые никуда не ссылаются ("+posts.no_outgoing.length+")");
-            $("div.spoiler_no_outgoing").html("<table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Действия</th></tr></thead><tbody>" + out_outgoing + "</tbody></table>");
+            out_outgoing = "<table class='cherry-stats-preview-table'><thead><tr><th>Post ID</th><th>URL</th><th>Действия</th></tr></thead><tbody>" + out_outgoing + "</tbody></table>";
+            if (posts.no_outgoing.length > table_limit) {
+                out_outgoing += "<p>Показано только 50 первых результатов.</p>";
+            }
+            $("div.spoiler_no_outgoing").html(out_outgoing);
             if (!open_spoiler_id) open_spoiler_id = "#label_spoiler_no_outgoing";
         } else {
             $("#label_spoiler_no_outgoing").hide()

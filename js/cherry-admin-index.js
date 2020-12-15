@@ -5,7 +5,7 @@ jQuery(document).ready(function ($) {
 	*/
 
     let index_interval_check, index_serialized_form;
-    let index_offset = 0, index_limit = 50, index_posts_count = 0, index_in_progress = false, php_execution_time = 0;
+    let index_offset = 0, index_limit = 20, index_posts_count = 0, index_in_progress = false, php_execution_time = 0;
 
     $('.button-reindex').click(function (e) {
         e.preventDefault();
@@ -32,7 +32,7 @@ jQuery(document).ready(function ($) {
                 console.log("Starting process with " + response + " posts found");
                 index_posts_count = parseInt(response);
                 // update stats_posts_count
-                index_interval_check = setInterval(index_process_next, 500);
+                index_interval_check = setInterval(index_process_next, 200);
             }
         });
     }

@@ -210,8 +210,12 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     $wpdb->flush();
     // Insert into DB
     $wpdb->query("INSERT INTO `$table_name` (pID, content, title, tags, suggestions) VALUES $values_string");
-    $wpdb->flush();
+    //$wpdb->flush();
 
+    $wpdb_error = $wpdb->last_error;
+    $wpdb_query = $wpdb->last_query;
+    $wpdb->flush();
+    
     arsort($common_words);
     $common_words = array_slice($common_words, 0 , 100);
     // Temporarely store overused words for the future 
@@ -226,6 +230,8 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	$ajax_array['status'] = 'OK';
     $time_elapsed_secs = microtime(true) - $EXEC_TIME;
     $ajax_array['time'] = number_format($time_elapsed_secs, 5);
+    $ajax_array['wpdb_error'] = $wpdb_error;
+    $ajax_array['wpdb_query'] = $wpdb_query;
     
     if ($reindex_offset + $batch >= $index_posts_count) {
         $options_meta['indexing_process'] = 'DONE';
