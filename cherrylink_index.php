@@ -1,9 +1,14 @@
 <?php 
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
- 
+
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_INDEX_LIBRARY', true);
+
+require_once (WP_PLUGIN_DIR . "/cherrylink/cherrylink_stemmer_ru.php");
 
 // ========================================================================================= //
 // ============================== CherryLink Links Index  ============================== //
@@ -45,21 +50,25 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     
     if ($is_initial) {
         $amount_of_db_rows = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item', 'wp_block')");
-        if ($amount_of_db_rows > CHERRYLINK_INITIAL_LIMIT)   
+        if ($amount_of_db_rows > CHERRYLINK_INITIAL_LIMIT) {
             return false; 
+        } else {
+            $options_meta['indexing_process'] = 'IN_PROGRESS';
+            update_option('linkate_posts_meta', $options_meta);
+        }
     }
 
 	$batch = isset($_POST['batch_size']) ? (int)$_POST['batch_size'] : 200;
     $reindex_offset = isset($_POST['index_offset']) ? (int)$_POST['index_offset'] : 0;
     $index_posts_count = isset($_POST['index_posts_count']) ? (int)$_POST['index_posts_count'] : $amount_of_db_rows;
 
-    require_once (WP_PLUGIN_DIR . "/cherrylink/cherrylink_stemmer_ru.php");
-
-	$stemmer = new Stem\LinguaStemRu();
+    $stemmer = new Stem\LinguaStemRu();
+    $stemmer->enable_stemmer(true);
+    
 	$suggestions_donors_src = $options['suggestions_donors_src'];
 	$suggestions_donors_join = $options['suggestions_donors_join'];
 	$clean_suggestions_stoplist = $options['clean_suggestions_stoplist'];
-	$min_len = $options['term_length_limit'];
+	$min_len = intval($options['term_length_limit']);
 
 	$words_table = $table_prefix."linkate_stopwords";
 	$black_words = array_filter($wpdb->get_col("SELECT stemm FROM $words_table WHERE is_white = 0 GROUP BY stemm"));
@@ -146,12 +155,15 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     reset($posts);
     
     $values_string = '';
-    // Save overused words TODO
     
+    // Get prev overused words
     if (isset($options['overused_words_temp'])) $common_words = $options['overused_words_temp'];
+    $joined_content_for_stopwords = array();
 
 	foreach ($posts as $post) {
         $postID = $post['ID'];
+        // Combine content for later process
+        $joined_content_for_stopwords = array_merge($joined_content_for_stopwords, mb_split("\W+", linkate_sp_mb_clean_words($post['post_content'])));
 
 		list($content, $content_sugg) = linkate_sp_get_post_terms($post['post_content'], $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
 
@@ -161,43 +173,33 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 			$content = '';
 
 		// Check SEO Fields
-		$seotitle = '';
-		if (function_exists('wpseo_init')){
-			$seotitle = linkate_decode_yoast_variables($postID);
-		}
-		if (function_exists( 'aioseop_init_class' )){
-			$seotitle = get_post_meta( $postID, "_aioseop_title", true);
-		}
-
+		$seotitle = linkate_get_post_seo_title($postID);
+		
 		// Title for suggestions
 		if (!empty($seotitle) && $seotitle !== $post['post_title']) {
 			$title = $post['post_title'] . " " . $seotitle;
 		} else {
 			$title = $post['post_title'];
-		}
+        }
+
+        // convert broken symbols
+        $title = iconv("UTF-8", "UTF-8//IGNORE", $title); 
+		if (!$title)
+			$title = '';
 
 		list($title, $title_sugg) = linkate_sp_get_title_terms( $title, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist );
 
         // Extract ancor suggestions
 		$suggestions = linkate_sp_prepare_suggestions($title_sugg, $content_sugg, $suggestions_donors_src, $suggestions_donors_join);
 
-		// Tags (useless)
+		// Tags
 		$tags = linkate_sp_get_tag_terms($postID);
 		
-		// Create query
+		// Create query string
 		if (!empty($values_string)) $values_string .= ',';
 		$values_string .= "(".$postID.", \"".$content."\", \"".$title."\", \"".$tags."\", \"".$suggestions."\")";
 
-		$word = strtok($content, ' ');
-		while ($word !== false) {
-            if(!array_key_exists($word,$common_words)){
-                $common_words[$word]=0;
-            }
-            $common_words[$word] += 1;
-            $word = strtok(' ');
-        }
-
-		// fix memory leak
+		// fix memory leaks
 		wp_cache_delete( $postID, 'post_meta' );
         unset($content);
         unset($title);
@@ -205,8 +207,8 @@ function linkate_posts_save_index_entries ($is_initial = false) {
         unset($title_sugg);
         unset($content_sugg);
         unset($suggestions);
-	}
-
+    }
+    
     $wpdb->flush();
     // Insert into DB
     $wpdb->query("INSERT INTO `$table_name` (pID, content, title, tags, suggestions) VALUES $values_string");
@@ -215,9 +217,9 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     $wpdb_error = $wpdb->last_error;
     $wpdb_query = $wpdb->last_query;
     $wpdb->flush();
-    
-    arsort($common_words);
-    $common_words = array_slice($common_words, 0 , 100);
+
+    // Process new overused words, add to prev
+    $common_words = linkate_process_batch_overused_words($joined_content_for_stopwords, $common_words, $min_len);
     // Temporarely store overused words for the future 
     $options['overused_words_temp'] = $common_words;
     update_option( 'linkate-posts', $options );
@@ -227,13 +229,13 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 
 	// Output for frontend
 	$ajax_array = array();
-	$ajax_array['status'] = 'OK';
+	$ajax_array['status'] = $wpdb_error ? 'ERROR' : 'OK';
     $time_elapsed_secs = microtime(true) - $EXEC_TIME;
     $ajax_array['time'] = number_format($time_elapsed_secs, 5);
     $ajax_array['wpdb_error'] = $wpdb_error;
     $ajax_array['wpdb_query'] = $wpdb_query;
     
-    if ($reindex_offset + $batch >= $index_posts_count) {
+    if (($reindex_offset + $batch) >= $index_posts_count && empty($wpdb_error)) {
         $options_meta['indexing_process'] = 'DONE';
         update_option('linkate_posts_meta', $options_meta);
         $ajax_array['status'] = 'DONE';
@@ -250,6 +252,8 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     unset($black_words);
     unset($white_words);
     unset($linkate_overusedwords);
+
+    $stemmer->clear_stem_cache();
     unset($stemmer);
 
     if (!$is_initial)
@@ -260,16 +264,33 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	return true;
 }
 
+function linkate_process_batch_overused_words ($batch_content_array, $common_words, $min_len) {
+    foreach ($batch_content_array as $key => $word) {
+        # code...
+        if (mb_strlen($word) > intval($min_len)) {
+            if(!array_key_exists($word,$common_words)){
+                $common_words[$word]=0;
+            } else {
+                $common_words[$word] += 1;
+            }
+        }
+    }
+    arsort($common_words);
+    $common_words = array_slice($common_words, 0 , 100);
+    return $common_words;
+}
+
 add_action('wp_ajax_linkate_last_index_overused_words', 'linkate_last_index_overused_words');
 function linkate_last_index_overused_words() {
 	// UPDATE SCHEME TIMESTAMP HERE CUZ WE ARE CREATING IT TOGETHER
 	linkate_scheme_update_option_timestamp();
 
 	$ajax_array = array();
-	// Add overused words
+	// Get existing stoplist
 	$existing_blacklist = array_flip(array_filter(linkate_get_blacklist(true)));
 	$options = get_option( 'linkate-posts' );
 
+    // Get temp overused words from reindex
 	if (isset($options['overused_words_temp']))
 		$common_words = $options['overused_words_temp'];
 	else {
@@ -296,11 +317,21 @@ function linkate_last_index_overused_words() {
 	unset($options['overused_words_temp']);
 	update_option( 'linkate-posts', $options );
 
-
 	// Send words
 	echo json_encode($ajax_array);
 	wp_die();
+}
 
+// extract from AIOSEO or Yoast
+function linkate_get_post_seo_title ($postID) {
+    $seotitle = '';
+    if (function_exists('wpseo_init')){
+        $seotitle = linkate_decode_yoast_variables($postID);
+    }
+    if (function_exists( 'aioseop_init_class' )){
+        $seotitle = get_post_meta( $postID, "_aioseop_title", true);
+    }
+    return is_string($seotitle) ? $seotitle : '';
 }
 
 // ========================================================================================= //
@@ -323,7 +354,6 @@ function linkate_create_links_scheme($offset = 0, $batch = 200) {
 		// $amount_of_db_rows = $amount_of_db_rows + $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->terms");
 		//doing the same with terms (category, tag...)
         $start = 0;
-        
 		while ($terms = $wpdb->get_results("SELECT `term_id` FROM $wpdb->terms LIMIT $start, $batch", ARRAY_A)) {
             $query_values = array();
 			reset($terms);
@@ -339,7 +369,6 @@ function linkate_create_links_scheme($offset = 0, $batch = 200) {
 					$descr .= $opt['descrbottom'] ? ' '.$opt['descrbottom'] : '';
 				}
 	
-                // linkate_scheme_add_row($descr, $termID, 1);
                 $query_values[] = linkate_scheme_get_add_row_query($descr, $termID, 1);
             }
             $query_values = array_filter($query_values);
@@ -365,8 +394,6 @@ function linkate_create_links_scheme($offset = 0, $batch = 200) {
 	foreach($posts as $post) {
 		$postID = $post['ID'];
         $query_values[] = linkate_scheme_get_add_row_query($post['post_content'], $postID, 0);
-        // linkate_scheme_add_row($post['post_content'], $postID, 0);
-        
     }
     $query_values = array_filter($query_values);
 

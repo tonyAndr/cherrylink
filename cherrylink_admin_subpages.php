@@ -1,8 +1,11 @@
 <?php
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
 
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LP_ADMIN_SUBPAGES_LIBRARY', true);
 
 class lp_admin_subpages {
@@ -53,9 +56,11 @@ class lp_admin_subpages {
 		$base .= '?page=' . $this->parent_page . '&subpage=';
 		$this->current_page = (isset($_GET['subpage']))?$this->page_from_slug($_GET['subpage']):$this->page_from_slug(false);
 		foreach($this->pages as $page) {
+            // Hide link stats tab 
             if ($page['slug'] === 'statistics') {
                 continue;
             }
+            // Add tabs
 			if($page === $this->current_page) {
 				echo "<li style=\"display: inline\"><a href=\"$base{$page['slug']}\" class=\"current\" style=\"display: inline\">{$page['title']}</a></li>\n";
 			} else {

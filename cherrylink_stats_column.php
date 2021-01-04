@@ -1,5 +1,11 @@
 <?php
+/*
+ * CherryLink Plugin
+ */
 
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_STATS_COLUMN_LIBRARY', true);
 
 
@@ -25,8 +31,8 @@ if ( is_admin() && 'edit.php' == $pagenow ) {
 
 // unique column 
 function linkate_post_stats_column($cols) {
-    $cols['cherry_outgoing'] = __('Исх', 'cherry_outgoing');
-    $cols['cherry_income'] = __('Вх', 'cherry_income');
+    $cols['cherry_outgoing'] = __('Исх', CHERRYLINK_TEXT_DOMAIN);
+    $cols['cherry_income'] = __('Вх', CHERRYLINK_TEXT_DOMAIN);
     return $cols;
 }
 

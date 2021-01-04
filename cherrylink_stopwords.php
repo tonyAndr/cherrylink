@@ -1,8 +1,11 @@
 <?php 
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
- 
+
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_STOPWORDS_LIBRARY', true);
 
 // ========================================================================================= //
@@ -67,7 +70,7 @@ function linkate_add_stopwords() {
     global $wpdb;
 	$table_name = $wpdb->prefix . "linkate_stopwords";
 
-	$is_stemm = isset($_POST['is_stemm']); // if we quick-add from stopword suggestions
+	$is_stemm = isset($_POST['is_stemm']) && intval($_POST['is_stemm']) === 1; // if we quick-add from stopword suggestions
 
 	if (isset($_POST['words']) && !empty($_POST['words']) ) {
 		$words = $_POST['words'];

@@ -1,17 +1,17 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Tony
- * Date: 26.03.2019
- * Time: 21:30
+/*
+ * CherryLink Plugin
  */
+
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
 
 class CL_RB_Metabox {
     /**
      * Adds a meta box to the post editing screen
      */
     static function crb_meta_box() {
-        add_meta_box( 'crb_meta', __( 'CherryLink Блок ссылок', 'linkate-posts' ), array('CL_RB_Metabox','crb_meta_callback'), null, 'normal', 'high', array(
+        add_meta_box( 'crb_meta', __( 'CherryLink Блок ссылок', CHERRYLINK_TEXT_DOMAIN ), array('CL_RB_Metabox','crb_meta_callback'), null, 'normal', 'high', array(
             '__back_compat_meta_box' => true,
         ) );
     }
@@ -26,16 +26,16 @@ class CL_RB_Metabox {
         ?>
 
         <p>
-            <label for="crb-meta-show" class="row-title"><?php _e( 'Показывать блок ссылок для этой статьи?', 'linkate-posts' )?></label>
+            <label for="crb-meta-show" class="row-title"><?php _e( 'Показывать блок ссылок для этой статьи?', CHERRYLINK_TEXT_DOMAIN )?></label>
             <input type="checkbox" name="crb-meta-show" id="crb-meta-show" value="crb-meta-show" <?php if ( isset ( $crb_stored_meta['crb-meta-show'] ) ) echo $crb_stored_meta[ 'crb-meta-show' ][0]; else echo 'checked' ?>>
         </p>
         <p style="display: none;">
-            <label for="crb-meta-show-edited" class="row-title"><?php _e( 'Проверочный чекбокс для сохранения индивидуальных опций вывода', 'linkate-posts' )?></label>
+            <label for="crb-meta-show-edited" class="row-title"><?php _e( 'Проверочный чекбокс для сохранения индивидуальных опций вывода', CHERRYLINK_TEXT_DOMAIN )?></label>
             <input type="checkbox" name="crb-meta-show-edited" id="crb-meta-show-edited" value="crb-meta-show-edited" <?php if ( isset ( $crb_stored_meta['crb-meta-show-edited'] ) ) echo $crb_stored_meta[ 'crb-meta-show-edited' ][0]; ?>>
         </p>
 
         <p>
-            <label for="crb-meta-use-manual" class="row-title"><?php _e( 'Редактировать анкоры ссылок', 'linkate-posts' )?></label>
+            <label for="crb-meta-use-manual" class="row-title"><?php _e( 'Редактировать анкоры ссылок', CHERRYLINK_TEXT_DOMAIN )?></label>
             <input type="checkbox" name="crb-meta-use-manual" id="crb-meta-use-manual" value="crb-meta-use-manual" <?php if ( isset ( $crb_stored_meta['crb-meta-use-manual'] ) ) echo $crb_stored_meta[ 'crb-meta-use-manual' ][0]; ?>>
         </p>
 
@@ -44,7 +44,7 @@ class CL_RB_Metabox {
             <code>[crb_show_block]</code>
         </p>
         <p style="display: none;">
-            <label for="crb-meta-links" class="row-title"><?php _e( 'Это надо скрыть', 'linkate-posts' )?></label>
+            <label for="crb-meta-links" class="row-title"><?php _e( 'Это надо скрыть', CHERRYLINK_TEXT_DOMAIN )?></label>
             <textarea readonly name="crb-meta-links" id="crb-meta-links" cols="60" rows="8"><?php if ( isset ( $crb_stored_meta['crb-meta-links'] ) ) echo $crb_stored_meta['crb-meta-links'][0]; ?></textarea>
         </p>
         <div class="crb-meta-visual"><p>Ссылки не выбраны.</p></div>

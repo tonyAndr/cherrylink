@@ -3,10 +3,10 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.1.7
+Version: 2.1.8
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
-Text Domain: linkate-posts
+Text Domain: cherrylink-td
 */
 
 function linkate_posts($args = '') {
@@ -17,13 +17,14 @@ function linkate_posts_mark_current(){
 	global $post, $linkate_posts_current_ID;
 	$linkate_posts_current_ID = $post->ID;
 }
-$linkate_posts_current_ID = -1;
+
 
 // ========================================================================================= //
 	// ============================== Defines and Imports ============================== //
 // ========================================================================================= //
 
-define('CHERRYLINK_INITIAL_LIMIT', 200);
+define('CHERRYLINK_INITIAL_LIMIT', 100);
+define('CHERRYLINK_TEXT_DOMAIN', 'cherrylink-td');
 
 if (!defined('LINKATE_DEBUG')) require(WP_PLUGIN_DIR.'/cherrylink/cherrylink_debug.php');
 
@@ -85,36 +86,35 @@ class LinkatePosts {
 	// ========================================================================================= //
     	// ============================== Main function [Get Posts] ============================== //
 	// ========================================================================================= //
-	static function execute($args='', $default_output_template='<li>{link}</li>', $option_key='linkate-posts'){
-		global $table_prefix, $wpdb, $wp_version, $linkate_posts_current_ID;
+	static function execute($args='', $default_output_template='{title}', $option_key='linkate-posts'){
+		global $table_prefix, $wpdb, $wp_version;
+        $table_name = $table_prefix . 'linkate_posts';
+        
+        // First we process any arguments to see if any defaults have been overridden
+		$arg_options = link_cf_parse_args($args);
+        
+		$is_term = isset($arg_options['is_term']) ? $arg_options['is_term'] : 0;
+        $offset = isset($arg_options['offset']) ? $arg_options['offset'] : 0;
+        $linkate_posts_current_ID = isset($arg_options['manual_ID']) ? intval($arg_options['manual_ID']) : -1;
 
-		// Manually throws id of the current post if set
-		$arg_id = 0;
-		$is_term = 0;
-		$offset = 0;
-		$relevant_block = 0;
-		$presentation_mode = 'classic';
-		if (function_exists('get_string_between')) {
-		    $linkate_posts_current_ID = get_string_between ($args, "manual_ID=", "&");
-		    $is_term = get_string_between ($args, "is_term=", "&");
-		    $offset = get_string_between ($args, "offset=", "&");
-			$relevant_block = get_string_between ($args, "relevant_block=", "&");
-			if (empty($relevant_block)) $relevant_block = 0;
-			$presentation_mode = get_string_between ($args, "mode=", "&");
-			if (empty($presentation_mode)) $presentation_mode = 'relevant_block';
-			
-		}
+        // switch output between editors (classic/gutenberg) and related block if empty
+        $presentation_mode = (isset($arg_options['mode']) && !empty($arg_options['mode'])) ? $arg_options['mode'] : 'related_block';
+        
+		// if (function_exists('get_string_between')) {
+		//     $linkate_posts_current_ID = get_string_between ($args, "manual_ID=", "&");
+		//     $is_term = get_string_between ($args, "is_term=", "&");
+		//     $offset = get_string_between ($args, "offset=", "&");
+		// 	$presentation_mode = get_string_between ($args, "mode=", "&");
+		// 	if (empty($presentation_mode)) $presentation_mode = 'related_block';
+		// }
 
 		$postid = link_cf_current_post_id($linkate_posts_current_ID);
 		
-		$table_name = $table_prefix . 'linkate_posts';
-		// First we process any arguments to see if any defaults have been overridden
-		$options = link_cf_parse_args($args);
 		// Next we retrieve the stored options and use them unless a value has been overridden via the arguments
-		$options = link_cf_set_options($option_key, $options, $default_output_template);
+		$options = link_cf_set_options($option_key, $arg_options, $default_output_template);
 
 		if (0 < $options['limit_ajax']) {
-			$match_tags = ($options['match_tags'] !== 'false' && $wp_version >= 2.3);
+			$match_tags = ($options['match_tags'] !== 'false');
 			$exclude_cats = ($options['excluded_cats'] !== '');
 			$include_cats = ($options['included_cats'] !== '');
 			$exclude_authors = ($options['excluded_authors'] !== '');
@@ -125,7 +125,7 @@ class LinkatePosts {
             $include_posts = implode(",", array_filter(explode(",", $include_posts)));
 			$match_category = ($options['match_cat'] === 'true');
 			$match_author = ($options['match_author'] === 'true');
-			$use_tag_str = ('' != trim($options['tag_str']) && $wp_version >= 2.3);
+			$use_tag_str = ('' != trim($options['tag_str']));
 			$omit_current_post = ($options['omit_current_post'] !== 'false');
 			$ignore_relevance = ($options['ignore_relevance'] !== 'false');
 			$match_against_title = ($options['match_all_against_title'] !== 'false');
@@ -152,18 +152,13 @@ class LinkatePosts {
 			if ($weight_content) $weight_content = 57.0 * $weight_content / $count_content;
 			if ($weight_title) $weight_title = 18.0 * $weight_title / $count_title;
 			if ($weight_tags) $weight_tags = 24.0 * $weight_tags / $count_tags;
-			if ($options['hand_links'] === 'true') {
-				// check custom field for manual links
-				$forced_ids = $wpdb->get_var("SELECT meta_value FROM $wpdb->postmeta WHERE post_id = $postid AND meta_key = 'linkate_sp_linkate' ") ;
-			} else {
-				$forced_ids = '';
-			}
+
 			// the workhorse...
 			if ($ignore_relevance) {
 				$sql = "SELECT * FROM `$table_name` LEFT JOIN `$wpdb->posts` ON `pID` = `ID` ";
 			} else {
 				$sql = "SELECT *, ";
-				$sql .= link_cf_score_fulltext_match($table_name, $weight_title, $titleterms, $weight_content, $contentterms, $weight_tags, $tagterms, $forced_ids, $match_against_title);
+				$sql .= link_cf_score_fulltext_match($table_name, $weight_title, $titleterms, $weight_content, $contentterms, $weight_tags, $tagterms, $match_against_title);
 			}
 
 			if ($check_custom) $sql .= "LEFT JOIN $wpdb->postmeta ON post_id = ID ";
@@ -173,12 +168,8 @@ class LinkatePosts {
 			if (!$ignore_relevance) {
 				$where[] = link_cf_where_fulltext_match($weight_title, $titleterms, $weight_content, $contentterms, $weight_tags, $tagterms, $match_against_title);
 			}
+			$where[] = link_cf_where_show_status($options['status']);
 
-			if (!function_exists('get_post_type')) {
-				$where[] = link_cf_link_cf_where_hide_future();
-			} else {
-				$where[] = link_cf_where_show_status($options['status'], $options['show_attachments']);
-			}
 			if ($is_term == 0) {
 				if ($match_category) $where[] = link_cf_where_match_category($postid);
 				if ($match_tags) $where[] = link_cf_where_match_tags($options['match_tags']);
@@ -186,7 +177,7 @@ class LinkatePosts {
 				if ($omit_current_post) $where[] = link_cf_where_omit_post($linkate_posts_current_ID);		
 				if ($check_custom) $where[] = link_cf_where_check_custom($options['custom']['key'], $options['custom']['op'], $options['custom']['value']);
 			}
-			$where[] = link_cf_where_show_pages($options['show_pages'], $options['show_attachments'], $options['show_customs']);
+			$where[] = link_cf_where_show_pages($options['show_pages'], $options['show_customs']);
 			if ($include_cats) $where[] = link_cf_where_included_cats($options['included_cats']);
 			if ($exclude_cats) $where[] = link_cf_where_excluded_cats($options['excluded_cats']);
 			if ($exclude_authors) $where[] = link_cf_where_excluded_authors($options['excluded_authors']);
@@ -230,7 +221,7 @@ class LinkatePosts {
         
         _cherry_debug(__FUNCTION__, $presentation_mode, 'Как обработать?');
 		switch($presentation_mode) {
-			case 'relevant_block':
+			case 'related_block':
 				return CL_Related_Block::prepare_related_block($postid, $results, $option_key, $options);
 				break;
             case 'gutenberg':
@@ -448,7 +439,7 @@ function linkate_posts_wp_admin_style() {
 
 function linkate_posts_init () {
 	global $wp_db_version;
-	load_plugin_textdomain('linkate_posts');
+	load_plugin_textdomain(CHERRYLINK_TEXT_DOMAIN);
 
   	LinkatePosts::get_linkate_version();
 

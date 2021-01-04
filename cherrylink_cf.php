@@ -1,9 +1,11 @@
 <?php
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
- 
 
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_CF_LIBRARY', true);
 
 function link_cf_parse_args($args) {
@@ -67,7 +69,6 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	if (!isset($arg['omit_current_post'])) $arg['omit_current_post'] = @$options['omit_current_post'];
 	if (!isset($arg['show_private'])) $arg['show_private'] = @$options['show_private'];
 	if (!isset($arg['show_pages'])) $arg['show_pages'] = @$options['show_pages'];
-	if (!isset($arg['show_attachments'])) $arg['show_attachments'] = @$options['show_attachments'];
 	if (!isset($arg['none_text'])) $arg['none_text'] = stripslashes(@$options['none_text']);
 	if (!isset($arg['no_text'])) $arg['no_text'] = @$options['no_text'];
 	if (!isset($arg['tag_str'])) $arg['tag_str'] = stripslashes(@$options['tag_str']);
@@ -75,7 +76,9 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	if (!isset($arg['included_cats'])) $arg['included_cats'] = stripslashes(@$options['included_cats']);
 	if (!isset($arg['excluded_authors'])) $arg['excluded_authors'] = stripslashes(@$options['excluded_authors']);
 	if (!isset($arg['included_authors'])) $arg['included_authors'] = stripslashes(@$options['included_authors']);
-	// БЫЛО if (!isset($arg['excluded_posts'])) $arg['excluded_posts'] = stripslashes(@$options['excluded_posts']);
+    // БЫЛО if (!isset($arg['excluded_posts'])) $arg['excluded_posts'] = stripslashes(@$options['excluded_posts']);
+    
+    // get from options + add from CRB args
 	if (!isset($arg['excluded_posts']) || empty($arg['excluded_posts'])) {
 		$arg['excluded_posts'] = stripslashes(@$options['excluded_posts']);
 	} else {
@@ -107,7 +110,6 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	if (!isset($arg['weight_tags'])) $arg['weight_tags'] = @$options['weight_tags'];
 	if (!isset($arg['num_terms'])) $arg['num_terms'] = stripslashes(@$options['num_terms']);
 	if (!isset($arg['term_extraction'])) $arg['term_extraction'] = @$options['term_extraction'];
-	if (!isset($arg['hand_links'])) $arg['hand_links'] = @$options['hand_links'];
 
 	// the last options cannot be set via arguments
 	$arg['stripcodes'] = @$options['stripcodes'];
@@ -173,7 +175,7 @@ function link_cf_prepare_template($template) {
 }
 		
 function link_cf_expand_template($result, $template, $translations, $option_key) {
-	global $wpdb, $wp_version;
+	global $wpdb;
 	$replacements = array();
 	
 	if(array_key_exists('fulltags',$translations)){
@@ -230,7 +232,13 @@ function link_cf_sort_items($sort, $results, $option_key, $group_template, $item
 // the $post global can be overwritten by the use of $wp_query so we go back to the source
 // note the addition of a 'manual overide' allowing the current posts to me marked by linkate_posts_mark_current for example
 function link_cf_current_post_id($manual_current_ID = -1) {
-	$the_ID = -1;
+    $the_ID = -1;
+
+    // -666 comes from admin page as preview w/o id
+    if ($manual_current_ID === -666) {
+        return false;
+    }
+
 	if ($manual_current_ID > 0) {
 		$the_ID = $manual_current_ID;
 	} else if (isset($GLOBALS['wp_the_query'])) {
@@ -241,7 +249,6 @@ function link_cf_current_post_id($manual_current_ID = -1) {
 	}
 	return $the_ID;
 }
-
 
 /*
 
@@ -255,7 +262,7 @@ function link_cf_where_match_author() {
 }
 
 function link_cf_where_match_tags($match_tags) {
-	global $wpdb, $wp_version;
+	global $wpdb;
 	$args = array('fields' => 'ids');
 	$tag_ids = wp_get_object_terms(link_cf_current_post_id(), 'post_tag', $args);
 	if ( is_array($tag_ids) && count($tag_ids) > 0 )  {
@@ -284,10 +291,9 @@ function link_cf_where_match_tags($match_tags) {
 	return $sql;
 }
 
-function link_cf_where_show_pages($show_pages, $show_attachments='false', $show_customs) {
+function link_cf_where_show_pages($show_pages, $show_customs) {
 	if (function_exists('get_post_type')) {
 		$typelist = array();
-		if ($show_attachments === 'true') {$typelist[] = "'attachment'";};	
 		if ($show_pages === 'true') {$typelist[] = "'page'"; $typelist[] = "'post'";}
 		else if ($show_pages === 'false') {$typelist[] = "'post'";}
 		else if ($show_pages === 'but') {$typelist[] = "'page'";};
@@ -310,11 +316,10 @@ function link_cf_where_show_pages($show_pages, $show_attachments='false', $show_
 	return $sql;
 }
 
-function link_cf_where_show_status($status, $include_inherit='false') {
+function link_cf_where_show_status($status) {
 	$set = array();
 	$status = (array) $status;
 	// a quick way of allowing for attachments having status=inherit
-	if ($include_inherit === 'true') $status['inherit'] = 'true';
 	foreach ($status as $name => $state) {
 		if ($state === 'true') $set[] = "'$name'";
 	}
@@ -326,29 +331,8 @@ function link_cf_where_show_status($status, $include_inherit='false') {
 	}
 }
 
-// a replacement, for WP < 2.3, ONLY category children
-if (!function_exists('get_term_children')) {
-	function get_term_children($term, $taxonomy) {
-		if ($taxonomies !== 'category') return array();
-		return get_categories('child_of='.$term);
-	}
-}
-
-
-// a replacement, for WP < 2.3, ONLY to get posts with given category IDs
-if (!function_exists('get_objects_in_term')) {
-	function get_objects_in_term($terms, $taxonomies) {
-		global $wpdb;
-		if ($taxonomies !== 'category') return array();
-		$terms = "'" . implode("', '", $terms) . "'";
-		$object_ids = $wpdb->get_col("SELECT post_id FROM $wpdb->post2cat WHERE category_id IN ($terms)");
-		if (!$object_ids) return array();
-		return $object_ids;
-	}
-}
-
 function link_cf_where_match_category($post_id) {
-	global $wpdb, $wp_version;
+	global $wpdb;
 	$cat_ids = '';
 	foreach(get_the_category($post_id) as $cat) {
 		if ($cat->cat_ID) $cat_ids .= $cat->cat_ID . ',';
@@ -371,7 +355,7 @@ function link_cf_where_match_category($post_id) {
 }
 
 function link_cf_where_included_cats($included_cats) {
-	global $wpdb, $wp_version;
+	global $wpdb;
 	$catarray = explode(',', $included_cats);
 	foreach ( $catarray as $cat ) {
 		$catarray = array_merge($catarray, get_term_children($cat, 'category'));
@@ -389,7 +373,7 @@ function link_cf_where_included_cats($included_cats) {
 }
 
 function link_cf_where_excluded_cats($excluded_cats) {
-	global $wpdb, $wp_version;
+	global $wpdb;
 	$catarray = explode(',', $excluded_cats);
 	foreach ( $catarray as $cat ) {
 		$catarray = array_merge($catarray, get_term_children($cat, 'category'));
@@ -474,22 +458,8 @@ function link_cf_where_omit_post($manual_current_ID = -1) {
 	return "ID != $postid";
 }
 
-function link_cf_where_just_post() {	
-	$postid = link_cf_current_post_id();
-	if ($postid <= 1) $postid = -1;
-	return "ID = $postid";
-}
-
 function link_cf_where_hide_pass() {
 	return "post_password =''";
-}
-
-function link_cf_link_cf_where_hide_future() {
-	// from wp 2.1 future posts are taken care of by post status
-	$time_difference = get_option('gmt_offset');
-	$now = gmdate("Y-m-d H:i:s",(time()+($time_difference*3600)));
-	$sql = "post_date <= '$now'";
-	return $sql;
 }
 
 function link_cf_where_fulltext_match($weight_title, $titleterms, $weight_content, $contentterms, $weight_tags, $tagterms, $match_against_title) {
@@ -506,16 +476,7 @@ function link_cf_where_fulltext_match($weight_title, $titleterms, $weight_conten
 	return '(' . implode(' OR ', $wsql) . ') ' ;
 }
 
-function link_cf_where_author_comments() {
-	$author_email = get_the_author_email();
-	return "'$author_email' != comment_author_email";
-}
-
-function link_cf_where_user_comments() {
-	return "user_id = 0";
-}
-
-function link_cf_score_fulltext_match($table_name, $weight_title, $titleterms, $weight_content, $contentterms, $weight_tags, $tagterms, $forced_ids='', $match_against_title) {
+function link_cf_score_fulltext_match($table_name, $weight_title, $titleterms, $weight_content, $contentterms, $weight_tags, $tagterms, $match_against_title) {
 	global $wpdb;
 	$wsql = array();
 	if (!$match_against_title) {
@@ -532,25 +493,10 @@ function link_cf_score_fulltext_match($table_name, $weight_title, $titleterms, $
 		$wsql[] = "(".number_format($weight_content+$weight_title+$weight_tags, 4, '.', '')." * (MATCH (`title`) AGAINST ( \"$all_terms\" )))";
 	}
 
-	if ($forced_ids) {
-		// apply a delta function to boost the score for certain IDs
-		$fIDs = explode(',', $forced_ids);
-		foreach($fIDs as $fID) {
-			$wsql[] = "100 * (1 - SIGN(ID ^ $fID))"; // the previous delta was $wsql[] = "100*EXP(-10*POW((ID-$fID),2))";   
-
-		}
-	}
 	return '(' . implode(' + ', $wsql) . "  ) as score FROM `$table_name` LEFT JOIN `$wpdb->posts` ON `pID` = `ID` "; 
 }
 
-function link_cf_where_comment_type($comment_type) {
-	if ($comment_type === 'comments') $sql = "comment_type = ''";
-	elseif ($comment_type === 'trackbacks') $sql = "comment_type != ''";
-	return $sql;
-}
-
 function link_cf_where_check_age($direction, $length, $duration) {
-	global $wp_version;
 	if ('none' === $direction) return '';
 	$age = "DATE_SUB(CURDATE(), INTERVAL $length $duration)";
 	// we only filter out posts based on age, not pages
@@ -582,8 +528,3 @@ function link_cf_where_check_custom($key, $op, $value) {
 	End of SQL functions
 
 */
-
-function link_cf_microtime() {
-	list($usec, $sec) = explode(" ", microtime());
-	return ((float)$usec + (float)$sec); 
-} 

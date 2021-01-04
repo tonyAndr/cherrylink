@@ -1,8 +1,11 @@
 <?php 
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
- 
+
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_STATISTICS_LIBRARY', true);
 
 // ========================================================================================= //

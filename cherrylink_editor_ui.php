@@ -1,6 +1,11 @@
 <?php
+/*
+ * CherryLink Plugin
+ */
 
-// add_action ( 'init', 'cherrylink_gutenberg_assets');
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+
 add_action ( 'admin_head', 'linkate_send_options_frontend');
 add_action('wp_ajax_getLinkateLinks', 'getLinkateLinks');
 add_action( 'admin_enqueue_scripts', 'hook_term_edit', 10);
@@ -210,7 +215,16 @@ function cherrylink_classiceditor_panel() {
 
             <div class="linkate-box-container container-articles"><?php echo create_quick_cat_select(); ?><div id="linkate-links-list"></div></div>
             <?php //echo getLinkateLinks($tag_ID, 1); ?>
-            <div class="linkate-box-container container-taxonomy"><?php echo hierarchical_term_tree(); ?> </div>
+            <div class="linkate-box-container container-taxonomy">
+                <?php 
+                    // suppress useless notices temporarely
+                    $error_level = error_reporting();
+                    error_reporting(E_ALL & ~E_NOTICE);
+                    echo hierarchical_term_tree(); 
+                    // revert it back
+                    error_reporting($error_level);
+                ?> 
+            </div>
         </div>
     </div>
     <?php

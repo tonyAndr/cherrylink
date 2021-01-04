@@ -210,6 +210,12 @@ progress {
     display: inline-block;
 }
 
+.cherry-adm-tooltip > img {
+    border: 1px solid #dcdcdc;
+    border-radius: 50%;
+    padding: 1px;
+}
+
 /* Tooltip text */
 .cherry-adm-tooltip .tooltiptext {
     visibility: hidden;
@@ -271,6 +277,7 @@ input[id^="spoiler"] ~ [class^="spoiler"] {
 }
 input[id^="spoiler"]:checked + label + [class^="spoiler"]{
     height: auto;
+    overflow: visible;
     opacity: 1;
     margin: 10px auto 0;
     padding: 10px;
@@ -282,7 +289,9 @@ input[id^="spoiler"]:checked + label + [class^="spoiler"]{
 }
 #index_stopwords_suggestions {
     padding: 10px;
-    background: gold;
+    margin-top:20px;
+    max-width:500px;
+    background: lavender;
     display: none;
 }
 
@@ -365,4 +374,20 @@ code.good-index {
 .cherry-stats-preview-table td:last-child {
     width:80px;
     text-align: center;
+}
+
+.cherry-settings-export-container {
+    display:flex;
+    flex-flow: row;
+    width: 100%;
+    flex-wrap:wrap;
+    justify-content: flex-start;
+}
+.cherry-settings-export-container > div {
+    max-width: 600px;
+    flex-grow: 1;
+    margin-bottom: 10px;
+    background: gainsboro;
+    padding:10px;
+    margin-right: 10px;
 }

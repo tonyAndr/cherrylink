@@ -6,6 +6,7 @@ jQuery(document).ready(function ($) {
 
     let index_interval_check, index_serialized_form;
     let index_offset = 0, index_limit = 20, index_posts_count = 0, index_in_progress = false, php_execution_time = 0;
+    let ajax_index_error_occured = false;
 
     $('.button-reindex').click(function (e) {
         e.preventDefault();
@@ -33,6 +34,9 @@ jQuery(document).ready(function ($) {
                 index_posts_count = parseInt(response);
                 // update stats_posts_count
                 index_interval_check = setInterval(index_process_next, 200);
+            },
+            error: function (jqXHR, textStatus, errorThrown ) {
+                handle_errors(errorThrown, jqXHR.responseText);
             }
         });
     }
@@ -62,10 +66,26 @@ jQuery(document).ready(function ($) {
             return;
         }
 
+        // Stop on error
+        if (ajax_index_error_occured) {
+            clearInterval(index_interval_check);
+            $('#reindex_progress').hide();
+            $('#reindex_progress').val(0);
+
+            $('.button-reindex').show();
+            $("input").prop('disabled', false);
+            console.log("Index creation failed");
+
+            let output = `Что-то пошло не так при создании индекса. Проверьте консоль браузера (F12), чтобы узнать больше.`
+            $('#reindex_progress_text').html(output);
+            return;
+        }
+
         // Skip if in progress
         if (index_in_progress)
             return;
 
+        // Process next batch
         let ajax_data = index_serialized_form
             + '&action=linkate_ajax_call_reindex'
             + '&index_offset=' + index_offset
@@ -81,12 +101,19 @@ jQuery(document).ready(function ($) {
             success: function (response) {
                 response = JSON.parse(response);
                 console.log(response);
-                if (response.time) {
-                    php_execution_time += parseFloat(response.time);
+                if (response.status === 'OK' || response.status === 'DONE') {
+                    if (response.time) {
+                        php_execution_time += parseFloat(response.time);
+                    }
+                    index_offset += index_limit;
+                    index_in_progress = false;
+                    index_update_progress();
+                } else {
+                    handle_errors("WPDB_ERROR: " + response.wpdb_error, "WPDB_QUERY: " + response.wpdb_query);
                 }
-                index_offset += index_limit;
-                index_in_progress = false;
-                index_update_progress();
+            },
+            error: function (jqXHR, textStatus, errorThrown ) {
+                handle_errors(errorThrown, jqXHR.responseText);
             }
         });
     }
@@ -102,6 +129,7 @@ jQuery(document).ready(function ($) {
         $('#reindex_progress_text').html(output);
     }
 
+    // Get overused words after reindex
     function index_get_overused_words() {
         let ajax_data = 'action=linkate_last_index_overused_words';
 
@@ -119,42 +147,55 @@ jQuery(document).ready(function ($) {
                             $("#label_spoiler_stop").click();
                         }
 
-                        var output_string = '<h2>Самые часто используемые слова на вашем сайте</h2><p>Формат вывода - <strong>основа слова: количество использований</strong>. Чтобы сразу добавить слово в черный список - просто нажмите на соответствующую строку.</p><ol>';
+                        var output_string = '<h2>Самые часто используемые слова на вашем сайте</h2><p>Формат - <strong>слово: количество использований</strong>.</p><p><strong>Нажмите на слова</strong>, которые хотите добавить в черный список.</p><ol>';
                         prog['common_words'].forEach(function (item) {
                             output_string += "<li title='Нажмите, чтобы добавить в стоп-лист' data-stemm='" + item.word + "' class='index-stopsugg-add'><strong>" + item.word + "</strong>: " + item.count + "</li>";
                         });
                         output_string += "</ol>";
                         $("#index_stopwords_suggestions").html(output_string);
                         $("#index_stopwords_suggestions").show();
-
-                        // quick add suggestions w/o stemming
-                        $(".index-stopsugg-add").click(function (event) {
-                            event.preventDefault();
-
-                            let words = [$(this).attr('data-stemm').trim()];
-                            let ajax_data = {
-                                words: words,
-                                action: 'linkate_add_stopwords',
-                                is_white: 0,
-                                is_stemm: 1
-                            };
-                            $(this).remove();
-                            $.ajax({
-                                type: "POST",
-                                url: ajaxurl,
-                                data: ajax_data,
-                                datatype: 'json',
-                                success: function (response) {
-                                    const findTable = Tabulator.prototype.findTable("#example-table");
-                                    findTable[0].setData();
-                                    // $("#example-table").tabulator("setData");
-                                }
-                            });
-
+                        document.querySelector('#index_stopwords_suggestions').scrollIntoView({
+                            behavior: 'smooth' 
                         });
+
+                        bind_action_add_overused_word_to_stoplist();
                     }
                 }
             }
         });
+    }
+
+    function bind_action_add_overused_word_to_stoplist () {
+        // quick add suggestions
+        $(".index-stopsugg-add").click(function (event) {
+            event.preventDefault();
+
+            let words = [$(this).attr('data-stemm').trim()];
+            let ajax_data = {
+                words: words,
+                action: 'linkate_add_stopwords',
+                is_white: 0,
+                is_stemm: 0
+            };
+            $(this).remove();
+            $.ajax({
+                type: "POST",
+                url: ajaxurl,
+                data: ajax_data,
+                datatype: 'json',
+                success: function (response) {
+                    const findTable = Tabulator.prototype.findTable("#example-table");
+                    findTable[0].setData();
+                    // $("#example-table").tabulator("setData");
+                }
+            });
+
+        });
+    }
+
+    function handle_errors (error_msg, error_details) {
+        ajax_index_error_occured = true;
+        console.log(error_msg);
+        console.log(error_details);
     }
 });

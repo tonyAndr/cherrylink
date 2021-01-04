@@ -1,8 +1,11 @@
 <?php 
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
- 
+
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_INSTALL_LIBRARY', true);
 
 // ========================================================================================= //
@@ -160,10 +163,9 @@ function fill_options($options) {
 	if (!isset($options['omit_current_post'])) $options['omit_current_post'] = 'true';
 	if (!isset($options['show_private'])) $options['show_private'] = 'false';
 	if (!isset($options['show_pages'])) $options['show_pages'] = 'false';
-	if (!isset($options['show_attachments'])) $options['show_attachments'] = 'false';
 	// show_static is now show_pages
 	if ( isset($options['show_static'])) {$options['show_pages'] = $options['show_static']; unset($options['show_static']);};
-	if (!isset($options['none_text'])) $options['none_text'] = __('Ничего не найдено...', 'linkate_posts');
+	if (!isset($options['none_text'])) $options['none_text'] = __('Ничего не найдено...', CHERRYLINK_TEXT_DOMAIN);
 	if (!isset($options['no_text'])) $options['no_text'] = 'false';
 	if (!isset($options['tag_str'])) $options['tag_str'] = '';
 	if (!isset($options['excluded_cats'])) $options['excluded_cats'] = '';
@@ -182,7 +184,7 @@ function fill_options($options) {
 	if (!isset($options['stripcodes'])) $options['stripcodes'] = array(array());
     $options['prefix'] = '<div class="linkate-box-container"><ol id="linkate-links-list">';
 	$options['suffix'] = '</ol></div>';
-	if (!isset($options['output_template'])) $options['output_template'] = '{title_seo}';
+	if (!isset($options['output_template'])) $options['output_template'] = '{title}';
 	if (!isset($options['match_cat'])) $options['match_cat'] = 'false';
 	if (!isset($options['match_tags'])) $options['match_tags'] = 'false';
 	if (!isset($options['match_author'])) $options['match_author'] = 'false';
@@ -197,7 +199,6 @@ function fill_options($options) {
 	if (!isset($options['num_terms'])) $options['num_terms'] = 50;
 	if (!isset($options['clean_suggestions_stoplist'])) $options['clean_suggestions_stoplist'] = 'false';
 	$options['term_extraction'] = 'frequency'; // since 1.4 we hide TextRank option 
-	if (!isset($options['hand_links'])) $options['hand_links'] = 'false';
 	if (!isset($options['utf8'])) $options['utf8'] = 'true';
 	if (!function_exists('mb_internal_encoding')) $options['utf8'] = 'false';
 	if (!isset($options['use_stemmer'])) $options['use_stemmer'] = 'false';

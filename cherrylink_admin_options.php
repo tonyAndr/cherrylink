@@ -1,21 +1,24 @@
 <?php
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
+
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
 
 // ========================================================================================= //
 // ============================== CherryLink Setup Settings Pages  ============================== //
 // ========================================================================================= //
 
 function linkate_posts_option_menu() {
-	add_options_page(__('CherryLink Options', 'linkate_posts'), __('CherryLink', 'linkate_posts'), 'cherrylink_settings', 'linkate-posts', 'linkate_posts_options_page');
+	add_options_page(__('CherryLink Options', CHERRYLINK_TEXT_DOMAIN), __('CherryLink', CHERRYLINK_TEXT_DOMAIN), 'cherrylink_settings', 'linkate-posts', 'linkate_posts_options_page');
 }
 
 add_action('admin_menu', 'linkate_posts_option_menu', 1);
 
 function linkate_posts_options_page(){
 	echo '<div class="wrap"><h2>';
-	_e('CherryLink - Настройки', 'linkate_posts');
+	_e('CherryLink - Настройки', CHERRYLINK_TEXT_DOMAIN);
 	echo '</h2></div><hr>';
 
 	linkate_posts_license_field();
@@ -41,7 +44,7 @@ function linkate_posts_license_field() {
 		$options = link_cf_options_from_post($options, array('hash_field'));
 		update_option('linkate-posts', $options);
 		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Обновление ключа</b>', 'linkate_posts') . '</p></div>';
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Обновление ключа</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
     }
     if (isset($_POST['remove_license'])) {
 		check_admin_referer('linkate-posts-update-options');
@@ -54,7 +57,7 @@ function linkate_posts_license_field() {
 
 		update_option('linkate-posts', $options);
 		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Ключ сброшен</b>', 'linkate_posts') . '</p></div>';
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Ключ сброшен</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
     }
 
 
@@ -73,14 +76,14 @@ function linkate_posts_license_field() {
         <?php if ($info): ?>
         <p>Действует лицензия на текущий домен, ключ скрыт в целях безопасности.</p>
         <form method="post" action="">
-			<input type="submit" class="button button-cherry" name="remove_license" value="<?php _e('Сбросить лицензию', 'linkate_posts') ?>" />
+			<input type="submit" class="button button-cherry" name="remove_license" value="<?php _e('Сбросить лицензию', CHERRYLINK_TEXT_DOMAIN) ?>" />
 			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 		</form>
         <?php else: ?>
 		<form method="post" action="">
-			<label for="hash_field"><?php _e('Ваш ключ:', 'linkate_posts') ?></label>
+			<label for="hash_field"><?php _e('Ваш ключ:', CHERRYLINK_TEXT_DOMAIN) ?></label>
 			<input type="text" size="100" name="hash_field" id="hash_field" value="<?php echo htmlspecialchars(stripslashes($options['hash_field'])); ?>">
-			<input type="submit" class="button button-cherry" name="update_license" value="<?php _e('Сохранить', 'linkate_posts') ?>" />
+			<input type="submit" class="button button-cherry" name="update_license" value="<?php _e('Сохранить', CHERRYLINK_TEXT_DOMAIN) ?>" />
 			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 		</form>
         <?php endif; ?>
@@ -102,7 +105,7 @@ function linkate_posts_filter_options_subpage(){
 		$options = link_cf_options_from_post($options, array('show_customs','excluded_posts', 'included_posts', 'excluded_authors', 'included_authors', 'excluded_cats', 'included_cats', 'tag_str', 'custom', 'limit_ajax', 'show_private', 'show_pages', 'status', 'age', 'omit_current_post', 'match_cat', 'match_tags', 'sort', 'quickfilter_dblclick', 'singleword_suggestions'));
 		update_option('linkate-posts', $options);
 		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки обновлены.</b>', 'linkate_posts') . '</p></div>';
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки обновлены.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
 	}
 	//now we drop into html to display the option page form
 	?>
@@ -114,7 +117,6 @@ function linkate_posts_filter_options_subpage(){
                 <hr>
                 <table class="optiontable form-table">
                     <?php
-                    //link_cf_display_skip($options['skip']);
                     link_cf_display_limit_ajax($options['limit_ajax']);
                     link_cf_display_show_pages($options['show_pages']);
                     link_cf_display_omit_current_post($options['omit_current_post']);
@@ -149,7 +151,7 @@ function linkate_posts_filter_options_subpage(){
                     </table>
                 </div>
                 <hr>
-                <div class="submit"><input type="submit" class="button button-cherry" name="update_options" value="<?php _e('Сохранить настройки', 'linkate_posts') ?>" /></div>
+                <div class="submit"><input type="submit" class="button button-cherry" name="update_options" value="<?php _e('Сохранить настройки', CHERRYLINK_TEXT_DOMAIN) ?>" /></div>
                 <?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 			</form>
 		</div>
@@ -164,7 +166,8 @@ function linkate_posts_output_options_subpage(){
 		check_admin_referer('linkate-posts-update-options');
 		if (defined('POC_CACHE_4')) poc_cache_flush();
 		$options = link_cf_options_from_post($options, 
-												array('output_template', 
+												array(
+                                                    // 'output_template', 
 													'link_before',
 													'link_after', 
                                                     'link_temp_alt', 
@@ -181,7 +184,7 @@ function linkate_posts_output_options_subpage(){
 
 		update_option('linkate-posts', $options);
 		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки обновлены.</b>', 'linkate_posts') . '</p></div>';
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки обновлены.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
 	}
 	//now we drop into html to display the option page form
 	?>
@@ -189,24 +192,25 @@ function linkate_posts_output_options_subpage(){
 		<div class="wrap linkateposts-tab-content">
 	        <form method="post" action="">
  
-	    		    <h2>Вывод списка ссылок в редакторе</h2>
-	    		    <p>В нужные поля подставить желаемый HTML код с использованием тегов из списка ниже. Теги выводят данные о записе или странице. </p>
+                <!-- <h2>Вывод списка ссылок в редакторе</h2>
+                <p>В нужные поля подставить желаемый HTML код с использованием тегов из списка ниже. Теги выводят данные о записе или странице. </p>
 
-	        		<table class="optiontable form-table">
-	        			<?php
-	        				link_cf_display_output_template($options['output_template']);
-	        				//link_cf_display_none_text($options['none_text']);
-	        			?>
-	        		</table>
+                <table class="optiontable form-table">
+                    <?php
+                        // link_cf_display_output_template($options['output_template']);
+                    ?>
+                </table>
 
-			    <hr>
+			    <hr> -->
 			    <h2>Общие настройки шаблонов и вставки</h2>
                 <hr>
 				<table class="optiontable form-table">
 
 		        	<?php
 			        link_cf_display_anons_len($options['anons_len']);
-			        link_cf_display_multilink($options['multilink'], $options['no_selection_action'], $options['relative_links']);
+                    link_cf_display_multilink($options['multilink']);
+                    link_cf_display_no_selection_action($options['no_selection_action']);
+                    link_cf_display_relative_links($options['relative_links']);
                     link_cf_display_suggestions_switch_action($options['suggestions_switch_action']);
                     link_cf_template_image_size($options['template_image_size'])
 			        ?>
@@ -228,7 +232,7 @@ function linkate_posts_output_options_subpage(){
 			        <table class="optiontable form-table">
 			          <?php link_cf_display_replace_term_template($options['term_before'], $options['term_after'], $options['term_temp_alt']); ?>
 			        </table>
-			    <div class="submit"><input type="submit" class="button button-cherry" name="update_options" value="<?php _e('Сохранить настройки', 'linkate_posts') ?>" /><input type="submit" id="restore_templates" class="button button-download" style="float: right;" value="<?php _e('Восстановить шаблоны по умолчанию', 'linkate_posts') ?>" /></div>
+			    <div class="submit"><input type="submit" class="button button-cherry" name="update_options" value="<?php _e('Сохранить настройки', CHERRYLINK_TEXT_DOMAIN) ?>" /><input type="submit" id="restore_templates" class="button button-download" style="float: right;" value="<?php _e('Восстановить шаблоны по умолчанию', CHERRYLINK_TEXT_DOMAIN) ?>" /></div>
 			    <?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 			</form>
 		</div>
@@ -276,7 +280,7 @@ function linkate_posts_index_options_subpage(){
 		$wpdb->query("TRUNCATE `$table_index`");
 
 		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Базы данных плагина очищены.</b>', 'linkate_posts') . '</p></div>';
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Базы данных плагина очищены.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
 	}
 
 	$index_rows = $wpdb->get_var("SELECT COUNT(*) FROM $table_index");
@@ -302,12 +306,6 @@ function linkate_posts_index_options_subpage(){
     $index_process_status_text = '';
     switch($index_process_status) {
         case 'VALUE_NOT_EXIST':
-            // if ($index_rows || $scheme_rows) {
-            //     // probably we had index already, but not the option
-            //     $index_process_status_text = '';
-            // } else {
-            //     $index_process_status_text = '<code class="bad-index">[Индекс не создан]</code>';
-            // }
             $index_process_status_text = '<code class="bad-index">[Индекс не создан]</code>';
         break;
         case 'IN_PROGRESS': 
@@ -347,10 +345,8 @@ function linkate_posts_index_options_subpage(){
 			    <hr>
 				<table class="optiontable form-table">
 					<?php
-						//link_cf_display_which_title($options['compare_seotitle']);
-						link_cf_display_clean_suggestions_stoplist($options['clean_suggestions_stoplist']);
 						link_cf_display_suggestions_donors($options['suggestions_donors_src'], $options['suggestions_donors_join'] );
-						//link_cf_display_term_extraction($options['term_extraction']);
+						link_cf_display_clean_suggestions_stoplist($options['clean_suggestions_stoplist']);
 						link_cf_display_num_term_length_limit($options['term_length_limit']);
 					?>
 				</table>
@@ -365,8 +361,8 @@ function linkate_posts_index_options_subpage(){
       		    <div id="reindex_progress_text"></div>
 			    <progress id="reindex_progress"></progress>
 				<div class="submit" style="text-align:right">
-					<input type="submit" class="button button-cherry" name="truncate_all" value="<?php _e('Очистить индекс', 'linkate_posts') ?>" />
-					<input type="submit" class="button button-download button-reindex" name="reindex_all" value="<?php _e($index_process_status === 'VALUE_NOT_EXIST' ? 'Создать индекс' : 'Пересоздать индекс', 'linkate_posts') ?>" />
+					<input type="submit" class="button button-cherry" name="truncate_all" value="<?php _e('Очистить индекс', CHERRYLINK_TEXT_DOMAIN) ?>" />
+					<input type="submit" class="button button-download button-reindex" name="reindex_all" value="<?php _e($index_process_status === 'VALUE_NOT_EXIST' ? 'Создать индекс' : 'Пересоздать индекс', CHERRYLINK_TEXT_DOMAIN) ?>" />
 					<?php  if (function_exists('wp_nonce_field')) //wp_nonce_field('linkate-posts-update-options'); ?>
 				</div>
 			</form>
@@ -377,28 +373,28 @@ function linkate_posts_index_options_subpage(){
 
 			<div class="spoiler_stop">
 				<h2>Стоп-слова</h2>
-				<p>Список стоп-слов индивидуальный для вашего сайта. В плагин уже встроены самые распространенные слова из русского языка, которые не учитываются в поиске схожести. Если их требуется расширить - используйте поле справа от таблицы.</p> <p>Слова нужно вводить без знаков препинания, каждое слово с новой строки. По умолчанию, все слова состоящие из 3 и меньше букв автоматически <strong>не учитывается алгоритмом</strong>. </p><p>Необходимо вписать все возможные словоформы (пример: узнать, узнал, узнала, узнают, узнавать и тд.) </p>
+				<p>Список стоп-слов индивидуальный для вашего сайта. В плагин уже встроены самые распространенные слова из русского языка, которые не учитываются в поиске схожести. Если их требуется расширить - используйте поле справа от таблицы.</p> <p>Слова нужно вводить без знаков препинания, каждое слово с новой строки. </p><p>Нет необходимости писать все возможные словоформы (пример: узнать, узнал, узнала, узнают, узнавать и тд.) - из слов выделяется основа без окончаний при добавлении в таблицу. </p>
 				<hr>
-				<div style="display:flex;flex-flow: row;width: 100%;flex-wrap:nowrap;justify-content: space-between">
-					<div style="flex-grow: 1; flex-shrink: 0; flex-basis: 0">
+				<div style="display:flex;flex-flow: row;width: 100%;flex-wrap:wrap;justify-content: space-evenly">
+                    <div style="">
 						<div class="table-controls" style="text-align: right; margin-bottom:10px;">
 							<button id="stopwords-remove-all"  tabIndex="-1">Удалить все из таблицы</button>
 							<button id="stopwords-defaults" tabIndex="-1">Вернуть стандартные</button>
 						</div>
 						<div id="example-table"></div>
 					</div>
-					<div style="flex-grow: 1; flex-shrink: 0; flex-basis: 0; padding-left:20px;">
-						<div id="index_stopwords_suggestions"></div>
-						<table class="optiontable form-table">
+					<div style="">
+						
 							<?php
 							link_cf_display_stopwords();
 							?>
-						</table>
 						<div class="table-controls">
 							<button id="stopwords-add">Добавить слова</button>
 						</div>
-					</div>
-				</div>
+                    </div>
+                    <div id="index_stopwords_suggestions"></div>
+                </div>
+                
 			</div>
 			<br>
 			<hr>
@@ -412,7 +408,7 @@ function linkate_posts_index_options_subpage(){
 				<form id="form_generate_csv" method="post" action="" >
 					<?php link_cf_display_scheme_export_options(); ?>
 					<progress id="csv_progress"></progress>
-					<div class="submit"><input id="generate_csv" type="submit" class="button button-cherry" name="generate_csv" value="<?php _e('Создать CSV', 'linkate_posts') ?>" /></div>
+					<div class="submit"><input id="generate_csv" type="submit" class="button button-cherry" name="generate_csv" value="<?php _e('Создать CSV', CHERRYLINK_TEXT_DOMAIN) ?>" /></div>
 					
 				</form>
 			</div>
@@ -451,7 +447,7 @@ function linkate_posts_statistics_options_subpage(){
 					<?php link_cf_display_scheme_statistics_options(); ?>
 					<progress id="csv_progress"></progress>
 					<div class="submit">
-                        <input id="generate_preview" type="submit" class="button button-cherry" name="generate_preview" value="<?php _e('Проверить перелинковку', 'linkate_posts') ?>" />  
+                        <input id="generate_preview" type="submit" class="button button-cherry" name="generate_preview" value="<?php _e('Проверить перелинковку', CHERRYLINK_TEXT_DOMAIN) ?>" />  
                     </div>
 				</form>
             <br>
@@ -482,7 +478,7 @@ function linkate_posts_statistics_options_subpage(){
 
 
 function linkate_posts_accessibility_options_subpage(){
-	global $wpdb, $wp_version;
+	global $wpdb;
 	$options = get_option('linkate-posts');
 
 	// Create options file to export
@@ -510,9 +506,9 @@ function linkate_posts_accessibility_options_subpage(){
 	        // rewrite options
 	        $options = link_cf_options_from_post($options, $keys);
 	        update_option('linkate-posts', $options);
-	        echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки импортированы.</b>', 'linkate_posts') . '</p></div>';
+	        echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки импортированы.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
         } else {
-	        echo '<div class="updated settings-error notice"><p>' . __('<b>Не удалось импортировать...</b>', 'linkate_posts') . '</p></div>';
+	        echo '<div class="updated settings-error notice"><p>' . __('<b>Не удалось импортировать...</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
         }
 	}
 
@@ -522,36 +518,42 @@ function linkate_posts_accessibility_options_subpage(){
 		// Fill up the options with the values chosen...
 		fill_options(NULL);
 		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки сброшены.</b>', 'linkate_posts') . '</p></div>';
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки сброшены.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
 	}
 	//now we drop into html to display the option page form
 	?>
 	<div class="linkateposts-admin-flex">
 		<div class="wrap linkateposts-tab-content">
-			<div class="column-left-export">	
-				<form method="post" action=""  enctype="multipart/form-data">
-				    <h2>Экспорт и импорт настроек плагина</h2>
-                    <p>Для переноса настроек между сайтами, скачайте файл настроек и импортируйте его на другом сайте. </p><p><strong>Внимание!</strong> Формат настроек в файле не совместим с закодированными настройками из версий младше 1.4.9. Для переноса с более младших версий, сначала обновите плагин на сайте-доноре, затем экспортируйте их в файл.</p>
-		    			<?php
-//		    				link_cf_display_export_template(http_build_query($options));
-//		    				link_cf_display_export_template(base64_encode(http_build_query($options)));
-		    			?>
-                    <a class="button button-download" href="<?php echo WP_PLUGIN_URL.'/cherrylink/export_options.txt'; ?>" download>Скачать файл настроек</a>
+        <div class="cherry-settings-export-container">
+            <div>
+                <h2>Экспорт настроек плагина</h2>
+                <p>Для переноса настроек между сайтами, скачайте файл настроек и импортируйте его на другом сайте. </p><p><strong>Внимание!</strong> Формат настроек в файле не совместим с закодированными настройками из версий младше 1.4.9. Для переноса с более младших версий, сначала обновите плагин на сайте-доноре, затем экспортируйте их в файл.</p>
+                <a class="button button-download" href="<?php echo WP_PLUGIN_URL.'/cherrylink/export_options.txt'; ?>" download>Скачать файл настроек</a>
+            </div>
+            <div>	
+                <h2>Импорт настроек плагина</h2>
+                <p>Загрузите текстовый файл <strong>export_options.txt</strong>, полученный при экспорте настроек.</p>
+                <form method="post" action="" enctype="multipart/form-data">
                     <div class="submit">
                         <p><strong>Поле для импорта:</strong></p>
-                        <label for="upload_options">Выберите файл </label><input type="file" name="upload_options" required>
-                        <input type="submit" class="button button-cherry" name="import_settings" value="<?php _e('Импортировать настройки', 'linkate_posts') ?>" /></div>
-				    <?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
-				</form>
-			</div>
-			<div class="column-right-export">
+                        <input type="file" name="upload_options" required>
+                        <input type="submit" class="button button-cherry" name="import_settings" value="<?php _e('Импортировать настройки', CHERRYLINK_TEXT_DOMAIN) ?>" />
+                    </div>
+                    <?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
+                </form>
+            </div>
+			<div>
 				<form method="post" action="">
 					<h2>Вернуть настройки по умолчанию</h2>
 			    	<p>Нажмите эту волшебную кнопочку, чтобы начать все с чистого листа. <strong>Внимание! Все настройки будут сброшены, в том числе лицезионный ключ!</strong></p>
-				    <div class="submit"><input type="submit" class="button button-cherry" name="reset_options" value="<?php _e('Сбросить настройки', 'linkate_posts') ?>" /></div>
+				    <div class="submit"><input type="submit" class="button button-cherry" name="reset_options" value="<?php _e('Сбросить настройки', CHERRYLINK_TEXT_DOMAIN) ?>" /></div>
 				    <?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 			    </form>
 			</div>
+
+        </div>
+
+
 		</div>
 		<?php link_cf_display_sidebar(); ?>
 	</div>
@@ -571,44 +573,7 @@ function linkate_posts_accessibility_options_subpage(){
 	}
 }
 
-function linkate_posts_suggestions_options_subpage(){
-	global $wpdb;
-	$options = get_option('linkate-posts');
-	if (isset($_POST['update_options'])) {
-		check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
-		// Fill up the options with the values chosen...
 
-		$options = link_cf_options_from_post($options, array( 'suggestions_join', 'suggestions_switch_action'));
-		update_option('linkate-posts', $options);
-
-		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки обновлены.</b>', 'linkate_posts') . '</p></div>';
-	}
-
-	//now we drop into html to display the option page form
-	?>
-	<div class="linkateposts-admin-flex">
-		<div class="wrap linkateposts-tab-content">
-			<form method="post" action="">
-	        <h2>Настройки поведения панели подсказок для возможных анкоров</h2>
-	        <hr>
-			<table class="optiontable form-table">
-				<?php
-					link_cf_display_suggestions_join($options['suggestions_join']);
-					//link_cf_display_suggestions_click($options['suggestions_click']);
-					link_cf_display_suggestions_switch_action($options['suggestions_switch_action']);
-				?>
-			</table>
-	        
-			<div class="submit"><input type="submit" class="button button-cherry" name="update_options" value="<?php _e('Сохранить настройки', 'linkate_posts') ?>" /></div>
-			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
-			</form>
-		</div>
-		<?php link_cf_display_sidebar(); ?>
-	</div>
-	<?php
-}
 
 function linkate_posts_relevance_options_subpage(){
 	$options = get_option('linkate-posts');
@@ -627,7 +592,7 @@ function linkate_posts_relevance_options_subpage(){
 		$options['weight_tags'] = $wtags / $wcombined;
 		update_option('linkate-posts', $options);
 		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки обновлены.</b>', 'linkate_posts') . '</p></div>';
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки обновлены.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
 	}
 	//now we drop into html to display the option page form
 	?>
@@ -644,7 +609,7 @@ function linkate_posts_relevance_options_subpage(){
 					link_cf_display_match_against_title($options['match_all_against_title']);
 				?>
 			</table>
-			<div class="submit"><input type="submit" class="button button-cherry" name="update_options" value="<?php _e('Сохранить настройки', 'linkate_posts') ?>" /></div>
+			<div class="submit"><input type="submit" class="button button-cherry" name="update_options" value="<?php _e('Сохранить настройки', CHERRYLINK_TEXT_DOMAIN) ?>" /></div>
 			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 			</form>
 		</div>

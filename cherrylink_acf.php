@@ -1,8 +1,11 @@
 <?php
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
- 
+
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_ACF_LIBRARY', true);
 
 function link_cf_is_base64_encoded($data)
@@ -191,26 +194,6 @@ function link_cf_check_cardinal($string) {
 	return ($value > 0) ? $value : 0;
 }
 
-function link_cf_display_available_tags($is_term) {
-	?>
-		<strong>Доступные теги:</strong>
-		<ul class="linkate-available-tags">
-		<li><strong>{title}</strong> - Заголовок H1;</li>
-		<li><strong>{url}</strong> - адрес ссылки;</li>
-		<?php if (!$is_term) {
-			?>
-			<li><strong>{title_seo}</strong> - Из AIOSeo или Yoast;</li>
-	        <li><strong>{categorynames}</strong> - категории;</li> 
-			<li><strong>{date}</strong> - дата;</li>
-			<li><strong>{author}</strong> - автор;</li>
-			<li><strong>{postid}</strong> - id поста;</li>
-			<li><strong>{imagesrc}</strong> - ссылка на превью;</li>
-			<li><strong>{anons}</strong> - текст анонса.</li>
-			<?php
-		} ?>
-		</ul>
-	<?php
-}
 function link_cf_get_available_tags($is_term) {
 	$tags ='
 		<strong>Доступные теги:</strong>
@@ -232,66 +215,23 @@ function link_cf_get_available_tags($is_term) {
 	return $tags;
 }
 
+// ========================================================================================= //
+// ============================== Output/Template   ============================== //
+// ========================================================================================= //
 
-function get_linkate_version($prefix) {
-	$plugin_version = str_replace('-', '_', $prefix) . '_version';
-	global $$plugin_version;
-	return ${$plugin_version};
-}
-function link_cf_display_export_template($export) {
-	?>
-	<label for="export"><?php _e('Настройки плагина:', 'post_plugin_library') ?></label>
-	<textarea name="export" id="export" rows="10"><?php echo $export; ?></textarea> 
-	<?php
-}
-
-function link_cf_display_accessibility_template($hash_field) {
-	?>
-
-	<?php
-}
-
-
-function link_cf_display_accessibility_response($info) {
-
-}
-
-/*
-
-	inserts a form button to completely remove the plugin and all its options etc.
-
-*/
-
-function link_cf_confirm_eradicate() {
- return (isset($_POST['eradicate-check']) && 'yes'===$_POST['eradicate-check']);
-}
-
-function link_cf_deactivate_plugin($plugin_file) {
-	$current = get_option('active_plugins');
-	$plugin_file = substr($plugin_file, strlen(WP_PLUGIN_DIR)+1);
-	$plugin_file = str_replace('\\', '/', $plugin_file);
-	if (in_array($plugin_file, $current)) {
-		array_splice($current, array_search($plugin_file, $current), 1); 
-		update_option('active_plugins', $current);
-	}
-}
-
-
-/*
-
-	For the display of the option pages
-
-*/
-
-function link_cf_display_multilink($multilink, $no_selection_action, $relative_links = "full") {
+function link_cf_display_multilink($multilink) {
 	?>
 		<tr valign="top">
-			<th scope="row"><label for="multilink"><?php _e('Разрешить множественную вставку ссылок:', 'post_plugin_library') ?></label></th>
+			<th scope="row"><label for="multilink"><?php _e('Разрешить множественную вставку ссылок:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 			<td><input name="multilink" type="checkbox" id="multilink" value="cb_multilink" <?php echo $multilink; ?>/></td>
             <td><?php link_cf_prepare_tooltip("Разрешить или запретить вставлять одну и ту же ссылку несколько раз. Если выключено - ссылки перечеркивются в панели перелинковки."); ?></td>
 		</tr>
+	<?php
+}
+function link_cf_display_no_selection_action($no_selection_action) {
+	?>
 		<tr valign="top">
-            <th scope="row"><label for="no_selection_action"><?php _e('Если текст не выделен, что делаем?', 'post_plugin_library') ?></label></th>
+            <th scope="row"><label for="no_selection_action"><?php _e('Если текст не выделен, что делаем?', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
             <td>
                 <select name="no_selection_action" id="no_selection_action">
                 <option <?php if($no_selection_action == 'title') { echo 'selected="selected"'; } ?> value="title">Вставить в анкор Title Seo</option>
@@ -301,8 +241,12 @@ function link_cf_display_multilink($multilink, $no_selection_action, $relative_l
                 </select>
             </td>
 	    </tr>
+	<?php
+}
+function link_cf_display_relative_links($relative_links = "full") {
+	?>
 		<tr valign="top">
-            <th scope="row"><label for="relative_links"><?php _e('Относительные ссылки', 'post_plugin_library') ?></label></th>
+            <th scope="row"><label for="relative_links"><?php _e('Относительные ссылки', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
             <td>
                 <select name="relative_links" id="relative_links">
                 <option <?php if($relative_links == 'full') { echo 'selected="selected"'; } ?> value="full">Полный путь (http://domain.ru/page.html)</option>
@@ -315,31 +259,12 @@ function link_cf_display_multilink($multilink, $no_selection_action, $relative_l
 	<?php
 }
 
-function link_cf_display_limit($limit) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="limit"><?php _e('Количество ссылок:', 'post_plugin_library') ?></label></th>
-		<td><input name="limit" type="number" id="limit" style="width: 60px;" value="<?php echo $limit; ?>" size="2" /></td>
-        <td><?php link_cf_prepare_tooltip("Рекомендую ставить большое число и использовать фильтрацию прямо в редакторе. Если больше доверяете алгоритму, чем КМу - ставьте ограничение и пусть вписывают то, что предложил плагин :)"); ?></td>
-	</tr>
-	<?php
-}
 function link_cf_display_limit_ajax($limit_ajax) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="limit_ajax"><?php _e('Количество ссылок :', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="limit_ajax"><?php _e('Количество ссылок :', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><input name="limit_ajax" type="number" id="limit_ajax" style="width: 60px;" value="<?php echo $limit_ajax; ?>" size="2" /></td>
         <td><?php link_cf_prepare_tooltip("Сколько ссылок будет выведено на панели перелинковки по умолчанию / сколько ссылок подгружать при нажатии на кнопку \"загрузить еще...\""); ?></td>
-	</tr>
-	<?php
-}
-
-
-function link_cf_display_skip($skip) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="skip"><?php _e('Сдвиг от начала на кол-во ссылок:', 'post_plugin_library') ?></label></th>
-		<td><input name="skip" type="number" id="skip" style="width: 60px;" value="<?php echo $skip; ?>" size="2" /></td>
 	</tr>
 	<?php
 }
@@ -347,7 +272,7 @@ function link_cf_display_skip($skip) {
 function link_cf_display_omit_current_post($omit_current_post) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="omit_current_post"><?php _e('Скрыть ссылку на текущий пост?', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="omit_current_post"><?php _e('Скрыть ссылку на текущий пост?', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 		<select name="omit_current_post" id="omit_current_post" >
 		<option <?php if($omit_current_post == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -358,11 +283,10 @@ function link_cf_display_omit_current_post($omit_current_post) {
 	<?php
 }
 
-
 function link_cf_display_show_private($show_private) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="show_private"><?php _e('Показывать защищенные паролем?', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="show_private"><?php _e('Показывать защищенные паролем?', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 		<select name="show_private" id="show_private">
 		<option <?php if($show_private == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -375,7 +299,7 @@ function link_cf_display_show_private($show_private) {
 function link_cf_display_suggestions_switch_action($suggestions_switch_action) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="suggestions_switch_action"><?php _e('Быстрые действия в подсказках: переход к анкору в тексте при наведении мышкой, вставка ссылки по клику на элемент', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="suggestions_switch_action"><?php _e('Быстрые действия в подсказках: переход к анкору в тексте при наведении мышкой, вставка ссылки по клику на элемент', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 		<select name="suggestions_switch_action" id="suggestions_switch_action">
 		<option <?php if($suggestions_switch_action == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -389,7 +313,7 @@ function link_cf_display_suggestions_switch_action($suggestions_switch_action) {
 function link_cf_display_suggestions_donors($suggestions_donors_src, $suggestions_donors_join) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="suggestions_donors_src"><?php _e('Доноры слов/фраз для подсказок', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="suggestions_donors_src"><?php _e('Доноры слов/фраз для подсказок', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
             <table class="linkateposts-inner-table">
                 <?php
@@ -409,7 +333,7 @@ function link_cf_display_suggestions_donors($suggestions_donors_src, $suggestion
 		</td>
 	</tr>
     <tr valign="top">
-        <th scope="row"><label for="suggestions_donors_join"><?php _e('Что делать с донорами для подсказок?', 'post_plugin_library') ?></label></th>
+        <th scope="row"><label for="suggestions_donors_join"><?php _e('Что делать с донорами для подсказок?', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
         <td>
             <select name="suggestions_donors_join" id="suggestions_donors_join">
                 <option <?php if($suggestions_donors_join == 'join') { echo 'selected="selected"'; } ?> value="join">Дополнить друг друга (берем все слова = больше подсказок)</option>
@@ -417,60 +341,32 @@ function link_cf_display_suggestions_donors($suggestions_donors_src, $suggestion
             </select>
         </td>
         <td><?php link_cf_prepare_tooltip("Пример:<br>
-У нас есть 3 поля, которые содержат слова:
-<ol>
-<li>Заголовок (Н1) - [ипотека, квартира, документы]</li>
-<li>Тайтл (СЕО) - [кредит, квартира, оформить]</li>
-<li>Контент (текст записи) - [кредит, ипотека, документы, квартира]</li>
-</ol>
-Если мы их объединим, то в подсказках будут слова:<br>
-<strong>[ипотека, квартира, документы, креди, оформить]</strong>
-<br><br>
-При пересечении (ищем общие слова):<br>
-<strong>[квартира] - только это слово встретилось во всех полях одновременно.</strong>
-<br><br>
-Если какое-либо из полей пустое (например у вас не задан сео тайтл), то это поле просто не учитывается."); ?></td>
+            У нас есть 3 поля, которые содержат слова:
+            <ol>
+            <li>Заголовок (Н1) - [ипотека, квартира, документы]</li>
+            <li>Тайтл (СЕО) - [кредит, квартира, оформить]</li>
+            <li>Контент (текст записи) - [кредит, ипотека, документы, квартира]</li>
+            </ol>
+            Если мы их объединим, то в подсказках будут слова:<br>
+            <strong>[ипотека, квартира, документы, креди, оформить]</strong>
+            <br><br>
+            При пересечении (ищем общие слова):<br>
+            <strong>[квартира] - только это слово встретилось во всех полях одновременно.</strong>
+            <br><br>
+            Если какое-либо из полей пустое (например у вас не задан сео тайтл), то это поле просто не учитывается."); ?></td>
     </tr>
-	<?php
-}
-function link_cf_display_suggestions_join($suggestions_join) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="suggestions_join"><?php _e('Опции отображения', 'post_plugin_library') ?></label></th>
-		<td>
-		<select name="suggestions_join" id="suggestions_join">
-		<option <?php if($suggestions_join == 'all') { echo 'selected="selected"'; } ?> value="all">Объединить все в 2 группы: "Простые анкоры" и "Фразы-анкоры"</option>
-		<option <?php if($suggestions_join == 'same') { echo 'selected="selected"'; } ?> value="same">Объединять только одинаковые анкоры</option>
-<!-- 		<option <?php if($suggestions_join == 'not') { echo 'selected="selected"'; } ?> value="not">Ничего не объединять</option> -->
-		</select> 
-		</td>
-	</tr>
-	<?php
-}
-function link_cf_display_suggestions_click($suggestions_click) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="suggestions_click"><?php _e('Быстрый переход к анкору при листании группы', 'post_plugin_library') ?></label></th>
-		<td>
-		<select name="suggestions_click" id="suggestions_click">
-		<option <?php if($suggestions_click == 'select') { echo 'selected="selected"'; } ?> value="select">Поиск и выделение</option>
-		<option <?php if($suggestions_click == 'insert') { echo 'selected="selected"'; } ?> value="insert">Вставка ссылки</option>
-		<option <?php if($suggestions_click == 'none') { echo 'selected="selected"'; } ?> value="none">Ничего не делать</option>
-		</select> 
-		</td>
-	</tr>
 	<?php
 }
 
 function link_cf_display_show_pages($show_pages) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="show_pages"><?php _e('Показывать ссылки на страницы или записи?', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="show_pages"><?php _e('Показывать ссылки на записи/страницы/вместе?', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 			<select name="show_pages" id="show_pages">
-			<option <?php if($show_pages == 'false') { echo 'selected="selected"'; } ?> value="false">Только записи</option>
-			<option <?php if($show_pages == 'true') { echo 'selected="selected"'; } ?> value="true">Записи и страницы</option>
-			<option <?php if($show_pages == 'but') { echo 'selected="selected"'; } ?> value="but">Только страницы</option>
+			<option <?php if($show_pages == 'false') { echo 'selected="selected"'; } ?> value="false">Только записи (post)</option>
+			<option <?php if($show_pages == 'but') { echo 'selected="selected"'; } ?> value="but">Только страницы (page)</option>
+			<option <?php if($show_pages == 'true') { echo 'selected="selected"'; } ?> value="true">Записи и страницы вместе</option>
 			</select>
 		</td> 
 	</tr>
@@ -478,42 +374,47 @@ function link_cf_display_show_pages($show_pages) {
 }
 
 function link_cf_display_show_custom_posts($show_customs) {
-	$hide_types = array ('post','page','attachment', 'wp_block','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset');
+    $hide_types = array ('post','page','attachment', 'wp_block', 'revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset');
+    $args = array(
+        'public'   => true,
+        '_builtin' => false
+     );
+    $types = get_post_types($args,'objects');
+    $output = '';
+    if ($types) {
+        $turned_on = explode(',', $show_customs);
+        foreach ($types as $type) {
+            // if (false === in_array($type->name, $hide_types)) {
+                if (false === in_array($type->name, $turned_on)) {
+                    $ischecked = '';
+                } else {
+                    $ischecked = 'checked';
+                }
+                $output .= "\n\t<tr valign=\"top\"><td>$type->label</td><td><input type=\"checkbox\" name=\"show_customs[]\" value=\"$type->name\" $ischecked /></td></tr>";
+            // }
+        }
+    }	
+    if (!empty($output)):
 	?>
 	<tr valign="top">
-		<th scope="row"><?php _e('Включить в список произвольные типы записей?', 'post_plugin_library') ?></th>
+		<th scope="row"><?php _e('Включить в список произвольные типы записей?', CHERRYLINK_TEXT_DOMAIN) ?></th>
 		<td>
 			<table class="linkateposts-inner-table">	
 			<?php 
-				$types = get_post_types('','names');
-				if ($types) {
-					$turned_on = explode(',', $show_customs);
-					echo "\n\t<tr valign=\"top\"><td><strong>Тип записи</strong></td><td><strong>Показать</strong></td></tr>";
-					foreach ($types as $type) {
-						if (false === in_array($type, $hide_types)) {
-
-							if (false === in_array($type, $turned_on)) {
-								$ischecked = '';
-							} else {
-								$ischecked = 'checked';
-							}
-							echo "\n\t<tr valign=\"top\"><td>$type</td><td><input type=\"checkbox\" name=\"show_customs[]\" value=\"$type\" $ischecked /></td></tr>";
-						}
-					}
-				}	
+                echo "\n\t<tr valign=\"top\"><td><strong>Тип записи</strong></td><td><strong>Показать</strong></td></tr>";
+                echo $output;
 			?>
 			</table>
 		</td> 
 	</tr>
-	<?php
+    <?php
+    endif;
 }
-
-
 
 function link_cf_display_quickfilter_dblclick($quickfilter_dblclick) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="quickfilter_dblclick"><?php _e('При выделении слова в редакторе вставлять его в поле быстрого фильтра автоматически <span style="color: red">(classic editor)</span>', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="quickfilter_dblclick"><?php _e('При выделении слова в редакторе вставлять его в поле быстрого фильтра автоматически <span style="color: red">(classic editor)</span>', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 			<select name="quickfilter_dblclick" id="quickfilter_dblclick">
 			<option <?php if($quickfilter_dblclick == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -527,7 +428,7 @@ function link_cf_display_quickfilter_dblclick($quickfilter_dblclick) {
 function link_cf_display_singleword_suggestions($singleword_suggestions) {
 	?>
     <tr valign="top">
-        <th scope="row"><label for="singleword_suggestions"><?php _e('Предлагать однословные подсказки анкоров', 'post_plugin_library') ?></label></th>
+        <th scope="row"><label for="singleword_suggestions"><?php _e('Предлагать однословные подсказки анкоров', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
         <td>
             <select name="singleword_suggestions" id="singleword_suggestions">
                 <option <?php if($singleword_suggestions == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -538,25 +439,10 @@ function link_cf_display_singleword_suggestions($singleword_suggestions) {
 	<?php
 }
 
-
-function link_cf_display_show_attachments($show_attachments) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="show_attachments"><?php _e('Show attachments?', 'post_plugin_library') ?></label></th>
-		<td>
-			<select name="show_attachments" id="show_attachments">
-			<option <?php if($show_attachments == 'false') { echo 'selected="selected"'; } ?> value="false">No</option>
-			<option <?php if($show_attachments == 'true') { echo 'selected="selected"'; } ?> value="true">Yes</option>
-			</select>
-		</td>
-	</tr>
-	<?php
-}
-
 function link_cf_display_match_author($match_author) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="match_author"><?php _e('Только ссылки на посты от того же автора?', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="match_author"><?php _e('Только ссылки на посты от того же автора?', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 			<select name="match_author" id="match_author">
 			<option <?php if($match_author == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -570,7 +456,7 @@ function link_cf_display_match_author($match_author) {
 function link_cf_display_match_cat($match_cat) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="match_cat"><?php _e('Только ссылки из той же категории?', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="match_cat"><?php _e('Только ссылки из той же категории?', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 			<select name="match_cat" id="match_cat">
 			<option <?php if($match_cat == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -582,12 +468,11 @@ function link_cf_display_match_cat($match_cat) {
 }
 
 function link_cf_display_match_tags($match_tags) {
-	global $wp_version;
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="match_tags"><?php _e('Ссылки с совпадающими метками (поле для ввода ниже)', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="match_tags"><?php _e('Ссылки с совпадающими метками (поле для ввода ниже)', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
-			<select name="match_tags" id="match_tags" <?php if ($wp_version < 2.3) echo 'disabled="true"'; ?> >
+			<select name="match_tags" id="match_tags" >
 			<option <?php if($match_tags == 'false') { echo 'selected="selected"'; } ?> value="false">Все равно</option>
 			<option <?php if($match_tags == 'any') { echo 'selected="selected"'; } ?> value="any">Один из перечесленных</option>
 			<option <?php if($match_tags == 'all') { echo 'selected="selected"'; } ?> value="all">Все обязательно</option>
@@ -597,54 +482,12 @@ function link_cf_display_match_tags($match_tags) {
 	<?php
 }
 
-function link_cf_display_none_text($none_text) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="none_text"><?php _e('Текст, если ничего не найдено:', 'post_plugin_library') ?></label></th>
-		<td><input name="none_text" type="text" id="none_text" value="<?php echo htmlspecialchars(stripslashes($none_text)); ?>" size="40" /></td>
-	</tr>
-	<?php
-}
-
-
 function link_cf_display_anons_len($len) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="anons_len"><?php _e('Длина анонса в символах (тег {anons}):', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="anons_len"><?php _e('Длина анонса в символах (тег {anons}):', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><input name="anons_len" type="number" min="0" id="anons_len" value="<?php echo htmlspecialchars(stripslashes($len)); ?>"  /></td>
         <td><?php link_cf_prepare_tooltip("Тег анонса {anons} выводит вступительный текст к статье. Используется в шаблонах вставки ниже."); ?></td>
-	</tr>
-	<?php
-}
-
-function link_cf_display_no_text($no_text) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="no_text"><?php _e('Скрывать вывод, если нет ссылок?', 'post_plugin_library') ?></label></th>
-		<td>
-			<select name="no_text" id="no_text">
-			<option <?php if($no_text == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
-			<option <?php if($no_text == 'true') { echo 'selected="selected"'; } ?> value="true">Да</option>
-			</select>
-		</td> 
-	</tr>
-	<?php
-}
-
-function link_cf_display_prefix($prefix) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="prefix"><?php _e('Префикс (код перед ссылками):', 'post_plugin_library') ?></label></th>
-		<td><input name="prefix" type="text" id="prefix" value="<?php echo htmlspecialchars(stripslashes($prefix)); ?>" size="40" /></td>
-	</tr>
-	<?php
-}
-
-function link_cf_display_suffix($suffix) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="suffix"><?php _e('Суффикс (код после ссылок):', 'post_plugin_library') ?></label></th>
-		<td><input name="suffix" type="text" id="suffix" value="<?php echo htmlspecialchars(stripslashes($suffix)); ?>" size="40" /></td>
 	</tr>
 	<?php
 }
@@ -674,7 +517,7 @@ function link_cf_template_image_size($template_image_size) {
 function link_cf_display_output_template($output_template) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="output_template"><?php _e('Содержание ссылки в списке:', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="output_template"><?php _e('Содержание ссылки в списке:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><input type="text" name="output_template" id="output_template" value="<?php echo htmlspecialchars(stripslashes($output_template)); ?>" size="40"/></td>
         <td><?php link_cf_prepare_tooltip(link_cf_get_available_tags(false)); ?></td>
 	</tr>
@@ -684,17 +527,17 @@ function link_cf_display_output_template($output_template) {
 function link_cf_display_replace_template($link_before, $link_after, $link_temp_alt) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="link_before"><?php _e('Вывод ссылки перед выделенным текстом:', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="link_before"><?php _e('Вывод ссылки перед выделенным текстом:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><textarea name="link_before" id="link_before" rows="4" cols="38"><?php echo htmlspecialchars(stripslashes(urldecode(base64_decode($link_before)))); ?></textarea></td>
         <td><?php link_cf_prepare_tooltip(link_cf_get_available_tags(false)); ?></td>
 	</tr>
 	<tr valign="top">
-		<th scope="row"><label for="link_after"><?php _e('Вывод после выделенного текста:', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="link_after"><?php _e('Вывод после выделенного текста:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><textarea name="link_after" id="link_after" rows="4" cols="38"><?php echo htmlspecialchars(stripslashes(urldecode(base64_decode($link_after)))); ?></textarea></td>
 	</tr>
 
 	<tr valign="top">
-		<th scope="row"><label for="link_temp_alt"><?php _e('Альтернативный шаблон:', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="link_temp_alt"><?php _e('Альтернативный шаблон:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><textarea name="link_temp_alt" id="link_temp_alt" rows="4" cols="38"><?php echo htmlspecialchars(stripslashes(urldecode(base64_decode($link_temp_alt)))); ?></textarea></td>
         <td><?php link_cf_prepare_tooltip("Альтернативный шаблон будет использован, если нажата комбинация CTRL/CMD+Click. Код в данном поле дан для примера, меняйте его по своему усмотрению."); ?></td>
 	</tr>
@@ -704,37 +547,27 @@ function link_cf_display_replace_template($link_before, $link_after, $link_temp_
 function link_cf_display_replace_term_template($term_before, $term_after, $term_temp_alt) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="term_before"><?php _e('Вывод ссылки перед выделенным текстом:', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="term_before"><?php _e('Вывод ссылки перед выделенным текстом:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><textarea name="term_before" id="term_before" rows="4" cols="38"><?php echo htmlspecialchars(stripslashes(urldecode(base64_decode($term_before)))); ?></textarea></td>
         <td><?php link_cf_prepare_tooltip(link_cf_get_available_tags(true)); ?></td>
 	</tr>
 		<tr valign="top">
-		<th scope="row"><label for="term_after"><?php _e('Вывод после выделенного текста:', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="term_after"><?php _e('Вывод после выделенного текста:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><textarea name="term_after" id="term_after" rows="4" cols="38"><?php echo htmlspecialchars(stripslashes(urldecode(base64_decode($term_after)))); ?></textarea></td>
 	</tr>
 	<tr valign="top">
-		<th scope="row"><label for="term_temp_alt"><?php _e('Альтернативный шаблон:', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="term_temp_alt"><?php _e('Альтернативный шаблон:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><textarea name="term_temp_alt" id="term_temp_alt" rows="4" cols="38"><?php echo htmlspecialchars(stripslashes(urldecode(base64_decode($term_temp_alt)))); ?></textarea></td>
         <td><?php link_cf_prepare_tooltip("Альтернативный шаблон будет использован, если нажата комбинация CTRL/CMD+Click. Код в данном поле дан для примера, меняйте его по своему усмотрению."); ?></td>
 	</tr>
 	<?php
 }
 
-function link_cf_display_divider($divider) {
-	?>
-	<tr valign="top">
-		<th scope="row"><label for="divider"><?php _e('Разделитель между ссылками:', 'post_plugin_library') ?></label></th>
-		<td><input name="divider" type="text" id="divider" value="<?php echo $divider; ?>" size="40" /></td>
-	</tr>
-	<?php
-}
-
 function link_cf_display_tag_str($tag_str) {
-	global $wp_version;
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="tag_str"><?php _e('Совпадающие метки:<br />(a,b _через запятую_, чтобы совпала любая из перечисленных, a+b _через плюс_, чтобы совпали все метки)', 'post_plugin_library') ?></label></th>
-		<td><input name="tag_str" type="text" id="tag_str" value="<?php echo $tag_str; ?>" <?php if ($wp_version < 2.3) echo 'disabled="true"'; ?> size="40" /></td>
+		<th scope="row"><label for="tag_str"><?php _e('Совпадающие метки:<br />(a,b _через запятую_, чтобы совпала любая из перечисленных, a+b _через плюс_, чтобы совпали все метки)', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
+		<td><input name="tag_str" type="text" id="tag_str" value="<?php echo $tag_str; ?>" size="40" /></td>
 	</tr>
 	<?php
 }
@@ -742,8 +575,8 @@ function link_cf_display_tag_str($tag_str) {
 function link_cf_display_excluded_posts($excluded_posts) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="excluded_posts"><?php _e('Исключить записи с ID (через запятую):', 'post_plugin_library') ?></label></th>
-		<td><input name="excluded_posts" type="text" id="excluded_posts" value="<?php echo $excluded_posts; ?>" size="40" /> <?php _e('', 'post_plugin_library'); ?></td>
+		<th scope="row"><label for="excluded_posts"><?php _e('Исключить записи с ID (через запятую):', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
+		<td><input name="excluded_posts" type="text" id="excluded_posts" value="<?php echo $excluded_posts; ?>" size="40" /> <?php _e('', CHERRYLINK_TEXT_DOMAIN); ?></td>
 	</tr>
 	<?php
 }
@@ -751,23 +584,12 @@ function link_cf_display_excluded_posts($excluded_posts) {
 function link_cf_display_included_posts($included_posts) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="included_posts"><?php _e('Только записи из списка ID (через запятую):', 'post_plugin_library') ?></label></th>
-		<td><input name="included_posts" type="text" id="included_posts" value="<?php echo $included_posts; ?>" size="40" /> <?php _e('', 'post_plugin_library'); ?></td>
+		<th scope="row"><label for="included_posts"><?php _e('Только записи из списка ID (через запятую):', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
+		<td><input name="included_posts" type="text" id="included_posts" value="<?php echo $included_posts; ?>" size="40" /> <?php _e('', CHERRYLINK_TEXT_DOMAIN); ?></td>
 	</tr>
 	<?php
 }
-function link_cf_display_scheme_info($exists, $time) {
-	if ($exists) {
-		?>
-			<p>Последнее обновление схемы: <strong style="color:green"><?php echo date('j-m-Y H:i:s', $time); ?></strong></p>
-		<?php
-	} else {
-		?>
-			<p>Чтобы сделать экспорт и видеть статистику входящих ссылок на панели перелинковки, необходимо создать индекс (кнопка ниже). Это может занять некоторое время, в зависимости от количества публикаций. </p>
-		<?php
-	}
 
-}
 function link_cf_display_scheme_export_options() {
 	$hide_types = array ('attachment', 'wp_block','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset', 'sticky_ad', 'post_format', 'nav_menu', 'link_category','tablepress_table');
 	?>
@@ -777,12 +599,12 @@ function link_cf_display_scheme_export_options() {
 		<p><strong>Типы записей и таксономий</strong></p>
 				<table class="linkateposts-inner-table">	
 				<?php 
-					$types = get_post_types('','names');
+					$types = get_post_types('','object');
 					if ($types) {
 						echo "\n\t<tr valign=\"top\"><td colspan=\"2\"><strong>Типы публикаций</strong></td></tr>";
 						foreach ($types as $type) {
-							if (false === in_array($type, $hide_types)) {
-								echo "\n\t<tr valign=\"top\"><td>$type</td><td><input type=\"checkbox\" name=\"export_types[]\" value=\"$type\" checked /></td></tr>";
+							if (false === in_array($type->name, $hide_types)) {
+								echo "\n\t<tr valign=\"top\"><td>$type->label</td><td><input type=\"checkbox\" name=\"export_types[]\" value=\"$type->name\" checked /></td></tr>";
 							}
 						}
 					}
@@ -831,19 +653,18 @@ function link_cf_display_scheme_export_options() {
 	<?php
 }
 function link_cf_display_scheme_statistics_options() {
-	$hide_types = array ('attachment', 'wp_block','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset', 'sticky_ad', 'post_format', 'nav_menu', 'link_category','tablepress_table');
+	$hide_types = array ('attachment', 'wp_block','revision','nav_menu_item','custom_css','oembed_cache','user_request','customize_changeset', 'post_format', 'nav_menu', 'link_category');
 	?>
 	<h2>Опции поиска</h2>
 	<div style="display: flex">
 		<div style="display: inline-flex;">
-            <!-- <table class="linkateposts-inner-table">	 -->
             <?php 
-                $types = get_post_types('','names');
+                $types = get_post_types('','object');
                 if ($types) {
                     echo "\n\t<table class=\"linkateposts-inner-table\"><tr valign=\"top\"><td colspan=\"2\"><strong>Типы публикаций</strong></td></tr>";
                     foreach ($types as $type) {
-                        if (false === in_array($type, $hide_types)) {
-                            echo "\n\t<tr valign=\"top\"><td>$type</td><td><input type=\"checkbox\" name=\"export_types[]\" value=\"$type\" checked /></td></tr>";
+                        if (false === in_array($type->name, $hide_types)) {
+                            echo "\n\t<tr valign=\"top\"><td>$type->label</td><td><input type=\"checkbox\" name=\"export_types[]\" value=\"$type->name\" checked /></td></tr>";
                         }
                     }
                     echo '</table>';
@@ -858,7 +679,6 @@ function link_cf_display_scheme_statistics_options() {
                     echo '</table>';
                 }	
             ?>
-            <!-- </table> -->
 		</div>
 		<div style="display:none">
 		<p><strong>Поля данных</strong></p>
@@ -891,12 +711,12 @@ function link_cf_display_sidebar() {
 				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/cherry_side_top.png"/>
                 <p>В обновлении 2.0 добавлена поддержка редактора Gutenberg!</p>
                 <p>Подробности о новой версии на <a href="https://seocherry.ru/dev/cherrylink-2-0-perelinkovka-gutenberg/">официальном сайте</a>.</p>
-				<h2>Мануал</h2>
+				<h2>Как пользоваться плагином</h2>
 				<a href="https://seocherry.ru/dev/cherrylink-manual/"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_2.png"/></a>
-				<p>На многие вопросы по использованию плагина может ответить <a href="https://seocherry.ru/dev/cherrylink-manual/">руководство пользователя</a> на моем сайте.</p>
-				<h2>Где взять ключ?</h2>
+				<p>На многие вопросы по использованию плагина может ответить <a href="https://seocherry.ru/dev/cherrylink-manual/">руководство пользователя</a> на оф. сайте.</p>
+				<h2>Где взять ключ активации</h2>
 				<a href="http://seocherry.ru/dev/cherrylink" ><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_3.png"/></a>
-                <p>Вся информация о плагине и его покупке находится на официальном сайте по адресу: <a href="http://seocherry.ru/dev/cherrylink" >SeoCherry.ru</a>.</p>
+                <p>Вся информация о плагине и его покупке находится по адресу: <a href="http://seocherry.ru/dev/cherrylink" >SeoCherry.ru</a>.</p>
                 <p>Справка по поводу <a href="https://seocherry.ru/perenos-licenzii-cherrylink-i-vozvrat-deneg/" target="_blank">переноса лицензии или возврата денежных средств</a>.</p>
 				<h2>Техподдержка</h2>
 				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_4.png"/>
@@ -912,11 +732,11 @@ function link_cf_display_authors($excluded_authors, $included_authors) {
 	global $wpdb;
 	?>
     <tr valign="top">
-        <th scope="row"><?php _e('Пояснение к фильтрам авторов и рубрик:', 'post_plugin_library') ?></th>
+        <th scope="row"><?php _e('Пояснение к фильтрам авторов и рубрик:', CHERRYLINK_TEXT_DOMAIN) ?></th>
         <td>Не нужно ставить галочки во всех полях _Показать_, чтобы вывести всех авторов и рубики. Если ничего не выбрано, они будут выведены по умолчанию.<br><br>Если хотите вывести только выбранных авторов/категории, ставьте галочки напротив них - остальное показано не будет.<br><br>Если хотите скрыть какую-либо категорию, ставьте галочку в столбце _Скрыть_ напротив соотв. категории, при этом не нужно у остальных проставлять галочки в _Показать_.</td>
     </tr>
 	<tr valign="top">
-		<th scope="row"><?php _e('Записи каких авторов выводить:', 'post_plugin_library') ?></th>
+		<th scope="row"><?php _e('Записи каких авторов выводить:', CHERRYLINK_TEXT_DOMAIN) ?></th>
 		<td>
 			<table class="linkateposts-inner-table">	
 			<?php 
@@ -950,7 +770,7 @@ function link_cf_display_cats($excluded_cats, $included_cats) {
 	global $wpdb;
 	?>
 	<tr valign="top">
-		<th scope="row"><?php _e('Рубирки скрыть/показать:', 'post_plugin_library') ?></th>
+		<th scope="row"><?php _e('Рубирки скрыть/показать:', CHERRYLINK_TEXT_DOMAIN) ?></th>
 		<td>
 			<table class="linkateposts-inner-table">	
 			<?php 
@@ -1010,7 +830,7 @@ function link_cf_display_cats($excluded_cats, $included_cats) {
 function link_cf_display_age($age) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="age-direction"><?php _e('Скрыть записи по возрасту:', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="age-direction"><?php _e('Скрыть записи по возрасту:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 			
 				<select name="age-direction" id="age-direction">
@@ -1035,7 +855,7 @@ function link_cf_display_age($age) {
 function link_cf_display_status($status) {
 	?>
 	<tr valign="top">
-		<th scope="row"><?php _e('Статус записей:', 'post_plugin_library') ?></th>
+		<th scope="row"><?php _e('Статус записей:', CHERRYLINK_TEXT_DOMAIN) ?></th>
 		<td>
 
 				<label for="status-publish">Опубликованы</label>
@@ -1070,7 +890,7 @@ function link_cf_display_status($status) {
 function link_cf_display_custom($custom) {
 	?>
 	<tr valign="top">
-		<th scope="row"><?php _e('Совпадающие по кастомному полю:', 'post_plugin_library') ?></th>
+		<th scope="row"><?php _e('Совпадающие по кастомному полю:', CHERRYLINK_TEXT_DOMAIN) ?></th>
 		<td>
 			<table>
 			<tr><td style="border-bottom-width: 0">Имя поля</td><td style="border-bottom-width: 0"></td><td style="border-bottom-width: 0">Значение</td></tr>
@@ -1098,32 +918,11 @@ function link_cf_display_custom($custom) {
 	<?php
 }
 
-function link_cf_display_content_filter($content_filter) {
-	?>
-	<tr valign="top">
-		<th scope="row"><?php _e('Output in content:<br />(<em>via</em> special tags)', 'post_plugin_library') ?></th>
-		<td>
-			<table>
-			<tr><td style="border-bottom-width: 0"><label for="content_filter">Activate</label></td></tr>
-			<tr>
-			<td style="border-bottom-width: 0">			
-			<select name="content_filter" id="content_filter">
-			<option <?php if($content_filter == 'false') { echo 'selected="selected"'; } ?> value="false">No</option>
-			<option <?php if($content_filter == 'true') { echo 'selected="selected"'; } ?> value="true">Yes</option>
-			</select>
-			</td>
-			</tr>
-			</table>
-		</td> 
-	</tr>
-	<?php
-}
-
 function link_cf_display_sort($sort) {
 	global $wpdb;
 	?>
 	<tr valign="top">
-		<th scope="row"><?php _e('Сортировать по:<br />можно оставить пустым для сортировки по умолчанию', 'post_plugin_library') ?></th>
+		<th scope="row"><?php _e('Сортировать по:<br />можно оставить пустым для сортировки по умолчанию', CHERRYLINK_TEXT_DOMAIN) ?></th>
 		<td>
 			<table>
 			<tr><td style="border-bottom-width: 0"></td><td style="border-bottom-width: 0">Тег <?php link_cf_prepare_tooltip(link_cf_get_available_tags(false)); ?></td><td style="border-bottom-width: 0">Порядок</td><td style="border-bottom-width: 0">Заглавные буквы</td></tr>
@@ -1167,66 +966,11 @@ function link_cf_display_sort($sort) {
 	<?php
 }
 
-function link_cf_display_orderby($options) {
-	global $wpdb;
-	$limit = 30;
-	$keys = $wpdb->get_col( "
-		SELECT meta_key
-		FROM $wpdb->postmeta
-		WHERE meta_key NOT LIKE '\_%'
-		GROUP BY meta_key
-		ORDER BY meta_id DESC
-		LIMIT $limit" );
-	$metaselect = "<select id='orderby' name='orderby'>\n\t<option value=''></option>";
-	if ( $keys ) {
-		natcasesort($keys);
-		foreach ( $keys as $key ) {
-			$key = esc_attr( $key );
-			if ($options['orderby'] == $key) {
-				$metaselect .= "\n\t<option selected='selected' value='$key'>$key</option>";
-			} else {
-				$metaselect .= "\n\t<option value='$key'>$key</option>";
-			}
-		}
-		$metaselect .= "</select>";
-	}
-
-	?>
-	<tr valign="top">
-		<th scope="row"><?php _e('Select output by custom field:', 'post_plugin_library') ?></th>
-		<td>
-			<table>
-			<tr><td style="border-bottom-width: 0">Field</td><td style="border-bottom-width: 0">Order</td><td style="border-bottom-width: 0">Case</td></tr>
-			<tr>
-			<td style="border-bottom-width: 0">
-			<?php echo $metaselect;	?>	
-			</td>
-			<td style="border-bottom-width: 0">
-				<select name="orderby_order" id="orderby_order">
-				<option <?php if($options['orderby_order'] == 'ASC') { echo 'selected="selected"'; } ?> value="ASC">ascending</option>
-				<option <?php if($options['orderby_order'] == 'DESC') { echo 'selected="selected"'; } ?> value="DESC">descending</option>
-				</select>
-			</td> 
-			<td style="border-bottom-width: 0">
-				<select name="orderby_case" id="orderby_case">
-				<option <?php if($options['orderby_case'] == 'false') { echo 'selected="selected"'; } ?> value="false">case-sensitive</option>
-				<option <?php if($options['orderby_case'] == 'true') { echo 'selected="selected"'; } ?> value="true">case-insensitive</option>
-				<option <?php if($options['orderby_case'] == 'num') { echo 'selected="selected"'; } ?> value="num">numeric</option>
-				</select>
-			</td> 
-			</tr>
-			</table>
-		</td>
-	</tr>
-	<?php
-}
-
 // now for linkate_posts
-
 function link_cf_display_num_term_length_limit($term_length_limit) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="term_length_limit"><?php _e('Не учитывать слова короче (кол-во букв, включительно):', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="term_length_limit"><?php _e('Не учитывать слова короче (кол-во букв, включительно):', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><input name="term_length_limit" type="number" id="term_length_limit" style="width: 60px;" value="<?php echo $term_length_limit; ?>" size="3"  min="0"/></td>
 	</tr>
 	<?php
@@ -1236,74 +980,43 @@ function link_cf_display_num_term_length_limit($term_length_limit) {
 function link_cf_display_num_terms($num_terms) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="num_terms"><?php _e('Количество ключевых слов для определения схожести:', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="num_terms"><?php _e('Количество ключевых слов для определения схожести:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><input name="num_terms" type="number" id="num_terms" style="width: 60px;" value="<?php echo $num_terms; ?>" size="3" /></td>
-        <td><?php link_cf_prepare_tooltip("Количество самых часто встречающихся в тексте слов, которые использует алгоритм для сравнения с другими статьями. <br><br>Если алгоритм не нашел статью, которую вы считаете релевантной, то можете попробовать увеличить это число (больше 100-200 не рекомендую).<br><br>Подробнее читайте в мануале (ссылка справа)."); ?></td>
+        <td><?php link_cf_prepare_tooltip("Количество самых часто встречающихся в тексте слов, которые использует алгоритм для сравнения с другими статьями. <br><br>Если алгоритм не нашел статью, которую вы считаете релевантной, то можете попробовать увеличить это число (больше 200 не рекомендую, может влиять на производительность).<br><br>Подробнее читайте в мануале (ссылка справа)."); ?></td>
 	</tr>
-	<?php
-}
-
-function link_cf_display_term_extraction($term_extraction) {
-	?>
-	<tr valign="top">
-		<th scope="row" title=""><label for="term_extraction"><?php _e('Алгоритм поиска ключевых слов:', 'post_plugin_library') ?></label></th>
-		<td>
-			<select name="term_extraction" id="term_extraction">
-			<option <?php if($term_extraction == 'frequency') { echo 'selected="selected"'; } ?> value="frequency">Частота использования</option>
-			<option <?php if($term_extraction == 'pagerank') { echo 'selected="selected"'; } ?> value="pagerank">Алгоритм TextRank</option>
-			</select>
-		</td> 
-
-	</tr>
-		<tr valign="top"><td colspan="2">* Стоп-слова учитываются только при включенном алгоритме по частотности использования слов.</td></tr>
 	<?php
 }
 
 function link_cf_display_weights($options) {
 	?>
 	<tr valign="top">
-		<th scope="row"><?php _e('Значимость полей:', 'post_plugin_library') ?></th>
+		<th scope="row"><?php _e('Значимость полей:', CHERRYLINK_TEXT_DOMAIN) ?></th>
 		<td>
 			<label for="weight_content">содержание записи:  </label><input name="weight_content" type="number" style="width: 60px;" id="weight_content" value="<?php echo round(100 * $options['weight_content']); ?>" size="3" /> %
-            <br>
+            <br><br>
 			<label for="weight_title">заголовок статьи:  </label><input name="weight_title" type="number" style="width: 60px;" id="weight_title" value="<?php echo round(100 * $options['weight_title']); ?>" size="3" /> %
-            <br>
+            <br><br>
 			<label for="weight_tags">метки (теги):  </label><input name="weight_tags" type="number" style="width: 60px;" id="weight_tags" value="<?php echo round(100 * $options['weight_tags']); ?>" size="3" /> %
 		</td>
-        <td><?php link_cf_prepare_tooltip("Укажите в процентах, какое поле для вас важнее при поиске схожих записей. Сумма не может превышать 100%.<br><br>Заголовок записи может быть из тега H1 или Title, в зависимости от настроек на странице Индекс ссылок. "); ?></td>
-		
-	</tr>
-	<?php
-}
-
-function link_cf_display_which_title($which_title) {
-	?>
-	<tr valign="top">
-	<th scope="row"><label for="compare_seotitle"><?php _e('Использовать SEO Title вместо H1:', 'post_plugin_library') ?></label></th>
-		<td><input name="compare_seotitle" type="checkbox" id="compare_seotitle" value="cb_compare_seotitle" <?php echo $which_title; ?>/></td>
-        <td><? link_cf_prepare_tooltip("Использовать SEO тайтл (берется из Yoast или AIOSEO, если найден) при поиске похожих статей вместо заголовка H1"); ?></td>
+        <td><?php link_cf_prepare_tooltip("Укажите в процентах, какое поле для вас важнее при поиске схожих записей. Сумма не может превышать 100%."); ?></td>
 	</tr>
 	<?php
 }
 function link_cf_display_stopwords() {
 	?>
-    <tr valign="top">
-        <th scope="row"><label for="is_white"><?php _e('Добавить в белый список?', 'post_plugin_library') ?></label></th>
-        <td><input name="is_white" type="checkbox" id="is_white" value="is_white"/></td>
-        <td><? link_cf_prepare_tooltip("Поставьте эту галочку, чтобы добавить слова в белый список. Они не будут удалены из текста при реиндексации. Полезно, если вы не хотите учитывать короткие слова, но нужно сохранить какие-либо сокращения в тексте (ИП, НИИ, ОАО и пр)."); ?></td>
-    </tr>
-	<tr valign="top">
-		<th scope="row"><label for="custom_stopwords"><?php _e('Произвольный список стоп-слов:', 'post_plugin_library') ?></label></th>
-		<td><textarea name="custom_stopwords" id="custom_stopwords" rows="6" cols="38" placeholder="слово1&#10;слово2"></textarea></td>
-	</tr>
-
+        <h3><label for="custom_stopwords"><?php _e('Ваши стоп-слова:', CHERRYLINK_TEXT_DOMAIN) ?></label></h3>
+        <textarea name="custom_stopwords" id="custom_stopwords" rows="6" cols="38" placeholder="слово1&#10;слово2"></textarea>
+        <br><br>
+        <input name="is_white" type="checkbox" id="is_white" value="is_white"/><label for="is_white"><?php _e('Добавить в белый список', CHERRYLINK_TEXT_DOMAIN) ?></label>
+        <br><br>
+        <? link_cf_prepare_tooltip("Поставьте эту галочку, чтобы добавить слова в белый список. Они не будут удалены из текста при реиндексации. Полезно, если вы не хотите учитывать короткие слова, но нужно сохранить какие-либо сокращения в тексте (ИП, НИИ, ОАО и пр)."); ?>
 	<?php
 }
 
 function link_cf_display_match_against_title($match_all_against_title) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="match_all_against_title"><?php _e('Одностороннее сравнение с тайтлом?', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="match_all_against_title"><?php _e('Одностороннее сравнение с тайтлом?', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 		<select name="match_all_against_title" id="match_all_against_title" >
 		<option <?php if($match_all_against_title == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -1314,10 +1027,11 @@ function link_cf_display_match_against_title($match_all_against_title) {
 	</tr>
 	<?php
 }
+
 function link_cf_display_ignore_relevance($ignore_relevance) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="ignore_relevance"><?php _e('Игнорировать релевантность статей (вывести все подряд)', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="ignore_relevance"><?php _e('Игнорировать релевантность статей (вывести все подряд)', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 		<select name="ignore_relevance" id="ignore_relevance" >
 		<option <?php if($ignore_relevance == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -1331,7 +1045,7 @@ function link_cf_display_ignore_relevance($ignore_relevance) {
 function link_cf_display_clean_suggestions_stoplist($clean_suggestions_stoplist) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="clean_suggestions_stoplist"><?php _e('Применить стоп-слова к подсказкам анкоров?', 'post_plugin_library') ?></label></th>
+		<th scope="row"><label for="clean_suggestions_stoplist"><?php _e('Применить стоп-слова к подсказкам анкоров?', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
 		<select name="clean_suggestions_stoplist" id="clean_suggestions_stoplist" >
 		<option <?php if($clean_suggestions_stoplist == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
@@ -1341,22 +1055,6 @@ function link_cf_display_clean_suggestions_stoplist($clean_suggestions_stoplist)
 		</td>
 	</tr>
 	<?php
-}
-
-function link_cf_get_plugin_data($plugin_file) {
-	if(!function_exists( 'get_plugin_data' ) ) require_once( ABSPATH . 'wp-admin/includes/plugin.php');
-	static $plugin_data;
-	if(!$plugin_data) {
-		$plugin_data = get_plugin_data($plugin_file);
-		if (!isset($plugin_data['Title'])) {
-			if ('' != $plugin_data['PluginURI'] && '' != $plugin_data['Name']) {
-				$plugin_data['Title'] = '<a href="' . $plugin_data['PluginURI'] . '" title="'. __('Посетите страницу плагина', 'post-plugin-library') . '">' . $plugin_data['Name'] . '</a>';
-			} else {
-				$plugin_data['Title'] = $name;
-			}
-		}
-	}
-	return $plugin_data;
 }
 
 function link_cf_prepare_tooltip($text) {

@@ -12,16 +12,23 @@ jQuery(document).ready(function ($) {
             ajaxURL: ajaxurl,
             ajaxParams: { action: "linkate_get_stopwords" }, //ajax parameters
             ajaxConfig: "POST", //ajax HTTP request type
+            ajaxResponse:function(url, params, response){
+                //url - the URL of the request
+                //params - the parameters passed with the request
+                //response - the JSON object returned in the body of the response.
+        
+                return response; //return the tableData property of a response json object
+            },
             pagination: "local",
-            paginationSize: 25,
+            paginationSize: 10,
             addRowPos: "top",          //when adding a new row, add it to the top of the table
             history: true,
-            // initialSort: [
-            //     { column: "id", dir: "asc" }, //sort by this first
-            // ],
+            initialSort: [
+                { column: "ID", dir: "desc" }, //sort by this first
+            ],
             columnHeaderSortMulti: true,
             responsiveLayout: "collapse",
-            paginationSizeSelector: [25, 100, 250, 1000],
+            paginationSizeSelector: [10, 25, 100, 250, 1000],
             layout: "fitColumns", //fit columns to width of table (optional)
             langs: {
                 "ru-ru": {
@@ -47,8 +54,10 @@ jQuery(document).ready(function ($) {
             },
             columns: [
                 { title: '#', formatter: "rownum", width: '5%', headerSort: false },
+                { title: 'db_id', field: "ID", width: '5%', headerSort: false, visible: false },
+
                 { title: "Слово", field: "word", widthGrow: 2, headerFilter: "input" },
-                { title: "Корень", field: "stemm", widthGrow: 2, headerFilter: "input" },
+                { title: "Корень", field: "stemm", widthGrow: 2, headerFilter: "input" , visible: false },
                 {
                     title: "Источник", field: "is_custom", widthGrow: 1, headerFilter: 'select', headerFilterParams: { values: { "": "Все", 0: "Стандарт", 1: "Произвольное" } }, formatter: function (cell, formatterParams) {
                         var value = cell.getValue();

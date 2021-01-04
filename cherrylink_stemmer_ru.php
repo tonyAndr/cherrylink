@@ -1,28 +1,30 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Tony
- * Date: 09.03.2019
- * Time: 10:27
+/*
+ * CherryLink Plugin
  */
 
+// Disable direct access
 
 namespace Stem;
+defined( 'ABSPATH' ) || exit;
 
 class LinguaStemRu
 {
 	var $VERSION = "0.02";
-	var $Stem_Caching = 0;
-	var $Stem_Cache = array();
+	var $Stem_Caching = 1;
+    var $Stem_Cache = array();
+    var $Stem_Enabled = false;
+
 	var $VOWEL = '/аеиоуыэюя/';
 	var $PERFECTIVEGROUND = '/((ив|ивши|ившись|ыв|ывши|ывшись)|((?<=[ая])(в|вши|вшись)))$/';
 	var $REFLEXIVE = '/(с[яь])$/';
-	var $ADJECTIVE = '/(ее|ие|ые|ое|о|ими|ыми|ей|ий|ый|ой|ем|им|ым|ом|его|ого|еых|ых|ую|юю|ая|яя|ою|ею)$/';
+	var $ADJECTIVE = '/(ее|ие|ые|ое|ими|ыми|ей|ий|ый|ой|ем|им|ым|ом|его|ого|ему|ому|их|ых|ую|юю|ая|яя|ою|ею)$/';
 	var $PARTICIPLE = '/((ивш|ывш|ующ)|((?<=[ая])(ем|нн|вш|ющ|щ)))$/';
-	var $VERB = '/((ила|ыла|ена|ейте|уйте|ите|или|ыли|ей|уй|ил|ыл|им|ым|ены|ить|ыть|ишь|ую|ю)|((?<=[ая])(ла|на|ете|йте|ли|й|л|ем|н|ло|но|ет|ют|ны|ть|ешь|нно)))$/';
-	var $NOUN = '/(а|ев|ов|ие|ье|е|иями|ями|ами|еи|ии|и|ией|ей|ой|ий|й|и|ы|ь|ию|ью|ю|ия|ья|я)$/';
+	var $VERB = '/((ила|ыла|ена|ейте|уйте|ите|или|ыли|ей|уй|ил|ыл|им|ым|ен|ило|ыло|ено|ят|ует|уют|ит|ыт|ены|ить|ыть|ишь|ую|ю)|((?<=[ая])(ла|на|ете|йте|ли|й|л|ем|н|ло|но|ет|ют|ны|ть|ешь|нно)))$/';
+	var $NOUN = '/(а|ев|ов|ие|ье|е|ьё|иями|ями|ами|еи|ии|и|ией|ей|ой|ий|й|иям|ям|ием|ем|ам|ом|о|у|ах|иях|ях|ы|ь|ию|ью|ю|ия|ья|я)$/';
 	var $RVRE = '/^(.*?[аеиоуыэюя])(.*)$/';
-	var $DERIVATIONAL = '/[^аеиоуыэюя][аеиоуыэюя]+[^аеиоуыэюя]+[аеиоуыэюя].*(?<=о)сть?$/';
+    var $DERIVATIONAL = '/[^аеиоуыэюя][аеиоуыэюя]+[^аеиоуыэюя]+[аеиоуыэюя].*(?<=о)сть?$/';
+    var $REGEX_SUPERLATIVE = '/.+?(ейш|ейше)$/';
     var $LEGIT = '/[а-я]/';
 
 	function __construct() {
@@ -48,7 +50,13 @@ class LinguaStemRu
 	function stem_word($word)
 	{
 		$word = mb_strtolower($word);
-		$word = str_replace('ё', 'е', $word); // замена ё на е, что бы учитывалась как одна и та же буква
+        $word = str_replace('ё', 'е', $word); // замена ё на е, что бы учитывалась как одна и та же буква
+        
+        // Этот стеммер портит символы, поэтому такие не обрабатываем. Зато работает быстро :)
+        // if ($this->m($word, $this->REGEX_SUPERLATIVE)) {
+        //     return $word;
+        // }
+
 		# Check against cache of stemmed words
 		if ($this->Stem_Caching && isset($this->Stem_Cache[$word])) {
 			return $this->Stem_Cache[$word];
@@ -88,9 +96,12 @@ class LinguaStemRu
 			$stem = $start.$RV;
 		} while(false);
 
-//		if (!$this->m($stem, $this->LEGIT)) {
-//		    return $word;
-//        }
+		if (!$this->m($stem, $this->LEGIT)) {
+		    return $word;
+        }
+		if (!iconv("UTF-8", "UTF-8//IGNORE", $stem)) {
+		    return $word;
+        }
 
 		if ($this->Stem_Caching) $this->Stem_Cache[$word] = $stem;
 		return $stem;
@@ -146,5 +157,9 @@ class LinguaStemRu
 	function clear_stem_cache()
 	{
 		$this->Stem_Cache = array();
-	}
+    }
+    
+    function enable_stemmer($enable) {
+        $this->Stem_Enabled = $enable;
+    }
 }

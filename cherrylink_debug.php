@@ -1,6 +1,8 @@
 <?php
 
+// Disable direct access
 defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_DEBUG', true);
 
 function _cherry_debug($func, $variable, $description = '') {

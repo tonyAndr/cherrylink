@@ -1,12 +1,16 @@
 <?php 
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
- 
+
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_EF_LIBRARY', true);
+require_once (WP_PLUGIN_DIR . "/cherrylink/cherrylink_stemmer_ru.php");
 
 function linkate_sp_terms_by_freq($ID, $num_terms = 50, $is_term = 0) {
-	if (!$ID) return array('', '', '');
+	if (!$ID) return array('', '', '', '');
 	global $wpdb, $table_prefix;
 	$table_name = $table_prefix . 'linkate_posts';
 	$terms = '';
@@ -73,9 +77,9 @@ function linkate_sp_save_index_entry($postID, $postObj, $updated) {
     // $post = $wpdb->get_row("SELECT post_content, post_title, post_type FROM $wpdb->posts WHERE ID = $postID", ARRAY_A);
     
 	$options = get_option('linkate-posts');
-	require_once (WP_PLUGIN_DIR . "/cherrylink/cherrylink_stemmer_ru.php");
-	$stemmer = new Stem\LinguaStemRu();
 
+    $stemmer = new Stem\LinguaStemRu();
+    $stemmer->enable_stemmer(true);
 
 	// wp_linkate_scheme, create new scheme for this post
 	if ($options['linkate_scheme_exists']) {
@@ -88,7 +92,7 @@ function linkate_sp_save_index_entry($postID, $postObj, $updated) {
 	$suggestions_donors_src = $options['suggestions_donors_src'];
     $suggestions_donors_join = $options['suggestions_donors_join'];
 	$clean_suggestions_stoplist = $options['clean_suggestions_stoplist'];
-	$min_len = $options['term_length_limit'];
+	$min_len = intval($options['term_length_limit']);
 
     $words_table = $table_prefix."linkate_stopwords";
     $black_words = $wpdb->get_col("SELECT stemm FROM $words_table WHERE is_white = 0 GROUP BY stemm");
@@ -98,16 +102,13 @@ function linkate_sp_save_index_entry($postID, $postObj, $updated) {
 
 	list($content, $content_sugg) = linkate_sp_get_post_terms($postObj->post_content, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
     $content = iconv("UTF-8", "UTF-8//IGNORE", $content); // convert broken symbols
+    if (!$content)
+        $content = '';
 	// Seo title is more relevant, usually
 	// Extracting terms from the custom titles, if present
-	$seotitle = '';
-	if (function_exists('wpseo_init')){
-//    	$seotitle = get_post_meta( $postID, "_yoast_wpseo_title", true);
-    	$seotitle = linkate_decode_yoast_variables($postID);
-	}
-    if (function_exists( 'aioseop_init_class' )){
-        $seotitle = get_post_meta( $postID, "_aioseop_title", true);
-    }
+	// Check SEO Fields
+    $seotitle = linkate_get_post_seo_title($postID);
+
     // anti-memory leak
     wp_cache_delete( $postID, 'post_meta' );
 
@@ -281,15 +282,6 @@ function linkate_decode_yoast_variables($post_id, $is_term = false) {
     } else {
         return '';
     }
-
-}
-
-function linkate_sp_clean_words($text) {
-	$text = strip_tags($text);
-	$text = strtolower($text);
-	$text = str_replace("’", "'", $text); // convert MSWord apostrophe
-	$text = preg_replace(array('/\[(.*?)\]/', '/&[^\s;]+;/', '/‘|’|—|“|”|–|…/', "/'\W/"), ' ', $text); //anything in [..] or any entities or MS Word droppings
-	return $text;
 }
 
 function linkate_sp_mb_clean_words($text) {
@@ -303,28 +295,36 @@ function linkate_sp_mb_clean_words($text) {
 }
 
 function linkate_sp_get_post_terms($text, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist) {
-	mb_regex_encoding('UTF-8');
+    mb_regex_encoding('UTF-8');
 	mb_internal_encoding('UTF-8');
-	// $wordlist = array_unique(mb_split("\W+", linkate_sp_mb_clean_words($text)));
 	$wordlist = mb_split("\W+", linkate_sp_mb_clean_words($text));
     $stemms = '';
     $words = array();
 
 	reset($wordlist);
 
-	foreach ($wordlist as $word) {
-		if ( mb_strlen($word) > $min_len || isset($linkate_overusedwords["white"][$word])) {
-			$stemm = $stemmer->stem_word($word);
-			if (!isset($linkate_overusedwords["black"][$stemm]))
-				if (mb_strlen($stemm) > 1)
-					$stemms .= $stemm . ' ';
-            if ($clean_suggestions_stoplist == 'false' || ($clean_suggestions_stoplist == 'true' && !isset($linkate_overusedwords["black"][$stemm])))
+    if ($stemmer->Stem_Enabled) {
+        foreach ($wordlist as $word) {
+            if ( mb_strlen($word) > $min_len || array_key_exists($word ,$linkate_overusedwords["white"])) {
+                $stemm = $stemmer->stem_word($word);
+                if (!array_key_exists($stemm, $linkate_overusedwords["black"]))
+                    if (mb_strlen($stemm) > 1)
+                        $stemms .= $stemm . ' ';
+                if ($clean_suggestions_stoplist == 'false' || ($clean_suggestions_stoplist == 'true' && !array_key_exists($stemm, $linkate_overusedwords["black"])))
+                    $words[] = $word;
+            }
+        }
+    } else {
+        foreach ($wordlist as $word) {
+            if ( mb_strlen($word) > $min_len) {
                 $words[] = $word;
-		}
-	}
+            }
+        }
+    }
 
-	unset($wordlist);
-	
+    unset($wordlist);
+    if (empty($stemms) && !$stemmer->Stem_Enabled)
+        $stemms = implode(' ', $words);
 	return array($stemms, $words);
 }
 
@@ -333,19 +333,27 @@ function linkate_sp_get_title_terms( $text, $min_len, $linkate_overusedwords, $s
 	mb_internal_encoding('UTF-8');
 	$wordlist = mb_split("\W+", linkate_sp_mb_clean_words($text));
 	$stemms = '';
-	$words = array();
-	foreach ($wordlist as $word) {
-		if ( mb_strlen($word) > $min_len || isset($linkate_overusedwords["white"][$word])) {
-			$stemm = $stemmer->stem_word($word);
-			if (!isset($linkate_overusedwords["black"][$stemm]))
-				$stemms .= $stemm . ' ';
-			if ($clean_suggestions_stoplist == 'false' || ($clean_suggestions_stoplist == 'true' && !isset($linkate_overusedwords["black"][$stemm])))
-                $words[] = $word;
+    $words = array();
+    if ($stemmer->Stem_Enabled) {
+        foreach ($wordlist as $word) {
+            if ( mb_strlen($word) > $min_len || array_key_exists($word ,$linkate_overusedwords["white"])) {
+                $stemm = $stemmer->stem_word($word);
+            if (!array_key_exists($stemm, $linkate_overusedwords["black"]))
+                $stemms .= $stemm . ' ';
+            if ($clean_suggestions_stoplist == 'false' || ($clean_suggestions_stoplist == 'true' && !array_key_exists($stemm, $linkate_overusedwords["black"])))
+                $words[] = $word;		
+            }
+        }
+    } else {
+        foreach ($wordlist as $word) {
+            if ( mb_strlen($word) > $min_len) 
+                $words[] = $word;		
+        }
+    }
 
-		}
-	}
-	unset($wordlist);
-	
+    unset($wordlist);
+    if (empty($stemms) && !$stemmer->Stem_Enabled)
+        $stemms = implode(' ', $words);
 	return array($stemms, $words);
 }
 
@@ -371,14 +379,14 @@ function linkate_sp_get_tag_terms($ID) {
 }
 
 // Using this to parse query from cherrylink_editor.php, probably not the smartest way to do it
-function get_string_between($string, $start, $end){
-	$string = ' ' . $string;
-	$ini = strpos($string, $start);
-	if ($ini == 0) return '';
-	$ini += strlen($start);
-	$len = strpos($string, $end, $ini) - $ini;
-	return substr($string, $ini, $len);
-}
+// function get_string_between($string, $start, $end){
+// 	$string = ' ' . $string;
+// 	$ini = strpos($string, $start);
+// 	if ($ini == 0) return '';
+// 	$ini += strlen($start);
+// 	$len = strpos($string, $end, $ini) - $ini;
+// 	return substr($string, $ini, $len);
+// }
 
 // Manipulate DB
 function linkate_scheme_delete_record($id, $type) {
@@ -495,8 +503,8 @@ function linkate_get_term_id_from_slug($url) {
 	if (!$thecategory) {
         unset($thecategory);
 		return 0;
-	} else {
-        $catid = $thecategory->term_id;
-		return $catid;
-	}
+    } 
+    
+    $catid = $thecategory->term_id;
+	return $catid;
 }

@@ -1,11 +1,11 @@
 <?php
+/*
+ * CherryLink Plugin
+ */
 
- /** 
-
- ** Linkate terms, cats, custom tax
-
- **/
-
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_TERMS_LIBRARY', true);
 
 /* ====== CLASSIC ====== */
@@ -31,21 +31,22 @@ function hierarchical_term_tree($category = 0, $taxonomy = array()) {
 
     $next = get_terms($args);
 
-    if ($next) {
+    if ($next && !($next instanceof WP_Error)) {
         $r .= $list_prefix;
 
         foreach ($next as $cat) {
              if (!$cat instanceof WP_Term || $cat->taxonomy == 'nav_menu')
-                 continue;
+                continue;
 
             if ($taxonomy != $cat->taxonomy) { // if next type of taxonomy - add header/divider
                 $taxonomy = $cat->taxonomy;
                 $label = is_object(get_taxonomy($cat->taxonomy)) ? get_taxonomy($cat->taxonomy)->label : $cat->taxonomy;
                 $r .= str_replace('{taxonomy}', $label, $output_tepmlate_devider);
             }
+            $link = get_term_link($cat);
             $r .= str_replace(  // item template with values
                     array('{url}','{title}','{taxonomy}'),
-                    array(get_term_link($cat),$cat->name,$cat->taxonomy),
+                    array($link,$cat->name,$cat->taxonomy),
                     $output_template_item_prefix) .  $cat->name . ' ('.$cat->count.')' . $output_template_item_suffix;
             $r .= $cat->term_id !== 0 ? hierarchical_term_tree($cat->term_id, $taxonomy) : null; // check children
 

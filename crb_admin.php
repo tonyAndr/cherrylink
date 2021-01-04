@@ -1,10 +1,10 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Tony
- * Date: 27.03.2019
- * Time: 23:18
+/*
+ * CherryLink Plugin
  */
+
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
 
 class CL_RB_Admin_Area {
     # Admin Page Options
@@ -34,11 +34,11 @@ class CL_RB_Admin_Area {
             ));
             update_option('linkate-posts', $options);
             // Show a message to say we've done something
-            echo '<div class="updated settings-error notice crb-update"><p>' . __('<b>Настройки обновлены.</b>', 'linkate_posts') . '</p></div>';
+            echo '<div class="updated settings-error notice crb-update"><p>' . __('<b>Настройки обновлены.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
 
             CL_Related_Block::clear_cache();
             // Show a message to say we've done something
-            echo '<div class="updated settings-error notice"><p>' . __('<b>Кэш очищен.</b>', 'linkate_posts') . '</p></div>';
+            echo '<div class="updated settings-error notice"><p>' . __('<b>Кэш очищен.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
         }
 
         if (isset($_POST['crb_defaults'])) {
@@ -46,11 +46,11 @@ class CL_RB_Admin_Area {
 
             CL_Related_Block::fill_options();
             // Show a message to say we've done something
-            echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки блоков ссылок вернулись к заводским.</b>', 'linkate_posts') . '</p></div>';
+            echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки блоков ссылок вернулись к заводским.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
 
             CL_Related_Block::clear_cache();
             // Show a message to say we've done something
-            echo '<div class="updated settings-error notice"><p>' . __('<b>Кэш очищен.</b>', 'linkate_posts') . '</p></div>';
+            echo '<div class="updated settings-error notice"><p>' . __('<b>Кэш очищен.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
         }
 
 
@@ -59,7 +59,7 @@ class CL_RB_Admin_Area {
 
             CL_Related_Block::clear_cache();
             // Show a message to say we've done something
-            echo '<div class="updated settings-error notice"><p>' . __('<b>Кэш очищен.</b>', 'linkate_posts') . '</p></div>';
+            echo '<div class="updated settings-error notice"><p>' . __('<b>Кэш очищен.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
         }
         ?>
         <h2>Настройки вывода для блока релевантных ссылок</h2>
@@ -142,14 +142,14 @@ class CL_RB_Admin_Area {
             <hr>
             
             <h3>Превью блоков</h3>
-            <p>Так будут выглядеть блоки на вашем сайте.</p>
+            <p>Примерно так будут выглядеть блоки на вашем сайте.</p>
 <!--            <label for="preview_width"><strong>Ширина контейнера</strong></label><br>-->
 <!--            <input id="preview_width" type="range" min="200" max="1000" step="1" value="750"><span id="range_number"></span>-->
             <div id="preview_container" style="margin: 0 auto; max-width:750px">
-            <?php echo cherrylink_related_block(); ?>
+            <?php echo cherrylink_related_block(array('offset' => false,'num_links' => false,'rel_type' => 'new' )); ?>
             </div>
             <hr>
-            <div class="submit"><input type="submit" class="button button-cherry" name="update_options" value="<?php _e('Сохранить настройки', 'linkate_posts') ?>" /><input type="submit" id="crb_defaults" name="crb_defaults" class="button button-download" style="float: right;" value="<?php _e(' Вернуть настройки блоков по умолчанию', 'linkate_posts') ?>" /></div>
+            <div class="submit"><input type="submit" class="button button-cherry" name="update_options" value="<?php _e('Сохранить настройки', CHERRYLINK_TEXT_DOMAIN) ?>" /><input type="submit" id="crb_defaults" name="crb_defaults" class="button button-download" style="float: right;" value="<?php _e(' Вернуть настройки блоков по умолчанию', CHERRYLINK_TEXT_DOMAIN) ?>" /></div>
             <?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
         </form>
 
@@ -201,7 +201,7 @@ class CL_RB_Admin_Area {
         <tr valign="top">
             <th scope="row"><label for="crb_show_for_pages">Показывать блок после текста страницы</label></th>
             <td>
-                <select name="crb_show_for_pages" id="crb_hide_existing_links">
+                <select name="crb_show_for_pages" id="crb_show_for_pages">
                     <option <?php if($crb_show_for_pages == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
                     <option <?php if($crb_show_for_pages == 'true') { echo 'selected="selected"'; } ?> value="true">Да</option>
                 </select>
@@ -259,7 +259,7 @@ class CL_RB_Admin_Area {
                 <input type="number" name="crb_cache_minutes" id="crb_cache_minutes" min="0" value="<?php echo intval($crb_cache_minutes); ?>"> (1440 минут = 24 часа) / <strong>0 - отключить кэш</strong>
             </td>
         </tr>
-        <tr valign="top"><td colspan=3><input type="submit" id="clear_cache" name="clear_cache" class="button button-download" value="<?php _e('Сбросить кэш', 'linkate_posts') ?>" /></td></tr>
+        <tr valign="top"><td colspan=3><input type="submit" id="clear_cache" name="clear_cache" class="button button-download" value="<?php _e('Сбросить кэш', CHERRYLINK_TEXT_DOMAIN) ?>" /></td></tr>
         <?php
     }
     static function css_tuning($crb_css_tuning) {

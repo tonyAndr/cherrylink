@@ -1,8 +1,11 @@
 <?php
 /*
- * Linkate Posts
+ * CherryLink Plugin
  */
 
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LP_OT_LIBRARY', true);
 
 // Called by the post plugins to match output tags to the actions that evaluate them
@@ -131,22 +134,6 @@ function linkate_otf_suggestions($option_key, $result, $ext) {
 	return $suggestions;
 }
 
-function linkate_otf_catlinks($option_key, $result, $ext) {
-	return linkate_otf_categorylinks($option_key, $result, $ext);
-}
-
-function linkate_otf_categorylinks($option_key, $result, $ext) {
-	$cats = get_the_category($result->ID);
-	$value = ''; $n = 0;
-	foreach ($cats as $cat) {
-		if ($n > 0) $value .= $ext;
-		$catname = apply_filters('single_cat_title', $cat->cat_name);
-		$value .= '<a href="' . get_category_link($cat->cat_ID) . '" title="' . sprintf(__("View all posts in %s", 'post_plugin_library'), $catname) . '" rel="category tag">'.$catname.'</a> ';
-		++$n;
-	}
-	return $value;
-}
-
 function linkate_otf_catnames($option_key, $result, $ext) {
 	return linkate_otf_categorynames($option_key, $result, $ext);
 }
@@ -155,18 +142,9 @@ function linkate_otf_categorynames($option_key, $result, $ext) {
 	$cats = get_the_category($result->ID);
 	$value = ''; //$n = 0;
 	foreach ($cats as $k=>$cat) {
-        //if ($n > 0) $value[] = $ext;
-        
 		$value .= $k === 0 ? $cat->name : ", " . $cat->name;
-		//++$n;
 	}
-    // return implode(", ", $value);
     return $value;
-}
-
-function linkate_otf_custom($option_key, $result, $ext) {
-	$custom = get_post_custom($result->ID);
-	return $custom[$ext][0];
 }
 
 function linkate_otf_tags($option_key, $result, $ext) {
@@ -177,23 +155,6 @@ function linkate_otf_tags($option_key, $result, $ext) {
 	}
 	if (!$ext) $ext = ', ';
 	$tag_list = join( $ext, $tag_list );
-	return $tag_list;
-}
-
-function linkate_otf_taglinks($option_key, $result, $ext) {
-	$tags = (array) get_the_tags($result->ID);
-	$tag_list = '';
-	$tag_links = array();
-	foreach ( $tags as $tag ) {
-		$link = get_tag_link($tag->term_id);
-		if ( is_wp_error( $link ) )
-			return $link;
-		$tag_links[] = '<a href="' . $link . '" rel="tag">' . $tag->name . '</a>';
-	}
-	if (!$ext) $ext = ' ';
-	$tag_links = join( $ext, $tag_links );
-	$tag_links = apply_filters( 'the_tags', $tag_links );
-	$tag_list .= $tag_links;
 	return $tag_list;
 }
 

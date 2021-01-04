@@ -1,8 +1,11 @@
 <?php
 /*
-Дополнение для CherryLink, добавляющее настраиваемые блоки с ссылками для перелинковки статей между собой.
-*/
+ * CherryLink Plugin
+ */
 
+// Disable direct access
+defined( 'ABSPATH' ) || exit;
+// Define lib name
 define('LINKATE_CRB_LIBRARY', true);
 
 class CL_Related_Block {
@@ -20,6 +23,11 @@ class CL_Related_Block {
         if (!function_exists('linkate_posts'))
             return 'Не найден плагин CherryLink';
         global $post;
+        if ($post) {
+            $post_id = $post->ID;
+        } else {
+            $post_id = -666;
+        }
            
         $options = get_option('linkate-posts');
         $is_term = 0;
@@ -40,11 +48,12 @@ class CL_Related_Block {
             $num_of_links = $num_links;
         }
         // only posts to include, if set
+        $included_posts = '';
         $excluded = '';
         if ($post) {
-            $included_posts = CL_RB_Metabox::get_custom_posts($post->ID);
+            $included_posts = CL_RB_Metabox::get_custom_posts($post_id);
             if ($hide_existing) {
-                $excluded = CL_Related_Block::get_posts_to_exclude($post->ID);
+                $excluded = CL_Related_Block::get_posts_to_exclude($post_id);
             }
         }
         // show latest if has args provided from func
@@ -60,15 +69,15 @@ class CL_Related_Block {
 
         $args = '';
         if ($included_posts) { // if custom selection
-            $args = "manual_ID=" . $post->ID . "&is_term=" . $is_term . "&offset=" . $offset . "&relevant_block=1&included_posts=" . $included_posts . "&ignore_relevance=true&";
+            $args = "manual_ID=" . $post_id . "&is_term=" . $is_term . "&offset=" . $offset . "&included_posts=" . $included_posts . "&ignore_relevance=true&";
             if ($num_links !== false) {
                 $args .= "&limit_ajax=".$num_of_links."&";
             }
         } else if (!$included_posts && $show_latest) { // show latest
-            $ids = self::get_latest_posts_ids($post->ID, $options, $num_of_links);
-            $args = "manual_ID=" . $post->ID . "&is_term=" . $is_term . "&offset=" . $offset . "&relevant_block=1&included_posts=" . $ids . "&ignore_relevance=true&";
+            $ids = self::get_latest_posts_ids($post_id, $options, $num_of_links);
+            $args = "manual_ID=" . $post_id . "&is_term=" . $is_term . "&offset=" . $offset . "&included_posts=" . $ids . "&ignore_relevance=true&";
         } else { // show related links
-            $args = "manual_ID=".$post->ID."&is_term=".$is_term."&offset=".$offset."&relevant_block=1&excluded_posts=".$excluded."&limit_ajax=".$num_of_links."&";
+            $args = "manual_ID=".$post_id."&is_term=".$is_term."&offset=".$offset."&excluded_posts=".$excluded."&limit_ajax=".$num_of_links."&";
         }
         
         _cherry_debug(__FUNCTION__, explode("&", $args), 'Аргументы для query');
@@ -363,6 +372,11 @@ function cherrylink_related_block_shortcode ($atts = [], $content = null, $tag =
     return cherrylink_related_block($atts);
 }
 
+function cherrylink_init_shortcode() {
+    // Register shortcode
+    add_shortcode( 'crb_show_block', 'cherrylink_related_block_shortcode' );
+}
+
 function _crb_init() {
     // Initial setup
     CL_Related_Block::fill_options();
@@ -370,9 +384,7 @@ function _crb_init() {
     // Append to content if needed
     add_filter('the_content', array('CL_Related_Block','add_after_content'));
     
-
-    // Register shortcode
-    add_shortcode( 'crb_show_block', 'cherrylink_related_block_shortcode' );
+    add_action('init', 'cherrylink_init_shortcode');
 
     // Include styles & scripts
 	add_action('wp_enqueue_scripts', array('CL_Related_Block','meta_assets'), 100);
