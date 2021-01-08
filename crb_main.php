@@ -342,6 +342,7 @@ class CL_Related_Block {
 // Alias to use in theme templates
 if (!function_exists("cherrylink_related_block")) {
     function cherrylink_related_block($atts = []) {
+        $EXEC_TIME = microtime(true);
         $options = get_option('linkate-posts');
         _cherry_debug(__FUNCTION__, $options, 'Содержимое options в php/шорткоде');
         // check individual settings
@@ -364,7 +365,8 @@ if (!function_exists("cherrylink_related_block")) {
             $output = CL_Related_Block::get_links($short_atts['offset'], $short_atts['num_links'], $short_atts['rel_type']);
         } 
         _cherry_debug(__FUNCTION__, $output, 'Переменная $output - готовый шаблон для вывода на экран');
-        return $output;
+        $time_elapsed_secs = microtime(true) - $EXEC_TIME;
+        return $output . "<!-- CRB MicroTime: $time_elapsed_secs -->";
     }
 }
 

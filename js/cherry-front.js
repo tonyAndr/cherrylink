@@ -1,4 +1,28 @@
 jQuery(document).ready(function ($) {
+    // console.log(tinymce.editors)
+    // tinymce.on( 'SetupEditor', e => {
+    //     if ( e.editor.id === "content" ) {
+    //         e.editor.on( 'init', event => {
+    //             console.log("Editor loaded")
+    //         });
+    //     }
+    // }, true );
+    // for (let editor of tinymce.editors) {
+    //     editor.on('ExecCommand change', function (event) {
+    //         timeOutLinksChecker(T_WAIT_EDITOR_INPUT);
+    //     });
+    //     editor.on('focus mousedown keyup change', function (event) {
+    //         cl_editor_lastfocus = 'RICH_EDITOR';
+    //     });
+    //     if (cherrylink_options['quickfilter_dblclick'] === "true")
+    //         editor.on('mouseup', function (event) {
+    //             if (editor.selection.getContent()) {
+    //                 $('#filter_by_title').val(editor.selection.getContent({ format: 'text' }));
+    //                 $('#filter_by_title').trigger("propertychange");
+    //             }
+    //         })
+    // }
+
     // cl_ prefix for variables to prevent any conflicts
     // fcl_ prefix for functions to prevent any conflicts
     const T_WAIT_EDITOR_INPUT = 200; // look timeOutChecker() 
@@ -1605,14 +1629,18 @@ jQuery(document).ready(function ($) {
             let host = location.host;
             let proto = location.protocol;
 
-            if (url.length > 0) {
-                if (url.indexOf(host) === -1) {
-                    url = "//" + host + url;
-                }
-                if (url.indexOf(proto) === -1) {
-                    url = proto + url;
-                }
-            }
+            let parser = document.createElement('a');
+            parser.href = url;
+            url = parser.href;
+
+            // if (url.length > 0) {
+            //     if (url.indexOf(host) === -1) {
+            //         url = "//" + host + url;
+            //     }
+            //     if (url.indexOf(proto) === -1) {
+            //         url = proto + url;
+            //     }
+            // }
 
             return url;
         }

@@ -455,25 +455,31 @@ function linkate_scheme_get_add_row_query($str, $post_id, $is_term) {
 
 		// remove some escaping stuff
         $href = trim(str_replace("\"", "", str_replace("\\", "", $href)));
-        
         if (empty($href)) continue; // no href - no need
-        if (strpos($href, '#') !== false && strpos($href, 'http') !== true) continue; // this is just our internal navigational links
+        if (strpos($href, '#') !== false) continue; // these are probably our in-page navigational links
+
+        $href = linkate_unparse_url($href, "full");
+        if (empty($href)) continue; // no href - no need
 
 		$ext_url = '';
         $ankor = esc_sql(trim($node->textContent));
         $ankor = empty($ankor) ? "_NOT_FOUND_" : $ankor;
-		$target_id = url_to_postid($href); //post_id
-		$target_type = 0;
-		if ($target_id === 0) { // term_id
-			$target_id = linkate_get_term_id_from_slug($href);
-			$target_type = 1;
-		}
-		if ($target_id === 0) {	// target - external
-			$target_type = 2;
-
-			$ext_url = esc_sql($href);
+        if (strpos($href, $_SERVER['HTTP_HOST']) !== false ) {
+            $target_id = url_to_postid($href); //post_id
+            $target_type = 0;
+            if ($target_id === 0) { // term_id
+                $target_id = linkate_get_term_id_from_slug($href);
+                $target_type = 1;
+            }
+            if ($target_id === 0) {
+                $target_type = 255; // bit type limitation
+                $ext_url = esc_sql($href); // not external, but will save it for admin links preview
+            }
+        } else {
+            $target_type = 2;
+            $ext_url = esc_sql($href);
         }
-        
+
         // add count to update post meta with outgoing links
         $outgoing_count++;
 

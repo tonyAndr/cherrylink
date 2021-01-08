@@ -70,10 +70,14 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	$clean_suggestions_stoplist = $options['clean_suggestions_stoplist'];
 	$min_len = intval($options['term_length_limit']);
 
-	$words_table = $table_prefix."linkate_stopwords";
-	$black_words = array_filter($wpdb->get_col("SELECT stemm FROM $words_table WHERE is_white = 0 GROUP BY stemm"));
+    $words_table = $table_prefix."linkate_stopwords";
+    // black words for common words search
+    $black_words_common = array_flip(array_filter($wpdb->get_col("SELECT word FROM $words_table WHERE is_white = 0")));
+    
+    // stop lists for indexation
+	$black_stemms = array_filter($wpdb->get_col("SELECT stemm FROM $words_table WHERE is_white = 0 GROUP BY stemm"));
 	$white_words = array_filter($wpdb->get_col("SELECT word FROM $words_table WHERE is_white = 1"));
-	$linkate_overusedwords["black"] = array_flip($black_words);
+	$linkate_overusedwords["black"] = array_flip($black_stemms);
 	$linkate_overusedwords["white"] = array_flip($white_words);
 
 	$table_name = $table_prefix.'linkate_posts';
@@ -116,7 +120,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 				$title = '';
 				if (function_exists('wpseo_init')) {
                     $yoast_opt = get_option('wpseo_taxonomy_meta');
-                    if ($yoast_opt && $yoast_opt['category']) {
+                    if ($yoast_opt && $yoast_opt['category'] && isset($yoast_opt['category'][$termID]) && isset($yoast_opt['category'][$termID]['wpseo_title'])) {
                         $title = $yoast_opt['category'][$termID]['wpseo_title'];
                     }
                 } else if ($aio_title && function_exists('show_descr_top')) {
@@ -219,7 +223,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     $wpdb->flush();
 
     // Process new overused words, add to prev
-    $common_words = linkate_process_batch_overused_words($joined_content_for_stopwords, $common_words, $min_len);
+    $common_words = linkate_process_batch_overused_words($joined_content_for_stopwords, $common_words, $min_len, $black_words_common);
     // Temporarely store overused words for the future 
     $options['overused_words_temp'] = $common_words;
     update_option( 'linkate-posts', $options );
@@ -249,7 +253,8 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     unset($common_words);
     unset($options);
     unset($options_meta);
-    unset($black_words);
+    unset($black_words_common);
+    unset($black_stemms);
     unset($white_words);
     unset($linkate_overusedwords);
 
@@ -264,10 +269,10 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	return true;
 }
 
-function linkate_process_batch_overused_words ($batch_content_array, $common_words, $min_len) {
+function linkate_process_batch_overused_words ($batch_content_array, $common_words, $min_len, $black_words_common) {
     foreach ($batch_content_array as $key => $word) {
         # code...
-        if (mb_strlen($word) > intval($min_len)) {
+        if (mb_strlen($word) > intval($min_len) && !array_key_exists($word,$black_words_common)) {
             if(!array_key_exists($word,$common_words)){
                 $common_words[$word]=0;
             } else {
@@ -286,8 +291,6 @@ function linkate_last_index_overused_words() {
 	linkate_scheme_update_option_timestamp();
 
 	$ajax_array = array();
-	// Get existing stoplist
-	$existing_blacklist = array_flip(array_filter(linkate_get_blacklist(true)));
 	$options = get_option( 'linkate-posts' );
 
     // Get temp overused words from reindex
@@ -300,19 +303,14 @@ function linkate_last_index_overused_words() {
 		wp_die();
 	}
 
-	// Remove words which already in the blacklist
+	// Reduce to $sw_count
 	arsort($common_words);
 	$sw_count = 30;
 	foreach ($common_words as $k => $v) {
 		if ($sw_count == 0) break;
-		if (!isset($existing_blacklist[$k])) {
-			$ajax_array['common_words'][] = array('word' => $k, 'count' => $v);
-			$sw_count--;
-		} 
+        $ajax_array['common_words'][] = array('word' => $k, 'count' => $v);
+        $sw_count--;
 	}
-
-    unset($existing_blacklist);
-
 	// Remove temp words from options
 	unset($options['overused_words_temp']);
 	update_option( 'linkate-posts', $options );

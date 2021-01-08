@@ -345,11 +345,19 @@ function linkate_oth_format_date($date, $fmt, $id) {
 }
 
 function linkate_unparse_url($url, $opt) {
-	$parsed_url = parse_url($url);
-	if ($parsed_url) {
+    $url = trim($url);
+    $parsed_url = parse_url($url);
+    if ($parsed_url === false) {
+        return '';
+    }
+    // $REQUEST_SCHEME = '';
+    // $HTTP_HOST = '';
+    $REQUEST_SCHEME = !empty($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] . '://' : '';
+    $HTTP_HOST = !empty($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
 
-		$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
-		$host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
+	if ($parsed_url) {
+		$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : $REQUEST_SCHEME;
+		$host     = isset($parsed_url['host']) ? $parsed_url['host'] : $HTTP_HOST;
 		$port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
 		$user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
 		$pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';

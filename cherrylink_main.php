@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.1.8
+Version: 2.1.9
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: cherrylink-td
@@ -99,14 +99,6 @@ class LinkatePosts {
 
         // switch output between editors (classic/gutenberg) and related block if empty
         $presentation_mode = (isset($arg_options['mode']) && !empty($arg_options['mode'])) ? $arg_options['mode'] : 'related_block';
-        
-		// if (function_exists('get_string_between')) {
-		//     $linkate_posts_current_ID = get_string_between ($args, "manual_ID=", "&");
-		//     $is_term = get_string_between ($args, "is_term=", "&");
-		//     $offset = get_string_between ($args, "offset=", "&");
-		// 	$presentation_mode = get_string_between ($args, "mode=", "&");
-		// 	if (empty($presentation_mode)) $presentation_mode = 'related_block';
-		// }
 
 		$postid = link_cf_current_post_id($linkate_posts_current_ID);
 		
@@ -157,11 +149,11 @@ class LinkatePosts {
 			if ($ignore_relevance) {
 				$sql = "SELECT * FROM `$table_name` LEFT JOIN `$wpdb->posts` ON `pID` = `ID` ";
 			} else {
-				$sql = "SELECT *, ";
+				$sql = "SELECT wp.ID,wp.post_content,wp.post_title,wp.post_author,wp.post_excerpt,wp.post_date,lp.pID,lp.suggestions, ";
 				$sql .= link_cf_score_fulltext_match($table_name, $weight_title, $titleterms, $weight_content, $contentterms, $weight_tags, $tagterms, $match_against_title);
 			}
 
-			if ($check_custom) $sql .= "LEFT JOIN $wpdb->postmeta ON post_id = ID ";
+			if ($check_custom) $sql .= "LEFT JOIN $wpdb->postmeta wpp ON post_id = ID ";
 
 			// build the 'WHERE' clause
 			$where = array();
@@ -197,8 +189,10 @@ class LinkatePosts {
             }
             
             _cherry_debug(__FUNCTION__, $sql, 'SQL query');
+            $EXEC_TIME = microtime(true);
             $results = $wpdb->get_results($sql);
-            _cherry_debug(__FUNCTION__, count($results), 'Результат query');
+            $time_elapsed_secs = microtime(true) - $EXEC_TIME;
+            _cherry_debug(__FUNCTION__, count($results), 'Результат query, время выполнения: '.$time_elapsed_secs);
 
             // remove duplicates
             $ids_list = array();

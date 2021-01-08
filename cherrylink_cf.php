@@ -493,7 +493,7 @@ function link_cf_score_fulltext_match($table_name, $weight_title, $titleterms, $
 		$wsql[] = "(".number_format($weight_content+$weight_title+$weight_tags, 4, '.', '')." * (MATCH (`title`) AGAINST ( \"$all_terms\" )))";
 	}
 
-	return '(' . implode(' + ', $wsql) . "  ) as score FROM `$table_name` LEFT JOIN `$wpdb->posts` ON `pID` = `ID` "; 
+	return '(' . implode(' + ', $wsql) . "  ) as score FROM `$table_name` lp LEFT JOIN `$wpdb->posts` wp ON `pID` = `ID` "; 
 }
 
 function link_cf_where_check_age($direction, $length, $duration) {

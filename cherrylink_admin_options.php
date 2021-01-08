@@ -467,6 +467,16 @@ function linkate_posts_statistics_options_subpage(){
                 <label for="spoiler_no_outgoing" id="label_spoiler_no_outgoing"></label>
                 <div class="spoiler_no_outgoing">
                 </div>
+                <br>
+                <input type="checkbox"  id="spoiler_has_404" />
+                <label for="spoiler_has_404" id="label_spoiler_has_404"></label>
+                <div class="spoiler_has_404">
+                </div>
+                <br>
+                <input type="checkbox"  id="spoiler_has_recursion" />
+                <label for="spoiler_has_recursion" id="label_spoiler_has_recursion"></label>
+                <div class="spoiler_has_recursion">
+                </div>
             </div>
             
 		    <!--  We save and update index using ajax call, see function linkate_ajax_call_reindex below -->

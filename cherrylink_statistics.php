@@ -397,7 +397,7 @@ function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 	foreach ($links as $link) {
 		// get source url and target url
 		$source_url = '';
-		if ($source_type == 0) { //post
+		if (intval($source_type) === 0) { //post
 			$source_url = get_permalink((int)$link['source_id']);
 			if (false === in_array($link['post_type'], $include_types) && !isset($from_editor))
 				continue; // skip, if not in our list
@@ -406,7 +406,7 @@ function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 			if ( ! empty( $post_categories ) && ! is_wp_error( $post_categories ) ) {
 				$source_categories = wp_list_pluck( $post_categories, 'name' );
 			}
-		} elseif ($source_type == 1) { // term
+		} elseif (intval($source_type) === 1) { // term
             $source_url = get_term_link((int)$link['source_id']);
             // if ($source_url instanceof WP_Error) $source_url = $source_url->get_error_message();
 			$term_obj = get_term((int)$link['source_id']);
@@ -428,9 +428,9 @@ function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 
 		for ($i=0; $i < sizeof($targets); $i++) {
 			$target_url = '';
-			if ($target_types[$i] == 0) { //post
+			if (intval($target_types[$i]) === 0) { //post
 				$target_url = get_permalink((int)$targets[$i]);
-			} elseif ($target_types[$i] == 1) {
+			} elseif (intval($target_types[$i]) === 1) {
 				$target_url = get_term_link((int)$targets[$i]);
 			} else {
 				$target_url = $ext_links[$i];
@@ -443,7 +443,7 @@ function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 				$buf_array[] = $link['count_targets'];
 				$buf_array[] = $link['count_sources'];
             } else { //from admin panel
-				if ($i == 0 || isset($_POST['duplicate_fields'])) {
+				if ($i === 0 || isset($_POST['duplicate_fields'])) {
 					if (isset($_POST['source_id']))     $buf_array[] = $link['source_id'];
 					if (isset($_POST['source_type']))   $buf_array[] = $source_type == 0 ? $link['post_type'] : $term_type;
 					if (isset($_POST['source_cats']))   $buf_array[] = $source_type == 0 ? implode(", ",$source_categories) : $term_name;
@@ -452,6 +452,7 @@ function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 					if (isset($_POST['ankor']))         $buf_array[] = $ankors[$i];
 					if (isset($_POST['count_out']))     $buf_array[] = $link['count_targets'];
 					if (isset($_POST['count_in']))      $buf_array[] = $link['count_sources'];
+					$buf_array[] = intval($target_types[$i]) === 255 ? 1 : 0;
 				} else { // by default, we don't repeat the same data
 					if (isset($_POST['source_id'])) $buf_array[] = '';
 					if (isset($_POST['source_type'])) $buf_array[] = '';
@@ -461,6 +462,7 @@ function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 					if (isset($_POST['ankor'])) $buf_array[] = $ankors[$i];
 					if (isset($_POST['count_out'])) $buf_array[] = '';
 					if (isset($_POST['count_in'])) $buf_array[] = '';
+					$buf_array[] = intval($target_types[$i]) === 255 ? 1 : 0;;
 				}
             }
             if (isset($from_editor) && $from_editor) {
@@ -480,22 +482,19 @@ function linkate_admin_preview_stats($stats_array) {
     $source_id = 0;
     $source_url = 3;
     $target_url = 4;
+    $ankor = 5;
     $count_out = 6;
     $count_in = 7;
+    $is_404 = 8;
     $new_array = array();
 
     $prev_id = '';
     foreach ($stats_array as $i => $row) {
-        // keep only repeated links
+        // keep only links of targets which have repeats (i.e. problematics)
         if (!empty($prev_id) && $prev_id !== $row[$source_id]) {
             $new_array[$prev_id]['targets'] = array_filter($new_array[$prev_id]['targets'], function ($element) {
                 return $element > 1;
             });
-            // if (count($new_array[$prev_id]['targets']) > 0) {
-            //     $new_array[$prev_id]['targets'] = array(array_map(function($k, $v) {
-            //         return array($k, $v);
-            //     }, array_keys($new_array[$prev_id]['targets']), $new_array[$prev_id]['targets']));
-            // }
         }
         // arrange data, count repeats
         if (!isset($new_array[$row[$source_id]])) {
@@ -504,6 +503,8 @@ function linkate_admin_preview_stats($stats_array) {
                 'targets' => array(
                     $row[$target_url] => 1
                 ),
+                'recursion' => array(),
+                'err_404' => array(),
                 'has_outgoing' => intval($row[$count_out]) > 0,
                 'has_incoming' => intval($row[$count_in]) > 0,
                 'has_repeats' => false
@@ -516,12 +517,43 @@ function linkate_admin_preview_stats($stats_array) {
                 $new_array[$row[$source_id]]['targets'][$row[$target_url]] = 1;
             }
         }
+
+        // recursion
+        if ($row[$source_url] === $row[$target_url]) {
+            $new_array[$row[$source_id]]['recursion'][] = $row[$ankor];
+        }
+
+        // 404
+        if ($row[$source_url] !== $row[$target_url] && $row[$is_404]) {
+            $new_array[$row[$source_id]]['err_404'][$row[$target_url]] = $row[$ankor];
+        }
+
+
         $prev_id = $row[$source_id];
     }
     $new_array = array_filter($new_array, function ($element) {
-        return $element['has_repeats'] || !$element['has_outgoing'] || !$element['has_incoming'];
+        return $element['has_repeats'] || !$element['has_outgoing'] || !$element['has_incoming'] || count($element['err_404']) > 0 || count($element['recursion']) > 0;
     });
     return $new_array;
+}
+
+function linkate_is_target_404($url) {
+    // $opts['http']['timeout'] = 2;
+
+    // $headers = null;
+    // if (version_compare(PHP_VERSION, '7.1.0', '>=')) {
+    //     $context = stream_context_create($opts);
+    //     $headers =  get_headers($url, 0, $context);
+    // } else {
+    //     $defaultOptions = stream_context_get_options(stream_context_get_default());
+    //     stream_context_set_default($opts);
+    //     $headers = get_headers($url);
+    //     stream_context_set_default($defaultOptions);
+    // }
+    
+    $headers = get_headers($url);
+    $code = substr($headers[0], 9, 3);
+    return $code === 404 || $code === "404";
 }
 
 // ========================================================================================= //
