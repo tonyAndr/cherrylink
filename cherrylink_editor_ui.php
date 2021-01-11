@@ -10,7 +10,6 @@ add_action ( 'admin_head', 'linkate_send_options_frontend');
 add_action('wp_ajax_getLinkateLinks', 'getLinkateLinks');
 add_action( 'admin_enqueue_scripts', 'hook_term_edit', 10);
 if (function_exists('register_cherrylink_gutenberg_scripts')) {
-    add_action('wp_ajax_cherrylink_gutenberg_panel', 'cherrylink_gutenberg_panel');
     add_action('enqueue_block_editor_assets', 'register_cherrylink_gutenberg_scripts');
 }
 
@@ -43,8 +42,7 @@ function hook_term_edit( $hook_suffix ) {
 		add_action('media_buttons', 'add_linkate_button', 15);
 		linkate_panel_css();
 		linkate_panel_tinymce_js();
-		linkate_snowball_js();
-
+        linkate_snowball_js();
     }
 	// Post editor
 	if ('post.php' === $hook_suffix || 'post-new.php' === $hook_suffix) {
@@ -55,7 +53,7 @@ function hook_term_edit( $hook_suffix ) {
 			linkate_panel_css();
 	        add_action('media_buttons', 'add_linkate_button', 15);
 	        linkate_panel_tinymce_js();
-			linkate_snowball_js();
+            linkate_snowball_js();
         } 
 	}
 	return;
@@ -67,15 +65,13 @@ function linkate_panel_css() {
 }
 
 function linkate_panel_tinymce_js() {
-    wp_register_script( 'cherrylink-js-main', plugins_url( '/js/cherry-front.js', __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
+    global $wp_version;
+    $classic_js = version_compare( $wp_version, '5.6', '>=' ) ? 'cherry-front.js' : 'cherry-front-legacy.js';
+    wp_register_script( 'cherrylink-js-main', plugins_url( '/js/'.$classic_js, __FILE__ ), array( 'jquery' ), LinkatePosts::get_linkate_version() );
 	wp_localize_script( 'cherrylink-js-main', 'ajax_obj', ['ajaxurl' => admin_url('admin-ajax.php')] );
     wp_enqueue_script( 'cherrylink-js-main' );
 }
 
-function linkate_panel_gutenberg_css() {
-	wp_register_style( 'cherrylink-css-main', plugins_url( '/css/cherry-gutenberg.css', __FILE__ ), '', LinkatePosts::get_linkate_version() );
-	wp_enqueue_style ('cherrylink-css-main');
-}
 function linkate_panel_gutenberg_js() {
     wp_register_script( 'cherrylink-js-main', plugins_url( '/js/cherry-gutenberg.js', __FILE__ ), array( 'jquery', 'wp-blocks', 'wp-editor', 'wp-dom-ready' ,'wp-plugins', 'wp-edit-post', 'wp-element'), LinkatePosts::get_linkate_version() );
     wp_enqueue_script( 'cherrylink-js-main' );
@@ -84,7 +80,6 @@ function linkate_snowball_js() {
 	wp_register_script( 'snowball-script', plugins_url( '/js/Snowball.min.js', __FILE__ ));
 	wp_enqueue_script( 'snowball-script' );
 }
-
 
 // The media button to dislay links box
 function add_linkate_button () {
@@ -138,92 +133,64 @@ function linkate_is_version_old( $operator = '<', $version = '4.9.6' ) {
     return version_compare( $wp_version, $version, $operator ) ? 1 : 0;
 }
 
-// function tinymce_plugin($init) {
-//     $init['cherrylink_change'] = plugins_url( '/js/cherry-front.js', __FILE__ );
-//     return $init;
-// }
-
-function cherrylink_gutenberg_panel() {
-    $options = (array) get_option('linkate-posts');
-    $multi_class = $options['multilink'] ? "link-exists-multi" : "link-exists";
-    echo "
-    <div class='cherrypanel-gutenberg-warning'>
-        <h3>Внимание!</h3>
-        <p>Функционал плагина CherryLink пока не может быть полностью реализован в новом редакторе Gutenberg.</p>
-        <p>Чтобы воспользоваться плагином, <strong>переключитесь в классический редактор</strong>.</p>
-    </div>
-    <div class='linkate-filter-bar'>
-        <div>
-            <div>
-                <input id='hide_that_exists' type='checkbox' checked><label class='".$multi_class."' for='hide_that_exists'>LINK</label>
-            </div>
-            <div>
-                <input id='show_that_exists' type='checkbox' checked><label for='show_that_exists' class='linkate-link'>LINK</label>
-            </div>
-        </div>
-        <div>
-            <input id='filter_by_title' type='text' placeholder='Фильтр'><span class='filter-clear-box'></span>
-        </div>
-    </div>
-    <div class='linkate-tabs'>
-        <div class='tab tab-articles linkate-tab-selected'>Записи</div>
-        <div class='tab tab-taxonomy'>Таксономии</div>
-    </div>
-    <div class='suggestions-panel-back'>&#10094; Назад</div>
-    <div id='cherrylink_meta_inside'>
-            <span id='link_template' data-before='". $options['link_before']."' data-after='".$options['link_after']."' data-temp-alt='".$options['link_temp_alt']."' hidden></span>
-            <span id='term_template' data-before='". $options['term_before']."' data-after='".$options['term_after']."'  data-term-temp-alt='". $options['term_temp_alt']."' hidden></span>
-            <div class='linkate-box-container container-articles'>". create_quick_cat_select()."
-                <div id='linkate-links-list'></div>
-                <div class='linkate-load-more'>
-                    <div class='lds-ellipsis'>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                    <div class=\"load-more-text\">Загрузить еще...</div>
-                </div>
-            </div>
-            <div class='linkate-box-container container-taxonomy'>". hierarchical_term_tree()."</div>
-    </div>
-    <div class='linkate-total-links'>
-        <div class='total-links-header'>Статистика перелинковки</div>
-        <div class='total-links-counter'>
-            <div> Исходящих</div>
-            <div id='links-count-total'>?</div>
-            <div> Входящих</div>
-            <div id='links-count-targets'>?</div>
-        </div>
-    </div>
-    ";
-    wp_die();
-}
-
-
 function cherrylink_classiceditor_panel() {
-
     $options = (array) get_option('linkate-posts');
+    $cl_exists_class = $options['multilink'] === 'checked' ? 'link-exists-multi' : 'link-exists';
     ?>
     <div id="linkate-box" class="linkate-custom-box">
+        <div class="linkate-close-btn">&#x2716;</div>
         <h2 class="hndle"><span>CherryLink <?php echo LinkatePosts::get_linkate_version(); ?></span></h2>
+        <div class="linkate-filter-bar">
+            <div>
+                <div>
+                    <input id="hide_that_exists" type="checkbox" checked>
+                    <label class="<?= $cl_exists_class ?>" for="hide_that_exists">LINK</label>
+                </div>
+                <div>
+                    <input id="show_that_exists" type="checkbox" checked>
+                    <label for="show_that_exists" class="linkate-link">LINK</label>
+                </div>
+            </div>
+            <div>
+                <input id="filter_by_title" type="text" placeholder="Фильтр">
+                <span class="filter-clear-box"></span>
+            </div>
+        </div>
+        <div class="linkate-tabs">
+            <div class="tab tab-articles linkate-tab-selected">Записи</div>
+            <div class="tab tab-taxonomy">Таксономии</div>
+        </div>
+        <div class="suggestions-panel-back">&#10094; Назад</div>
         <div class="inside" id="cherrylink_meta_inside">
             <span id="link_template" data-before="<?php echo $options['link_before']; ?>" data-after="<?php echo $options['link_after']; ?>" data-temp-alt="<?php echo $options['link_temp_alt']; ?>" hidden></span>
             <span id="term_template" data-before="<?php echo $options['term_before']; ?>" data-after="<?php echo $options['term_after']; ?>"  data-term-temp-alt="<?php echo $options['term_temp_alt']; ?>" hidden></span>
-            <span id="multilink" data-value="<?php echo $options['multilink']; ?>" hidden></span>
-            <span id="wp_ver" data-value="<?php echo linkate_is_version_old('<', '4.9.6'); ?>" hidden></span>
 
-            <div class="linkate-box-container container-articles"><?php echo create_quick_cat_select(); ?><div id="linkate-links-list"></div></div>
-            <?php //echo getLinkateLinks($tag_ID, 1); ?>
+            <div class="linkate-box-container container-articles">
+                <?php echo create_quick_cat_select(); ?>
+                <div id="linkate-links-list"></div>
+                <div class="linkate-load-more">
+                    <div class="lds-ellipsis"><div></div><div></div><div></div><div></div></div>
+                    <div class="load-more-text">Загрузить еще...</div>
+                </div>
+            </div>
             <div class="linkate-box-container container-taxonomy">
                 <?php 
                     // suppress useless notices temporarely
-                    $error_level = error_reporting();
-                    error_reporting(E_ALL & ~E_NOTICE);
+                    // $error_level = error_reporting();
+                    // error_reporting(E_ALL & ~E_NOTICE);
                     echo hierarchical_term_tree(); 
                     // revert it back
-                    error_reporting($error_level);
+                    // error_reporting($error_level);
                 ?> 
+            </div>
+        </div>
+        <div class="linkate-total-links">
+            <div class="total-links-header">Статистика перелинковки</div>
+            <div class="total-links-counter">
+                <div> Исходящих</div>
+                <div id="links-count-total">?</div>
+                <div> Входящих</div>
+                <div id="links-count-targets">?</div>
             </div>
         </div>
     </div>

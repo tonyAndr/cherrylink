@@ -364,9 +364,9 @@ if (!function_exists("cherrylink_related_block")) {
             );
             $output = CL_Related_Block::get_links($short_atts['offset'], $short_atts['num_links'], $short_atts['rel_type']);
         } 
-        _cherry_debug(__FUNCTION__, $output, 'Переменная $output - готовый шаблон для вывода на экран');
         $time_elapsed_secs = microtime(true) - $EXEC_TIME;
-        return $output . "<!-- CRB MicroTime: $time_elapsed_secs -->";
+        _cherry_debug(__FUNCTION__, $output, 'Переменная $output - это выводим на экран CRB MicroTime:'. $time_elapsed_secs);
+        return $output;
     }
 }
 

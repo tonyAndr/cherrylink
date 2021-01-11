@@ -333,6 +333,9 @@
     width:100%;
     flex-shrink: 0;
 }
+.linkate-filter-bar > div:first-child > div {
+    display: inline-table;
+}
 
 .linkate-filter-bar > div:first-child {
     float:left;
