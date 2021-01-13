@@ -230,8 +230,8 @@ function fill_options($options) {
 	if (!isset($options['relative_links'])) $options['relative_links'] = "full"; // since 1.4.9
 	if (!isset($options['quickfilter_dblclick'])) $options['quickfilter_dblclick'] = "false"; // since 1.5.0
     if (!isset($options['singleword_suggestions'])) $options['singleword_suggestions'] = "true"; // since 1.6.0
-    
-	if (!isset($options['debug_enabled'])) $options['debug_enabled'] = "false"; // since 2.0.6
+    if (!isset($options['debug_enabled'])) $options['debug_enabled'] = "false"; // since 2.0.6
+    if (!isset($options['use_stemming'])) $options['use_stemming'] = "false"; // since 2.1.11
 
 	update_option('linkate-posts', $options);
 	return $options;

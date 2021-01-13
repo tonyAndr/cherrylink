@@ -20,8 +20,6 @@ class CL_Related_Block {
     }
 
     static function get_links($offset = false, $num_links = false, $rel_type = false) {
-        if (!function_exists('linkate_posts'))
-            return 'Не найден плагин CherryLink';
         global $post;
         if ($post) {
             $post_id = $post->ID;
@@ -90,20 +88,21 @@ class CL_Related_Block {
         } else {
             $cache_delay_time = $options['crb_cache_minutes'] * MINUTE_IN_SECONDS;
         }
+        $output = '';
 
-        // Get relevant results
-        if ( false === ( $output = get_transient( "crb__".$args ) ) ) {
-            // It wasn't there, so regenerate the data and save the transient
-            _cherry_debug(__FUNCTION__, false, 'Релевантный поиск, в кэше не нашли');
-            $output = linkate_posts($args);
-            if ($cache_delay_time !== 0) {
-                set_transient( "crb__".$args, $output, $cache_delay_time );
+        if (!$show_latest) {
+            // Get relevant results
+            if ( false === ( $output = get_transient( "crb__".$args ) ) ) {
+                // It wasn't there, so regenerate the data and save the transient
+                _cherry_debug(__FUNCTION__, false, 'Релевантный поиск, в кэше не нашли');
+                $output = linkate_posts($args);
+                if ($cache_delay_time !== 0) {
+                    set_transient( "crb__".$args, $output, $cache_delay_time );
+                }
             }
         }
 
-//        $output = linkate_posts($args);
-
-        // If empty - ignore relevance
+        // ignore relevance
         if (!$output || empty($output)) {
             $args .= "ignore_relevance=true&show_pages=false&";
             if ( false === ( $output = get_transient( "non_rel_crb__".$args ) ) ) {

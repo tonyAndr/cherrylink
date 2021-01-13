@@ -30,8 +30,6 @@ function getLinkateLinks() {
 
     $data =  linkate_posts("manual_ID=".$post_id."&is_term=".$is_term."&offset=".$offset."&mode=".$mode."&");
     wp_send_json($data);
-    // echo json_encode( $data, JSON_HEX_QUOT); 
-    // wp_die();
 }
 
 
@@ -93,7 +91,6 @@ function linkate_send_options_frontend() {
     if ($post)
         $current_id = $post->ID;
     $scheme_exists = isset($options['linkate_scheme_exists']) ? true : false;
-//	$cats = linkate_get_all_categories();
     ?>
     <script>
     var cherrylink_options = [];
@@ -107,6 +104,7 @@ function linkate_send_options_frontend() {
     cherrylink_options['linkate_scheme_exists'] = <?php echo '"'. $scheme_exists . '"'; ?>;
     cherrylink_options['quickfilter_dblclick'] = <?php echo '"'. $options['quickfilter_dblclick'] . '"'; ?>;
     cherrylink_options['singleword_suggestions'] = <?php echo '"'. $options['singleword_suggestions'] . '"'; ?>;
+    cherrylink_options['use_stemming'] = <?php echo '"'. $options['use_stemming'] . '"'; ?>;
     cherrylink_options['multilink'] = <?php echo '"'. $options['multilink'] . '"'; ?>;
     cherrylink_options['wp_ver'] = <?php echo linkate_is_version_old('<', '4.9.6'); ?>;
     cherrylink_options['term_length_limit'] = <?php echo $options['term_length_limit']; ?>;
@@ -176,11 +174,11 @@ function cherrylink_classiceditor_panel() {
             <div class="linkate-box-container container-taxonomy">
                 <?php 
                     // suppress useless notices temporarely
-                    // $error_level = error_reporting();
-                    // error_reporting(E_ALL & ~E_NOTICE);
+                    $error_level = error_reporting();
+                    error_reporting(E_ALL & ~E_NOTICE);
                     echo hierarchical_term_tree(); 
                     // revert it back
-                    // error_reporting($error_level);
+                    error_reporting($error_level);
                 ?> 
             </div>
         </div>
@@ -200,7 +198,7 @@ function cherrylink_classiceditor_panel() {
 function create_quick_cat_select() {
 	$cats = linkate_get_all_categories();
 
-	$items = "<option value=\"0\" class=\"quick_item_all\" selected>Все категории</option>";
+	$items = "<option value=\"0\" class=\"quick_item_all\" selected>Все рубрики</option>";
 	foreach ($cats as $v) {
 		$k = key($v);
 		$margin = "";

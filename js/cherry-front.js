@@ -368,9 +368,9 @@ jQuery(document).ready(function ($) {
                 fast_action_class = " suggestion-fast-insert";
             }
             panel += "<div class=\"suggestion-group\"><div class=\"suggestion-select-list\">"
-            words_array.forEach(function (el, id, array) {
-                let relative_position = Math.round((el[0] / cl_editor_lastfocus_html_content.length) * 100);
-                panel += "<div class=\"suggestion-select-option \" data-start=\"" + el[0] + "\" data-end=\"" + el[1] + "\" data-text=\"" + el[2] + "\"><div class=\"suggestion-buttons\"><a title=\"Найти в тексте\" class=\"suggestion-find\"> </a><a class=\"suggestion-insert\" title=\"Вставить ссылку\">&#9088;</a></div><div class=\"suggestion-select-option-text" + fast_action_class + "\">" + fcl_strip(el[2]) + " <span style='font-size: smaller; color:lightgrey'>(" + relative_position + "%)</span> </div>" + stop_btn + "</div>";
+            words_array.sort((a,b) => (a[3] - b[3])).forEach(function (el, id, array) {
+                // let relative_position = Math.round((el[0] / cl_editor_lastfocus_html_content.length) * 100);
+                panel += "<div class=\"suggestion-select-option \" data-start=\"" + el[0] + "\" data-end=\"" + el[1] + "\" data-text=\"" + el[2] + "\"><div class=\"suggestion-buttons\"><a title=\"Найти в тексте\" class=\"suggestion-find\"> </a><a class=\"suggestion-insert\" title=\"Вставить ссылку\">&#9088;</a></div><div class=\"suggestion-select-option-text" + fast_action_class + "\">" + fcl_strip(el[2]) + " <span style='font-size: smaller; color:lightgrey'>(" + el[3] + "%)</span> </div>" + stop_btn + "</div>";
             });
             panel += "</div></div>";
             return panel;
@@ -1082,8 +1082,8 @@ jQuery(document).ready(function ($) {
         let st = start, en = end;
         txt = txt.substring(st, en);
         // add text pos percentage
-
-        return [st, en, txt];
+        let relative_position = Math.round((start / cl_editor_lastfocus_html_content.length) * 100);
+        return [st, en, txt, relative_position];
     }
 
     function fcl_isTinyMCE() {
@@ -1137,7 +1137,6 @@ jQuery(document).ready(function ($) {
         // result arrays for single and multi-word ankors
         let nearest_single = [];
         let nearest_multi = [];
-    
         let nearest_positions = [];
 
         // get current article's content
@@ -1151,12 +1150,12 @@ jQuery(document).ready(function ($) {
         let sug_arr = suggestions.trim().toLowerCase().split(' ');
         let text_arr = finalString.trim().split(' ');
 
-        // Filter short words
+        // Filter content words by length and stoplists
         text_arr = text_arr.filter(function (w) {
             return cl_whitelist.includes(w) || (w.length > cherrylink_options['term_length_limit'] && !cl_blacklist.includes(w));
         });
 
-        // looking for ankors in text using levenstein
+        // looking for ankors in text using stemming and levenstein
         for (let i = sug_arr.length - 1; i >= 0; i--) {
             let count = 0;
             let words = [];
@@ -1221,18 +1220,18 @@ jQuery(document).ready(function ($) {
                     for (var k = 0; k < pos_matrix.length; k++) {
                         if (i !== k) {
                             for (var n = 0; n < pos_matrix[k].length; n++) {
-                                let start, end, diff = 100;
+                                let start, end, diff = 100, max_diff = 30;
                                 let add = false;
                                 if (pos_matrix[i][j].pos > pos_matrix[k][n].pos) {
                                     diff = pos_matrix[i][j].pos - (pos_matrix[k][n].pos + pos_matrix[k][n].len);
-                                    if (diff < 20) {
+                                    if (diff < max_diff) {
                                         start = pos_matrix[k][n].pos;
                                         end = pos_matrix[i][j].pos + pos_matrix[i][j].len;
                                         add = true;
                                     }
                                 } else {
                                     diff = pos_matrix[k][n].pos - (pos_matrix[i][j].pos + pos_matrix[i][j].len);
-                                    if (diff < 20 && diff > 0) {
+                                    if (diff < max_diff && diff > 0) {
                                         start = pos_matrix[i][j].pos;
                                         end = pos_matrix[k][n].pos + pos_matrix[k][n].len;
                                         add = true
@@ -1275,11 +1274,11 @@ jQuery(document).ready(function ($) {
                 }
             }
             // see definition below
-            nearest_positions = fcl_removeBadSuggestions(nearest_positions);
+            nearest_multi = fcl_removeBadSuggestions(nearest_positions);
             // get text for frases
-            nearest_positions.forEach(function (el) {
-                nearest_multi.push(fcl_getAnkorText(el[0], el[1]));
-            })
+            // nearest_positions.forEach(function (el) {
+            //     nearest_multi.push(fcl_getAnkorText(el[0], el[1]));
+            // })
         }
 
         // hide singleword if set
@@ -1290,20 +1289,20 @@ jQuery(document).ready(function ($) {
     }
 
     // Remove bad suggestions with puntuation or short ones (<=3) or in h1-6
+
     function fcl_removeBadSuggestions(nearest_positions) {
-        let n_p;
-        n_p = nearest_positions.slice();
-        for (var i = n_p.length - 1; i >= 0; i--) {
-            let item = fcl_getAnkorText(n_p[i][0], n_p[i][1]);
+        nearest_positions = nearest_positions.map((v, i) => {
+            let item = fcl_getAnkorText(v[0], v[1]);
             if (item[2].search(/[\.,\/#!$%\^&\*;\":{}=`~()@\+\?\\n\[\]\+]/i) > -1 || item[2].search(/ - /) > -1 || item[2].length <= 3) {
                 //console.log(item[2]);
-                fcl_removePos(nearest_positions, n_p[i]);
+                return false;
             }
-            if (fcl_inHeaderOrLink(n_p[i][0])) {
-                fcl_removePos(nearest_positions, n_p[i]);
+            if (fcl_inHeaderOrLink(v[0])) {
+                return false;
             }
-        }
-        return nearest_positions;
+            return item;
+        });
+        return nearest_positions.filter(x => x);
     }
 
     /* ===================       ==================== */
@@ -1478,7 +1477,7 @@ jQuery(document).ready(function ($) {
             let ankors = fcl_getAllAnkorsInUse(content);
             let links_title = 'Ссылки в тексте [анкор:url]<ul>';
 
-            for (var i = ankors.length - 1; i >= 0; i--) {
+            for (var i = 0; i <= ankors.length - 1; i++) {
                 links_title += '<li><span class=\'tooltip-ankor-text\'>' + ankors[i].ankor + '</span>: <span class=\'tooltip-url\'><a target="_blank" href="' + ankors[i].url + '">' + ankors[i].url + '</a></span></li>';
             }
             links_title += '</ul>';
@@ -1495,7 +1494,12 @@ jQuery(document).ready(function ($) {
                 ajax_get_data_from_server();
                 fcl_toggle_links_stats();
                 //fcl_individual_links_stats();
-                fcl_get_stop_lists();
+
+                // Use_stemming in this case determines whether we use stoplists or no. 
+                // Stemming for suggestions in js still applies, but not in php, if === false
+                if (cherrylink_options["use_stemming"] === 'true') {
+                    fcl_get_stop_lists();
+                }
             }
             $('#linkate-box').toggleClass('hide-or-show');
         });

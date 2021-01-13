@@ -128,7 +128,9 @@ jQuery(document).ready(function ($) {
             success: function (response) {
                 response = JSON.parse(response);
                 console.log(response);
-                $('#generate_csv').after('<a id="btn_csv_dload" class="button button-download" href="' + response['url'] + '" download>Скачать файл</a>');
+                // $('#generate_csv').after('<a id="btn_csv_dload" class="button button-download" href="' + response['url'] + '" download>Скачать файл</a>');
+                location.href= response['url'];
+                // $('#btn_csv_dload').click();
             },
             error: function (jqXHR, textStatus, errorThrown ) {
                 handle_errors(errorThrown, jqXHR.responseText);

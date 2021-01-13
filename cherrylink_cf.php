@@ -116,7 +116,6 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	$arg['utf8'] = @$options['utf8'];
 	$arg['use_stemmer'] = @$options['use_stemmer'];
 	$arg['batch'] = @$options['batch'];
-	$arg['exclude_users'] = @$options['exclude_users'];
 
 	// for related block
 	$arg['crb_show_after_content'] = @$options['crb_show_after_content'];
@@ -493,7 +492,7 @@ function link_cf_score_fulltext_match($table_name, $weight_title, $titleterms, $
 		$wsql[] = "(".number_format($weight_content+$weight_title+$weight_tags, 4, '.', '')." * (MATCH (`title`) AGAINST ( \"$all_terms\" )))";
 	}
 
-	return '(' . implode(' + ', $wsql) . "  ) as score FROM `$table_name` lp LEFT JOIN `$wpdb->posts` wp ON `pID` = `ID` "; 
+	return '(' . implode(' + ', $wsql) . "  ) as score FROM `$table_name` "; 
 }
 
 function link_cf_where_check_age($direction, $length, $duration) {
@@ -521,6 +520,26 @@ function link_cf_where_check_custom($key, $op, $value) {
 	} else {
 		return "(meta_key = '$key' && meta_value $op '$value')";
 	}
+}
+
+function link_cf_get_suggestions_for_ids($results) {
+    global $wpdb;
+    $table_name = $wpdb->prefix."linkate_posts";
+    $ids = array();
+    foreach ($results as $k => $res) {
+        # code...
+        $ids[] = $res->ID;
+    }
+    $query = "SELECT pID, suggestions FROM $table_name WHERE pID IN (".implode(',', $ids).") AND is_term = 0";
+    $suggestions = $wpdb->get_results($query);
+    foreach ($results as &$o1) {
+        foreach ($suggestions as $o2) {
+            if ($o1->ID === $o2->pID) {
+                $o1 = (object) array_merge((array) $o1, (array) $o2);
+            }
+        }
+    }
+    return $results;
 }
 
 /*

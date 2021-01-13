@@ -313,11 +313,11 @@ function link_cf_display_suggestions_switch_action($suggestions_switch_action) {
 function link_cf_display_suggestions_donors($suggestions_donors_src, $suggestions_donors_join) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="suggestions_donors_src"><?php _e('Доноры слов/фраз для подсказок', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
+		<th scope="row"><label for="suggestions_donors_src"><?php _e('Доноры слов/фраз для подсказок анкоров', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td>
             <table class="linkateposts-inner-table">
                 <?php
-                $opts = array('title', 'content');
+                    $opts = array('title', 'content');
                     $turned_on = explode(',', $suggestions_donors_src);
                     echo "\n\t<tr valign=\"top\"><td><strong>Источник</strong></td><td>Включить?</td></tr>";
                     foreach ($opts as $opt) {
@@ -341,19 +341,18 @@ function link_cf_display_suggestions_donors($suggestions_donors_src, $suggestion
             </select>
         </td>
         <td><?php link_cf_prepare_tooltip("Пример:<br>
-            У нас есть 3 поля, которые содержат слова:
+            У нас есть 2 поля, которые содержат слова:
             <ol>
-            <li>Заголовок (Н1) - [ипотека, квартира, документы]</li>
-            <li>Тайтл (СЕО) - [кредит, квартира, оформить]</li>
+            <li>Заголовок (Н1) - [ипотека, квартира, дом]</li>
             <li>Контент (текст записи) - [кредит, ипотека, документы, квартира]</li>
             </ol>
-            Если мы их объединим, то в подсказках будут слова:<br>
-            <strong>[ипотека, квартира, документы, креди, оформить]</strong>
+            Если мы их объединим, то в подсказках будут все уникальные слова:<br>
+            <strong>[ипотека, квартира, дом, документы, кредит]</strong>
             <br><br>
             При пересечении (ищем общие слова):<br>
-            <strong>[квартира] - только это слово встретилось во всех полях одновременно.</strong>
+            <strong>[квартира, ипотека] - только эти слова встретились в обоих полях одновременно.</strong>
             <br><br>
-            Если какое-либо из полей пустое (например у вас не задан сео тайтл), то это поле просто не учитывается."); ?></td>
+            Если какое-либо из полей пустое, то оно не учитывается."); ?></td>
     </tr>
 	<?php
 }
@@ -972,7 +971,8 @@ function link_cf_display_num_term_length_limit($term_length_limit) {
 	<tr valign="top">
 		<th scope="row"><label for="term_length_limit"><?php _e('Не учитывать слова короче (кол-во букв, включительно):', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
 		<td><input name="term_length_limit" type="number" id="term_length_limit" style="width: 60px;" value="<?php echo $term_length_limit; ?>" size="3"  min="0"/></td>
-	</tr>
+        <td><?php link_cf_prepare_tooltip("Этот параметр позволяет отсеить различные союзы, предлоги и пр. Все, что короче или равно по длине заданному значению просто игнорируется алгоритмом.<br><br>Если вы хотите разрешить некоторые короткие слова или аббревиатуры, то добавьте их в белый список в редакторе стоп-слов."); ?></td>
+    </tr>
 	<?php
 }
 
@@ -1051,7 +1051,21 @@ function link_cf_display_clean_suggestions_stoplist($clean_suggestions_stoplist)
 		<option <?php if($clean_suggestions_stoplist == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
 		<option <?php if($clean_suggestions_stoplist == 'true') { echo 'selected="selected"'; } ?> value="true">Да</option>
 		</select>
-        <td><?php link_cf_prepare_tooltip("В положении \"ДА\" может значительно уменьшить количество неплохих анкоров для перелинковки"); ?></td>
+        <td><?php link_cf_prepare_tooltip("Фильтрация подсказок по черным и белым спискам стоп-слов."); ?></td>
+		</td>
+	</tr>
+	<?php
+}
+function link_cf_display_use_stemming($use_stemming) {
+	?>
+	<tr valign="top">
+		<th scope="row"><label for="use_stemming"><?php _e('Использовать стемминг и стоп-слова', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
+		<td>
+		<select name="use_stemming" id="use_stemming" >
+		<option <?php if($use_stemming == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
+		<option <?php if($use_stemming == 'true') { echo 'selected="selected"'; } ?> value="true">Да</option>
+		</select>
+        <td><?php link_cf_prepare_tooltip("Более тщательная обработка текстов при создании индекса. Улучшает точность алгоритмов релевантности, но увеличивает время создания индекса.<br><br>Если стемминг выключен, то стоп-слова тоже не имеют силы, из-за невозможности точного сравнения слов. "); ?></td>
 		</td>
 	</tr>
 	<?php

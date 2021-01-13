@@ -20,7 +20,7 @@ function linkate_ajax_call_reindex() {
 
 	$options = get_option('linkate-posts');
 	// Fill up the options with the values chosen...
-	$options = link_cf_options_from_post($options, array('term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors_src', 'suggestions_donors_join'));
+	$options = link_cf_options_from_post($options, array('term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors_src', 'suggestions_donors_join', 'use_stemming'));
     update_option('linkate-posts', $options);
 
     $options_meta = get_option('linkate_posts_meta');
@@ -43,6 +43,8 @@ function linkate_get_posts_count_reindex() {
 
 // sets up the index for the blog
 function linkate_posts_save_index_entries ($is_initial = false) {
+    mb_regex_encoding('UTF-8');
+	mb_internal_encoding('UTF-8');
     $EXEC_TIME = microtime(true);
 	global $wpdb, $table_prefix;
     $options = get_option('linkate-posts');
@@ -62,8 +64,9 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     $reindex_offset = isset($_POST['index_offset']) ? (int)$_POST['index_offset'] : 0;
     $index_posts_count = isset($_POST['index_posts_count']) ? (int)$_POST['index_posts_count'] : $amount_of_db_rows;
 
+    $use_stemming = $options['use_stemming'] === "true";
     $stemmer = new Stem\LinguaStemRu();
-    $stemmer->enable_stemmer(true);
+    $stemmer->enable_stemmer($use_stemming);
     
 	$suggestions_donors_src = $options['suggestions_donors_src'];
 	$suggestions_donors_join = $options['suggestions_donors_join'];
@@ -113,8 +116,8 @@ function linkate_posts_save_index_entries ($is_initial = false) {
                         $aio_title = $opt['title'];
                     }
 				}
-
-				list($content, $content_sugg) = linkate_sp_get_post_terms($descr, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
+                $descr_words_list = mb_split("\W+", linkate_sp_mb_clean_words($descr));
+				list($content, $content_sugg) = linkate_sp_get_post_terms($descr_words_list, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
 				//Seo title is more relevant, usually
 				//Extracting terms from the custom titles, if present
 				$title = '';
@@ -166,10 +169,11 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 
 	foreach ($posts as $post) {
         $postID = $post['ID'];
+        $content_words_list = mb_split("\W+", linkate_sp_mb_clean_words($post['post_content']));
         // Combine content for later process
-        $joined_content_for_stopwords = array_merge($joined_content_for_stopwords, mb_split("\W+", linkate_sp_mb_clean_words($post['post_content'])));
+        $joined_content_for_stopwords = array_merge($joined_content_for_stopwords, $content_words_list);
 
-		list($content, $content_sugg) = linkate_sp_get_post_terms($post['post_content'], $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
+		list($content, $content_sugg) = linkate_sp_get_post_terms($content_words_list, $min_len, $linkate_overusedwords, $stemmer, $clean_suggestions_stoplist);
 
 		// convert broken symbols
 		$content = iconv("UTF-8", "UTF-8//IGNORE", $content); 
@@ -216,7 +220,6 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     $wpdb->flush();
     // Insert into DB
     $wpdb->query("INSERT INTO `$table_name` (pID, content, title, tags, suggestions) VALUES $values_string");
-    //$wpdb->flush();
 
     $wpdb_error = $wpdb->last_error;
     $wpdb_query = $wpdb->last_query;

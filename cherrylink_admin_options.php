@@ -345,9 +345,10 @@ function linkate_posts_index_options_subpage(){
 			    <hr>
 				<table class="optiontable form-table">
 					<?php
-						link_cf_display_suggestions_donors($options['suggestions_donors_src'], $options['suggestions_donors_join'] );
-						link_cf_display_clean_suggestions_stoplist($options['clean_suggestions_stoplist']);
 						link_cf_display_num_term_length_limit($options['term_length_limit']);
+                        link_cf_display_use_stemming($options['use_stemming']);
+                        link_cf_display_suggestions_donors($options['suggestions_donors_src'], $options['suggestions_donors_join'] );
+						link_cf_display_clean_suggestions_stoplist($options['clean_suggestions_stoplist']);
 					?>
 				</table>
                 <h3>Полезные советы</h3>
@@ -408,7 +409,7 @@ function linkate_posts_index_options_subpage(){
 				<form id="form_generate_csv" method="post" action="" >
 					<?php link_cf_display_scheme_export_options(); ?>
 					<progress id="csv_progress"></progress>
-					<div class="submit"><input id="generate_csv" type="submit" class="button button-cherry" name="generate_csv" value="<?php _e('Создать CSV', CHERRYLINK_TEXT_DOMAIN) ?>" /></div>
+					<div class="submit"><input id="generate_csv" type="submit" class="button button-cherry" name="generate_csv" value="<?php _e('Скачать схему в .CSV', CHERRYLINK_TEXT_DOMAIN) ?>" /></div>
 					
 				</form>
 			</div>

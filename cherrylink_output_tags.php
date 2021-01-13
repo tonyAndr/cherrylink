@@ -128,10 +128,7 @@ function linkate_otf_anons($option_key, $result, $ext) {
 }
 
 function linkate_otf_suggestions($option_key, $result, $ext) {
-	global $wpdb, $table_prefix;
-	$table_name = $table_prefix.'linkate_posts';
-	$suggestions = $wpdb->get_var("SELECT suggestions FROM $table_name WHERE pID=$result->ID AND is_term=0 limit 1"); 
-	return $suggestions;
+	return $result->suggestions;
 }
 
 function linkate_otf_catnames($option_key, $result, $ext) {
