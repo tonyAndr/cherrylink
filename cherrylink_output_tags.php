@@ -38,6 +38,7 @@ function linkate_otf_title ($option_key, $result, $ext) {
 function linkate_otf_title_seo ($option_key, $result, $ext) {
 	if (isset($result->manual_title))
 		return $result->manual_title; // return manual title for block links
+    $title = '';
     if (function_exists('wpseo_init'))
         $title = linkate_decode_yoast_variables($result->ID);
     if (function_exists( 'aioseop_init_class' ))
@@ -163,7 +164,7 @@ function linkate_otf_imagesrc($option_key, $result, $ext) {
 	$options = get_option($option_key);
 	$url_option = $options['relative_links'];
 	$crb_image_size = $options['crb_image_size'];
-	$template_image_size = $options['template_image_size'];
+	$template_image_size = isset($options['template_image_size']) ? $options['template_image_size'] : '';
 	$crb_placeholder_path = empty($options['crb_placeholder_path']) ? WP_PLUGIN_URL . '/cherrylink/img/imgsrc_placeholder.jpg' : $options['crb_placeholder_path'];
     $crb_content_filter = $options['crb_content_filter'] == 1;
     

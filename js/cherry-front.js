@@ -286,21 +286,24 @@ jQuery(document).ready(function ($) {
                     }
 
                 });
-
-            for (let editor of tinymce.editors) {
-                editor.on('ExecCommand change', function (event) {
-                    timeOutLinksChecker(T_WAIT_EDITOR_INPUT);
-                });
-                editor.on('focus mousedown keyup change', function (event) {
-                    cl_editor_lastfocus = 'RICH_EDITOR';
-                });
-                if (cherrylink_options['quickfilter_dblclick'] === "true")
-                    editor.on('mouseup', function (event) {
-                        if (editor.selection.getContent()) {
-                            $('#filter_by_title').val(editor.selection.getContent({ format: 'text' }));
-                            $('#filter_by_title').trigger("propertychange");
-                        }
-                    })
+            try {
+                for (let editor of tinymce.editors) {
+                    editor.on('ExecCommand change', function (event) {
+                        timeOutLinksChecker(T_WAIT_EDITOR_INPUT);
+                    });
+                    editor.on('focus mousedown keyup change', function (event) {
+                        cl_editor_lastfocus = 'RICH_EDITOR';
+                    });
+                    if (cherrylink_options['quickfilter_dblclick'] === "true")
+                        editor.on('mouseup', function (event) {
+                            if (editor.selection.getContent()) {
+                                $('#filter_by_title').val(editor.selection.getContent({ format: 'text' }));
+                                $('#filter_by_title').trigger("propertychange");
+                            }
+                        })
+                }
+            } catch (err) {
+                console.log(err)
             }
         }
 

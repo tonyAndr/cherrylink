@@ -112,12 +112,18 @@ function linkate_gutenberg_hierarchical_terms($category = 0, $taxonomy = array()
 
     if ($next) {
         foreach ($next as $cat) {
-             if (!$cat instanceof WP_Term || $cat->taxonomy == 'nav_menu')
-                 continue;
+            if (!$cat instanceof WP_Term || $cat->taxonomy == 'nav_menu')
+                continue;
+
+            $cat_tax = get_taxonomy($cat->taxonomy);
+
+            // Don't show terms w/o taxonomies or if taxonomy isn't public
+            if ($cat_tax === false || (is_object($cat_tax) && !$cat_tax->public))
+                continue;
 
             if ($taxonomy != $cat->taxonomy) { // if next type of taxonomy - add header/divider
                 $taxonomy = $cat->taxonomy;
-                $label = is_object(get_taxonomy($cat->taxonomy)) ? get_taxonomy($cat->taxonomy)->label : $cat->taxonomy;
+                $label = is_object($cat_tax) ? $cat_tax->label : $cat->taxonomy;
                 $r[] = array(
                     "name" => $label,
                     "is_divider" => "yes"

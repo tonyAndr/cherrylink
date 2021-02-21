@@ -308,7 +308,7 @@ function linkate_last_index_overused_words() {
 
 	// Reduce to $sw_count
 	arsort($common_words);
-	$sw_count = 30;
+	$sw_count = 100;
 	foreach ($common_words as $k => $v) {
 		if ($sw_count == 0) break;
         $ajax_array['common_words'][] = array('word' => $k, 'count' => $v);
