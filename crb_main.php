@@ -158,6 +158,7 @@ class CL_Related_Block {
         $item_template = isset($options['crb_temp_link']) ? stripslashes(urldecode(base64_decode($options['crb_temp_link']))) : self::TEMP_LINK;
 
         $item_template = str_replace('imagesrc', 'imagesrc:crb', $item_template);
+        $item_template = str_replace('imgtag', 'imgtag:crb', $item_template);
 
         if ($results) {
             // IF CUSTOM MANUAL ANKORS - REPLACE {title} or {title_seo} with them HERE

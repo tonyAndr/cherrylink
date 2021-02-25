@@ -208,7 +208,8 @@ function link_cf_get_available_tags($is_term) {
 			<li><strong>{date}</strong> - дата;</li>
 			<li><strong>{author}</strong> - автор;</li>
 			<li><strong>{postid}</strong> - id поста;</li>
-			<li><strong>{imagesrc}</strong> - ссылка на превью;</li>
+			<li><strong>{imagesrc}</strong> - ссылка на картинку-превью;</li>
+			<li><strong>{imgtag}</strong> - готовый HTML тег с картинкой (только для блока ссылок);</li>
 			<li><strong>{anons}</strong> - текст анонса.</li>';
 	}
 	$tags .= '</ul>';
