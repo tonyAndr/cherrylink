@@ -30,8 +30,8 @@ function linkate_otf_postid ($option_key, $result, $ext) {
 function linkate_otf_title ($option_key, $result, $ext) {
 	if (isset($result->manual_title))
 		return $result->manual_title; // return manual title for block links
-    $value = linkate_oth_truncate_text($result->post_title, $ext);
-    $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); // for json
+    // $value = linkate_oth_truncate_text($result->post_title, $ext);
+    $value = htmlspecialchars($result->post_title, ENT_QUOTES, 'UTF-8'); // for json
 	$value = apply_filters('the_title', $value, $result->ID);
     if(defined('QTRANSLATE_FILE')) $value = apply_filters('translate_text', $value);
     return $value;
@@ -48,7 +48,7 @@ function linkate_otf_title_seo ($option_key, $result, $ext) {
     if (!$title)
 		$title = $result->post_title;
 	$title = htmlspecialchars($title, ENT_QUOTES);  
-    $title = linkate_oth_truncate_text($title, $ext);
+    // $title = linkate_oth_truncate_text($title, $ext);
     if(defined( 'QTRANSLATE_FILE')) $title = apply_filters('translate_text', $title);
     return $title;
 }
@@ -58,7 +58,8 @@ function linkate_otf_url($option_key, $result, $ext) {
 	$url_option = $options['relative_links'];
 	$value = get_permalink($result->ID);
 	$value = linkate_unparse_url($value, $url_option);
-	return linkate_oth_truncate_text($value, $ext);
+    return $value;
+	// return linkate_oth_truncate_text($value, $ext);
 }
 
 function linkate_otf_author($option_key, $result, $ext) {
