@@ -1104,10 +1104,14 @@ jQuery(document).ready(function ($) {
         let i = 0;
 
         while (cl_editor_textarea[i]) {
-            if ($(cl_editor_textarea[i]).hasClass('wp-editor-area') && $('#wp-' + cl_editor_textarea[i].id + '-wrap').hasClass('tmce-active')) {
-                content += tinymce.get(cl_editor_textarea[i].id).getContent();
-            } else {
-                content += cl_editor_textarea[i].value;
+			try {
+                if ($(cl_editor_textarea[i]).hasClass('wp-editor-area') && $('#wp-' + cl_editor_textarea[i].id + '-wrap').hasClass('tmce-active')) {
+                    content += tinymce.get(cl_editor_textarea[i].id).getContent();
+                } else {
+                    content += cl_editor_textarea[i].value;
+                }			
+            } catch (err) {
+                console.log('Unable to get editors content by id: ', cl_editor_textarea[i].id);
             }
             i++;
         }

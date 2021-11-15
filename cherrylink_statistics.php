@@ -315,6 +315,7 @@ function linkate_queryresult_to_array_backwards($links, $target_type) {
 	foreach ($links as $link) {
 		// get source url and target url
 		$target_url = '';
+        $target_categories = array();
 		if ($target_type == 0) { //post
 			$target_url = get_permalink((int)$link['target_id']);
 			if (false === in_array($link['post_type'], $include_types) && !isset($_POST["from_editor"]))
@@ -397,6 +398,7 @@ function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 	foreach ($links as $link) {
 		// get source url and target url
 		$source_url = '';
+        $source_categories = array();
 		if (intval($source_type) === 0) { //post
 			$source_url = get_permalink((int)$link['source_id']);
 			if (false === in_array($link['post_type'], $include_types) && !isset($from_editor))
