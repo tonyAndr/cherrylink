@@ -707,22 +707,26 @@ function link_cf_display_sidebar() {
     }
 	?>
 	<div class="linkateposts-admin-sidebar">
-				<h2>CherryLink <?php echo LinkatePosts::get_linkate_version();?></h2>
-				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/cherry_side_top.png"/>
-                <p>В обновлении 2.0 добавлена поддержка редактора Gutenberg!</p>
-                <p>Подробности о новой версии на <a href="https://seocherry.ru/dev/cherrylink-2-0-perelinkovka-gutenberg/">официальном сайте</a>.</p>
-				<h2>Как пользоваться плагином</h2>
-				<a href="https://seocherry.ru/dev/cherrylink-manual/"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_2.png"/></a>
-				<p>На многие вопросы по использованию плагина может ответить <a href="https://seocherry.ru/dev/cherrylink-manual/">руководство пользователя</a> на оф. сайте.</p>
-				<h2>Где взять ключ активации</h2>
-				<a href="http://seocherry.ru/dev/cherrylink" ><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_3.png"/></a>
-                <p>Вся информация о плагине и его покупке находится по адресу: <a href="http://seocherry.ru/dev/cherrylink" >SeoCherry.ru</a>.</p>
-                <p>Справка по поводу <a href="https://seocherry.ru/perenos-licenzii-cherrylink-i-vozvrat-deneg/" target="_blank">переноса лицензии или возврата денежных средств</a>.</p>
-				<h2>Техподдержка</h2>
-				<img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_4.png"/>
-				<p>Если есть вопросы о работе плагина, покупке или баг репорт (найденные ошибки) - пишите в <a href="https://t.me/joinchat/HCjIHgtC9ePAkJOP1V_cPg">телеграм-чат</a> или на почту <strong>mail@seocherry.ru</strong>. </p>
-				<p>Другие плагины разработчика можно найти <a href="https://seocherry.ru/buy-plugin/">на этой страничке</a>.</p>
-                <?= $actLeft; ?>
+        <?php linkate_posts_license_field(); ?>
+        <div class="sb-news">
+            <h2>Появился новый плагин!</h2>
+            <p><a href="https://fdd.tonyandr.com/"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/fdd-icon.png"/></a></p>
+            <p><strong>Files Download Delay</strong> - оберните ссылки на файлы в контейнер с таймером обратного отсчета, добавьте форму для email подписки или дополнительный рекламный блок. <a href="https://fdd.tonyandr.com/" target="_blank">Посмотреть демо</a>.</p>
+            <p>Плагин доступен бесплатно <a href="https://wordpress.org/plugins/files-download-delay/" target="_blank">в репозитории WordPress</a>.</p>
+        </div>
+        <div class="sb-info">
+            <h2>Полезное</h2>
+            <a href="https://seocherry.ru/dev/cherrylink-manual/" target="_blank"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_2.png"/></a>
+            <a href="https://seocherry.ru/buy-plugin/"  target="_blank"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_3.png"/></a>
+            <p>Справка по поводу <a href="https://seocherry.ru/perenos-licenzii-cherrylink-i-vozvrat-deneg/" target="_blank">переноса лицензии или возврата денежных средств</a>.</p>
+        </div>
+        <div class="sb-info">
+            <h2>Техподдержка</h2>
+            <img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_4.png"/>
+            <p>Если есть вопросы о работе плагина, покупке или баг репорт (найденные ошибки) - пишите в <a href="https://t.me/joinchat/HCjIHgtC9ePAkJOP1V_cPg" target="_blank">телеграм-чат</a> или на почту <strong>mail@seocherry.ru</strong>. </p>
+            <p>Другие плагины разработчика можно найти <a href="https://seocherry.ru/buy-plugin/" target="_blank">на этой страничке</a>.</p>
+        </div>
+        <?= $actLeft; ?>
 
 	</div>
 	<?php

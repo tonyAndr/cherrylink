@@ -194,8 +194,16 @@ jQuery(document).ready(function ($) {
             return false;
         });
 
+        // View article front
+        // $('.link-preview').unbind().click(function () {
+        //     let url = $(this).parent().parent().find('div.linkate-link').attr('data-url');
+        //     window.open(url, '_blank');
+        // });
+
+        // Edit article
         $('.link-preview').unbind().click(function () {
-            let url = $(this).parent().parent().find('div.linkate-link').attr('data-url');
+            let id = $(this).parent().parent().find('div.linkate-link').attr('data-postid');
+            let url = '/wp-admin/post.php?action=edit&post=' + id;
             window.open(url, '_blank');
         });
 

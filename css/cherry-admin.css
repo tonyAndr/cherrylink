@@ -132,14 +132,25 @@
 }
 
 .linkateposts-admin-sidebar {
-    padding: 1em;
-    background: lavender;
     flex-grow:1;
     max-width: 300px;
     min-width: 250px;
-    border: 1px solid #dcdcdc;
-    border-top: none;
 }
+
+.linkateposts-admin-sidebar > div.sb-info {
+    padding: 1em;
+    background: lavender;
+    border: 1px solid #dcdcdc;
+    margin-top: 1em;
+}
+.linkateposts-admin-sidebar > div.sb-news {
+    padding: 1em;
+    background: white;
+    border: 1px solid #dcdcdc;
+    border-top: 3px solid #e43839;
+    margin-top: 1em;
+}
+
 .linkateposts-admin-sidebar img{
     width:100%;
 }
@@ -150,10 +161,8 @@
 }
 .linkateposts-accessibility-good,
 .linkateposts-accessibility-warning {
-    padding: 10px;
+    padding: 1em;
     color: white;
-    margin-right:20px;
-    border: 1px solid #dcdcdc;
 }
 .linkateposts-accessibility-good h2,
 .linkateposts-accessibility-warning h2 {

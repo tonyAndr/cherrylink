@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.2.5
+Version: 2.2.6
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: cherrylink-td
@@ -276,7 +276,7 @@ class LinkatePosts {
 		<div class="linkate-item-container">
 			<div class="linkate-controls">
 				<div class="link-counter" title="Найдено в тексте / переход к ссылке">0</div>
-				<div class="link-preview" title="Что за статья? Откроется в новой вкладке"></div>
+				<div class="link-preview" title="Редактировать статью в новой вкладке"></div>
 				<div class="link-add-to-block" title="Добавить в блок релевантных ссылок"></div><div class="link-del-from-block btn-hidden" title="Убрать из блока ссылок"></div>
 			</div>
 			<div class="linkate-link" title="Нажмите для вставки в текст" data-url="{url}" data-titleseo="{title_seo}" data-title="{title}" data-category="{categorynames}" data-date="{date}" data-author="{author}" data-postid="{postid}" data-imagesrc="{imagesrc}" data-anons="{anons}" data-suggestions="{suggestions}"><span class="link-title" >';
@@ -471,7 +471,9 @@ function linkate_check_update(){
         'cherrylink'
     );
 
-    $update_checker->setAuthentication('6d568422fc0119bba8ac68799afb87572e0f571e');
+    // legacy: 6d568422fc0119bba8ac68799afb87572e0f571e
+    $update_checker->setAuthentication('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');
+    
     $update_checker->setBranch('master');
     $update_checker->getVcsApi()->enableReleaseAssets();
 }

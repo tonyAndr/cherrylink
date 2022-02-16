@@ -18,10 +18,9 @@ add_action('admin_menu', 'linkate_posts_option_menu', 1);
 
 function linkate_posts_options_page(){
 	echo '<div class="wrap"><h2>';
-	_e('CherryLink - Настройки', CHERRYLINK_TEXT_DOMAIN);
-	echo '</h2></div><hr>';
-
-	linkate_posts_license_field();
+    echo 'CherryLink v'. LinkatePosts::get_linkate_version() . '</h2>';
+    echo 'Настройки плагина';
+	echo '</div><hr>';
 
 	$m = new lp_admin_subpages();
 	$m->add_subpage('Индекс ссылок', 'other', 'linkate_posts_index_options_subpage');
