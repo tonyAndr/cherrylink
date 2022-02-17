@@ -81,7 +81,9 @@ function linkate_posts_license_field() {
         <?php else: ?>
 		<form method="post" action="">
 			<label for="hash_field"><?php _e('Ваш ключ:', CHERRYLINK_TEXT_DOMAIN) ?></label>
-			<input type="text" size="100" name="hash_field" id="hash_field" value="<?php echo htmlspecialchars(stripslashes($options['hash_field'])); ?>">
+            <br>
+			<input type="text" name="hash_field" id="hash_field" value="<?php echo htmlspecialchars(stripslashes($options['hash_field'])); ?>">
+            <br>
 			<input type="submit" class="button button-cherry" name="update_license" value="<?php _e('Сохранить', CHERRYLINK_TEXT_DOMAIN) ?>" />
 			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
 		</form>

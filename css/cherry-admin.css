@@ -180,6 +180,11 @@
     background: tomato;
 }
 
+#hash_field {
+    display: block;
+    width: 100%;
+}
+
 #reindex_progress {
     display: none;
 }
