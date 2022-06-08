@@ -40,5 +40,45 @@ jQuery(document).ready(function($){
 		$('#btn_csv_dload').remove();
 		$('#generate_csv').show();
 	})
+
+
+    /*
+	--- === DB COLLATION UPDATE === ---
+	*/
+
+    function update_collations() {
+        $("#update_collation_btn").hide();
+        $("#update_collation_btn").after("Обновляем, подождите...")
+        $.ajax({
+            type: "GET",
+            url: ajaxurl + "?action=update_collation",
+            datatype: 'json',
+            success: function (response) {
+                console.log(response)
+                if (!response["result"]) {
+                    $(".plugin-update-warning").html("<p>Произошла ошибка при обновлении: " + response["error"] + "</p>");
+                } else {
+                    $(".plugin-update-warning").html("<p>Обновление прошло успешно.</p>")
+                }
+            }
+        });
+    }
 	
+    $.ajax({
+        type: "GET",
+        url: ajaxurl + "?action=check_collation",
+        datatype: 'json',
+        success: function (response) {
+            let result = JSON.parse(response);
+            console.log(result)
+            if (!result) {
+                $(".plugin-update-warning").html("<p>Рекоммендуется обновить таблицы плагина в БД для полной поддержки символов и эмодзи Unicode. Обновить сейчас?</p><p><button id='update_collation_btn' class='button button-secondary'>Обновить таблицы</button></p>");
+                $("#update_collation_btn").click(function (e) {
+                    update_collations();
+                })
+                $(".plugin-update-warning").show();
+            }
+        }
+    });
+
 });

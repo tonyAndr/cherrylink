@@ -707,6 +707,7 @@ function link_cf_display_sidebar() {
     }
 	?>
 	<div class="linkateposts-admin-sidebar">
+        <div class="plugin-update-warning"></div>
         <?php linkate_posts_license_field(); ?>
         <div class="sb-news">
             <h2>Появился новый плагин!</h2>

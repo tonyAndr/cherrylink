@@ -38,7 +38,6 @@ function linkate_posts_license_field() {
 	$options = get_option('linkate-posts');
 	if (isset($_POST['update_license'])) {
 		check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
 		// Fill up the options with the values chosen...
 		$options = link_cf_options_from_post($options, array('hash_field'));
 		update_option('linkate-posts', $options);
@@ -47,7 +46,6 @@ function linkate_posts_license_field() {
     }
     if (isset($_POST['remove_license'])) {
 		check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
 		// Fill up the options with the values chosen...
         $options['hash_last_check'] = 0;
         $options['hash_last_status'] = false;
@@ -101,7 +99,6 @@ function linkate_posts_filter_options_subpage(){
 	$options = get_option('linkate-posts');
 	if (isset($_POST['update_options'])) {
 		check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
 		// Fill up the options with the values chosen...
 		$options = link_cf_options_from_post($options, array('show_customs','excluded_posts', 'included_posts', 'excluded_authors', 'included_authors', 'excluded_cats', 'included_cats', 'tag_str', 'custom', 'limit_ajax', 'show_private', 'show_pages', 'status', 'age', 'omit_current_post', 'match_cat', 'match_tags', 'sort', 'quickfilter_dblclick', 'singleword_suggestions'));
 		update_option('linkate-posts', $options);
@@ -165,7 +162,6 @@ function linkate_posts_output_options_subpage(){
 	$options = get_option('linkate-posts');
 	if (isset($_POST['update_options'])) {
 		check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
 		$options = link_cf_options_from_post($options, 
 												array(
                                                     // 'output_template', 
@@ -268,7 +264,6 @@ function linkate_posts_index_options_subpage(){
 
 	if (isset($_POST['truncate_all'])) {
 		// check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
 		// Remove scheme
 		unset($options['linkate_scheme_exists']);
 		unset($options['linkate_scheme_time']);
@@ -501,7 +496,6 @@ function linkate_posts_accessibility_options_subpage(){
 
 	if (isset($_POST['import_settings']) && isset($_FILES['upload_options'])) {
 		check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
 		// Fill up the options with the values chosen...
 		$name    = basename($_FILES['upload_options']['name']);
 		$ext     = end(explode('.', $name));
@@ -526,7 +520,6 @@ function linkate_posts_accessibility_options_subpage(){
 
 	if (isset($_POST['reset_options'])) {
 		check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
 		// Fill up the options with the values chosen...
 		fill_options(NULL);
 		// Show a message to say we've done something
@@ -572,7 +565,6 @@ function linkate_posts_accessibility_options_subpage(){
 	<?php
 	if (isset($_POST['export_settings'])) {
 		check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
 
 		$str = http_build_query($options);
 		header("Content-Disposition: attachment; filename=\"cherrylink_options.txt\"");
@@ -591,7 +583,6 @@ function linkate_posts_relevance_options_subpage(){
 	$options = get_option('linkate-posts');
 	if (isset($_POST['update_options'])) {
 		check_admin_referer('linkate-posts-update-options');
-		if (defined('POC_CACHE_4')) poc_cache_flush();
 		// Fill up the options with the values chosen...
 
 		$options = link_cf_options_from_post($options, array( 'num_terms', 'match_all_against_title','weight_title', 'weight_content', 'weight_tags', 'ignore_relevance'));

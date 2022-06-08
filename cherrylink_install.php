@@ -23,11 +23,9 @@ function linkate_posts_install() {
 	$suppress = $wpdb->hide_errors();
 
 	// main table, index
-	if ($result = $wpdb->query("SHOW TABLES LIKE '".$table_name."'")) {
-	    if($result->num_rows == 1) {
-	    	if (cherrylink_update_table_structure())
-	        	$create_index = true;
-	    }
+    $result = $wpdb->query("SHOW TABLES LIKE '".$table_name."'");
+	if ($result) {
+	    $create_index = cherrylink_update_table_structure();
 	} else {
 		$create_index = true;
 		    	$sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
@@ -37,22 +35,21 @@ function linkate_posts_install() {
 				`tags` text NOT NULL ,
 				`is_term` tinyint DEFAULT false,
 				`suggestions` text NOT NULL ,
+                INDEX `pID` (`pID`),
 				FULLTEXT KEY `title` ( `title` ) ,
 				FULLTEXT KEY `content` ( `content` ) ,
 				FULLTEXT KEY `tags` ( `tags` ),
 				FULLTEXT KEY `suggestions` ( `suggestions` )
-				) ENGINE = MyISAM CHARSET = utf8;";
+				) ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_520_ci;";
 		$wpdb->query($sql);
 		$wpdb->show_errors($suppress);
 	}
 
 	// scheme table, export, statistics
 	$table_name = $table_prefix . 'linkate_scheme';
-	if ($result = $wpdb->query("SHOW TABLES LIKE '".$table_name."'")) {
-	    if($result->num_rows == 1) {
-	        if (cherrylink_update_table_structure())
-	        	$create_index = true;
-	    }
+    $result = $wpdb->query("SHOW TABLES LIKE '".$table_name."'");
+    if($result) {
+        $create_index = cherrylink_update_table_structure();
 	} else {
 		$create_index = true;
 		    	$sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
@@ -63,7 +60,7 @@ function linkate_posts_install() {
 				`target_type` tinyint unsigned NOT NULL ,
 				`ankor_text` varchar(1000) NOT NULL ,
 				`external_url` varchar(1000) NOT NULL 
-				) ENGINE = MyISAM CHARSET = utf8;";
+				) ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_520_ci;";
 		$wpdb->query($sql);
 		$wpdb->show_errors($suppress);
 
@@ -71,11 +68,9 @@ function linkate_posts_install() {
 
 	// stopwords table
 	$table_name = $table_prefix . 'linkate_stopwords';
-	if ($result = $wpdb->query("SHOW TABLES LIKE '".$table_name."'")) {
-		if($result->num_rows == 1) {
-			if (cherrylink_update_table_structure())
-				$create_index = true;
-		}
+    $result = $wpdb->query("SHOW TABLES LIKE '".$table_name."'");
+    if ($result) {
+        $create_index = cherrylink_update_table_structure();
 	} else {
 		$create_index = true;
 		$sql = "CREATE TABLE IF NOT EXISTS `$table_name` (
@@ -84,10 +79,9 @@ function linkate_posts_install() {
 				`word` varchar(20) NOT NULL UNIQUE ,
 				`is_white` tinyint unsigned NOT NULL default 0,
 				`is_custom` tinyint unsigned NOT NULL default 0 
-				) ENGINE = MyISAM CHARSET = utf8;";
+				) ENGINE = InnoDB CHARSET=utf8mb4 COLLATE utf8mb4_unicode_520_ci;";
 		$wpdb->query($sql);
 		$wpdb->show_errors($suppress);
-
 	}
 
 	error_reporting($errorlevel);
@@ -96,7 +90,6 @@ function linkate_posts_install() {
 	$options = (array) get_option('linkate-posts');
 	fill_options($options);
 
-	//
 	fill_stopwords();
 	
 	if ($create_index)  {// only (re)create if needed
@@ -129,6 +122,66 @@ function cherrylink_update_table_structure() {
 	return $update_index;
 }
 
+add_action("wp_ajax_check_collation", "linkate_table_is_collation_utf8mb4");
+function linkate_table_is_collation_utf8mb4() {
+	global $wpdb;
+    $table_name = $wpdb->prefix . 'linkate_posts';
+	$results = $wpdb->get_results( $wpdb->prepare(
+        "SELECT TABLE_SCHEMA , TABLE_NAME , COLUMN_NAME , COLLATION_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = %s AND TABLE_NAME = %s AND COLUMN_NAME = 'content'",
+		DB_NAME, $table_name
+	) );
+	if ( ! empty( $results ) && strpos($results[0]->COLLATION_NAME, 'utf8mb4') !== false) {
+		wp_send_json(true);
+	}
+	wp_send_json(false);
+}
+
+add_action("wp_ajax_update_collation", "linkate_table_update_collation_utf8mb4");
+function linkate_table_update_collation_utf8mb4() {
+	global $wpdb;
+    $table_posts = $wpdb->prefix . 'linkate_posts';
+    $table_scheme = $wpdb->prefix . 'linkate_scheme';
+    $table_stop = $wpdb->prefix . 'linkate_stopwords';
+    $results = [];
+    foreach([$table_posts, $table_scheme, $table_stop] as $table) {
+        $results[] = $wpdb->query( 
+            "ALTER TABLE `$table` ENGINE = INNODB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_520_ci;"
+        );
+        if ($table === $table_posts) {
+            $results[] = $wpdb->query( 
+                "ALTER TABLE `$table` CHANGE `content` `content` LONGTEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL;"
+            );
+            $results[] = $wpdb->query( 
+                "ALTER TABLE `$table` CHANGE `title` `title` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL;"
+            );
+            $results[] = $wpdb->query( 
+                "ALTER TABLE `$table` CHANGE `tags` `tags` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL;"
+            );
+            $results[] = $wpdb->query( 
+                "ALTER TABLE `$table` CHANGE `suggestions` `suggestions` TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL;"
+            );
+        }
+        if ($table === $table_scheme) {
+            $results[] = $wpdb->query( 
+                "ALTER TABLE `$table` CHANGE `ankor_text` `ankor_text` VARCHAR(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL;"
+            );
+        }
+        if ($table === $table_stop) {
+            $results[] = $wpdb->query( 
+                "ALTER TABLE `$table` CHANGE `stemm` `stemm` VARCHAR(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL;"
+            );
+            $results[] = $wpdb->query( 
+                "ALTER TABLE `$table` CHANGE `word` `word` VARCHAR(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_520_ci NOT NULL UNIQUE;"
+            );
+        }
+    }
+
+    if ($results[0] && $results[1] && $results[2])
+	    wp_send_json(["result" => true, "error" => $wpdb->last_error]);
+    else {
+        wp_send_json(["result" => false, "error" => $wpdb->last_error]);
+    }
+}
 
 function linkate_table_column_exists( $table_name, $column_name ) {
 	global $wpdb;

@@ -405,3 +405,13 @@ code.good-index {
     padding:10px;
     margin-right: 10px;
 }
+
+/* plugin update warning */
+.plugin-update-warning {
+    display: none;
+    border: 3px solid orange;
+    margin: 10px 0;
+    padding: 10px;
+    background: antiquewhite;
+    font-weight: 700;
+}
