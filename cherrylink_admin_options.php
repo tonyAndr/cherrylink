@@ -100,7 +100,7 @@ function linkate_posts_filter_options_subpage(){
 	if (isset($_POST['update_options'])) {
 		check_admin_referer('linkate-posts-update-options');
 		// Fill up the options with the values chosen...
-		$options = link_cf_options_from_post($options, array('show_customs','excluded_posts', 'included_posts', 'excluded_authors', 'included_authors', 'excluded_cats', 'included_cats', 'tag_str', 'custom', 'limit_ajax', 'show_private', 'show_pages', 'status', 'age', 'omit_current_post', 'match_cat', 'match_tags', 'sort', 'quickfilter_dblclick', 'singleword_suggestions'));
+		$options = link_cf_options_from_post($options, array('show_customs','excluded_posts', 'included_posts', 'excluded_authors', 'included_authors', 'excluded_cats', 'included_cats', 'tag_str', 'custom', 'limit_ajax', 'show_private', 'show_pages', 'status', 'age', 'omit_current_post', 'match_cat', 'match_tags', 'sort', 'quickfilter_dblclick', 'singleword_suggestions', 'output_template'));
 		update_option('linkate-posts', $options);
 		// Show a message to say we've done something
 		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки обновлены.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
@@ -111,13 +111,14 @@ function linkate_posts_filter_options_subpage(){
 
 		<div class="wrap linkateposts-tab-content">
 			<form method="post" action="">
-                <h2>Какие ссылки выводить?</h2>
+                <h2>Вывод ссылок в панели перелинковки</h2>
                 <hr>
                 <table class="optiontable form-table">
                     <?php
+                    link_cf_display_output_template($options['output_template']);
                     link_cf_display_limit_ajax($options['limit_ajax']);
                     link_cf_display_show_pages($options['show_pages']);
-                    link_cf_display_omit_current_post($options['omit_current_post']);
+                    // link_cf_display_omit_current_post($options['omit_current_post']);
                     link_cf_display_match_cat($options['match_cat']);
                     link_cf_display_status($options['status']);
                     link_cf_display_show_private($options['show_private']);
@@ -164,7 +165,7 @@ function linkate_posts_output_options_subpage(){
 		check_admin_referer('linkate-posts-update-options');
 		$options = link_cf_options_from_post($options, 
 												array(
-                                                    // 'output_template', 
+                                                    
 													'link_before',
 													'link_after', 
                                                     'link_temp_alt', 
@@ -188,17 +189,6 @@ function linkate_posts_output_options_subpage(){
 	<div class="linkateposts-admin-flex">
 		<div class="wrap linkateposts-tab-content">
 	        <form method="post" action="">
- 
-                <!-- <h2>Вывод списка ссылок в редакторе</h2>
-                <p>В нужные поля подставить желаемый HTML код с использованием тегов из списка ниже. Теги выводят данные о записе или странице. </p>
-
-                <table class="optiontable form-table">
-                    <?php
-                        // link_cf_display_output_template($options['output_template']);
-                    ?>
-                </table>
-
-			    <hr> -->
 			    <h2>Общие настройки шаблонов и вставки</h2>
                 <hr>
 				<table class="optiontable form-table">
@@ -343,6 +333,7 @@ function linkate_posts_index_options_subpage(){
 					<?php
 						link_cf_display_num_term_length_limit($options['term_length_limit']);
                         link_cf_display_use_stemming($options['use_stemming']);
+                        link_cf_display_seo_meta_source($options['seo_meta_source']);
                         link_cf_display_suggestions_donors($options['suggestions_donors_src'], $options['suggestions_donors_join'] );
 						link_cf_display_clean_suggestions_stoplist($options['clean_suggestions_stoplist']);
 					?>
@@ -380,18 +371,16 @@ function linkate_posts_index_options_subpage(){
 						</div>
 						<div id="example-table"></div>
 					</div>
-					<div style="">
-						
-							<?php
-							link_cf_display_stopwords();
-							?>
+					<div>
+                        <?php
+                            link_cf_display_stopwords();
+                        ?>
 						<div class="table-controls">
 							<button id="stopwords-add">Добавить слова</button>
 						</div>
                     </div>
                     <div id="index_stopwords_suggestions"></div>
                 </div>
-                
 			</div>
 			<br>
 			<hr>

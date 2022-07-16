@@ -54,7 +54,7 @@ function link_cf_options_from_post($options, $args) {
 			break;
 		case 'excluded_posts':
 		case 'included_posts':
-			$check = explode(',', rtrim($_POST[$arg]));
+			$check = explode(',', rtrim($_POST[$arg] ?? ''));
 			$ids = array();
 			foreach ($check as $id) {
 				$id = link_cf_check_cardinal($id);
@@ -517,9 +517,14 @@ function link_cf_template_image_size($template_image_size) {
 function link_cf_display_output_template($output_template) {
 	?>
 	<tr valign="top">
-		<th scope="row"><label for="output_template"><?php _e('Содержание ссылки в списке:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
-		<td><input type="text" name="output_template" id="output_template" value="<?php echo htmlspecialchars(stripslashes($output_template)); ?>" size="40"/></td>
-        <td><?php link_cf_prepare_tooltip(link_cf_get_available_tags(false)); ?></td>
+		<th scope="row"><label for="output_template"><?php _e('Заголовок ссылок в списке:', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
+		<td>
+			<select name="output_template" id="output_template">
+			<option <?php if($output_template == 'h1') { echo 'selected="selected"'; } ?> value="h1">H1 - заголовок записи</option>
+			<option <?php if($output_template == 'seotitle') { echo 'selected="selected"'; } ?> value="seotitle">SEO Title</option>
+			</select>
+		</td> 
+        <td><?php link_cf_prepare_tooltip("Влияет только на отображение ссылок в панели CherryLink в редакторе статьи. SEO title будет взят из Yoast/AIOSEO/RankMath ЕСЛИ соответствующий плагин выбран на вкладке _Индекс ссылок_. Если не найден - вернет заголовок Н1."); ?></td>
 	</tr>
 	<?php
 }
@@ -1074,6 +1079,23 @@ function link_cf_display_use_stemming($use_stemming) {
         <td><?php link_cf_prepare_tooltip("Более тщательная обработка текстов при создании индекса. Улучшает точность алгоритмов релевантности, но увеличивает время создания индекса.<br><br>Если стемминг выключен, то стоп-слова тоже не имеют силы, из-за невозможности точного сравнения слов. "); ?></td>
 		</td>
 	</tr>
+	<?php
+}
+
+function link_cf_display_seo_meta_source($seo_meta_source = "none") {
+	?>
+		<tr valign="top">
+            <th scope="row"><label for="seo_meta_source"><?php _e('Использовать SEO поля', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
+            <td>
+                <select name="seo_meta_source" id="seo_meta_source">
+                <option <?php if($seo_meta_source == 'none') { echo 'selected="selected"'; } ?> value="none">Нет</option>
+                <option <?php if($seo_meta_source == 'yoast') { echo 'selected="selected"'; } ?> value="yoast">Yoast SEO</option>
+                <option <?php if($seo_meta_source == 'aioseo') { echo 'selected="selected"'; } ?> value="aioseo">AIO SEO</option>
+                <option <?php if($seo_meta_source == 'rankmath') { echo 'selected="selected"'; } ?> value="rankmath">RankMath</option>
+                </select>
+             </td>
+            <td><?php link_cf_prepare_tooltip("Выберите плагин, который вы используете для поисковой оптимизации статей. Мета-поля title и description могут быть использованы для улучшения точности алгоритма и увеличения количества подсказок анкоров."); ?></td>
+	    </tr>
 	<?php
 }
 

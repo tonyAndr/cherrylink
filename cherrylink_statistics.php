@@ -44,6 +44,7 @@ function linkate_generate_json() {
 			}
 
 			$output_array[] = array(
+                'source_id' => $link['source_id'],
 				'source_url' => $source_url,
 				'ankor' => $link['ankor_text']
 			);

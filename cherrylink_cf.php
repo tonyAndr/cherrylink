@@ -41,7 +41,7 @@ function link_cf_parse_args($args) {
 	return $result;
 }
 
-function link_cf_set_options($option_key, $arg, $default_output_template) {
+function link_cf_set_options($option_key, $arg) {
 	$options = get_option($option_key);
 	// deal with compound options
 	if (isset($arg['custom-key'])) {$arg['custom']['key'] = $arg['custom-key']; unset($arg['custom-key']);}
@@ -95,7 +95,7 @@ function link_cf_set_options($option_key, $arg, $default_output_template) {
 	if (!isset($arg['suffix'])) $arg['suffix'] = stripslashes(@$options['suffix']);
 	if (!isset($arg['output_template'])) $arg['output_template'] = stripslashes(@$options['output_template']);
 	// an empty output_template makes no sense so we fall back to the default
-	if ($arg['output_template'] == '') $arg['output_template'] = $default_output_template;
+	if ($arg['output_template'] == '') $arg['output_template'] = 'h1';
 	if (!isset($arg['match_cat'])) $arg['match_cat'] = @$options['match_cat'];
 	if (!isset($arg['match_tags'])) $arg['match_tags'] = @$options['match_tags'];
 	if (!isset($arg['match_author'])) $arg['match_author'] = @$options['match_author'];
@@ -249,6 +249,8 @@ function link_cf_current_post_id($manual_current_ID = -1) {
 	return $the_ID;
 }
 
+
+
 /*
 
 	Functions to fill in the WHERE part of the workhorse SQL
@@ -336,7 +338,7 @@ function link_cf_where_match_category($post_id) {
 	foreach(get_the_category($post_id) as $cat) {
 		if ($cat->cat_ID) $cat_ids .= $cat->cat_ID . ',';
 	}
-	$cat_ids = rtrim($cat_ids, ',');
+	$cat_ids = rtrim($cat_ids ?? '', ',');
 	$catarray = explode(',', $cat_ids);
 	foreach ( $catarray as $cat ) {
 		$catarray = array_merge($catarray, get_term_children($cat, 'category'));
@@ -541,6 +543,8 @@ function link_cf_get_suggestions_for_ids($results) {
     }
     return $results;
 }
+
+
 
 /*
 

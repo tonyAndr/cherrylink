@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.2.7
+Version: 2.3.0
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: cherrylink-td
@@ -87,7 +87,7 @@ class LinkatePosts {
     	// ============================== Main function [Get Posts] ============================== //
 	// ========================================================================================= //
 
-	static function execute($args='', $default_output_template='{title}', $option_key='linkate-posts'){
+	static function execute($args='', $option_key='linkate-posts'){
 		global $table_prefix, $wpdb, $wp_version;
         $table_name = $table_prefix . 'linkate_posts';
         
@@ -102,9 +102,9 @@ class LinkatePosts {
 		$postid = link_cf_current_post_id($linkate_posts_current_ID);
 		
 		// Next we retrieve the stored options and use them unless a value has been overridden via the arguments
-		$options = link_cf_set_options($option_key, $arg_options, $default_output_template);
+		$options = link_cf_set_options($option_key, $arg_options);
 
-		if (0 < $options['limit_ajax']) {
+		if ($postid && 0 < $options['limit_ajax']) {
 			$match_tags = ($options['match_tags'] !== 'false');
 			$exclude_cats = ($options['excluded_cats'] !== '');
 			$include_cats = ($options['included_cats'] !== '');
@@ -287,7 +287,8 @@ class LinkatePosts {
 		$results_count = 0;
 		if ($results) {
             $results = link_cf_get_suggestions_for_ids($results);
-			$out_final = $output_template_item_prefix . $options['output_template'] . $output_template_item_suffix;
+            $output_template = (!isset($options['output_template']) || $options['output_template'] === 'h1' || $options['output_template'] === '{title}') ? '{title}' : '{title_seo}';
+			$out_final = $output_template_item_prefix . $output_template . $output_template_item_suffix;
 			$translations = link_cf_prepare_template($out_final);
 			foreach ($results as $result) {
 				$items[] = link_cf_expand_template($result, $out_final, $translations, $option_key);

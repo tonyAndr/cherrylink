@@ -432,6 +432,13 @@
     clear:both;
 }
 
+.incoming-link::before {
+    content: "[ссылается] ";
+    font-weight: bold;
+    font-size: 10px;
+    color: #1a7ac2;
+}
+
 .link-exists {
     text-decoration:line-through;
     color:#aaa;

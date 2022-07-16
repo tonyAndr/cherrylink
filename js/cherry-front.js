@@ -16,7 +16,7 @@ jQuery(document).ready(function ($) {
     let cl_list_terms = $('div[class*="link-term"]');
 
     let cl_individual_stats = false;
-
+    let incoming_links_array = []; // to mark links which point to the current article
     let cl_whitelist = [];
     let cl_blacklist = [];
 
@@ -322,6 +322,8 @@ jQuery(document).ready(function ($) {
         cl_list_terms.unbind().click(function (e) {
             prepareLinkTemplate(e, true);
         });
+
+        fcl_markIncomingLinks();
 
 
         /* =================== END listeners ==================== */
@@ -833,12 +835,13 @@ jQuery(document).ready(function ($) {
     }
 
     function fcl_get_stemm(word) {
-        word = word.replace('ё', 'е');
+        word = word.replace('ё', 'е').toLowerCase();
         if (stem_cache[word])
             return stem_cache[word];
         snowball.setCurrent(word);
         snowball.stem();
         var stem = snowball.getCurrent();
+        if (stem.length < 3) stem = word;
         stem_cache[word] = stem;
         return stem;
     }
@@ -1324,6 +1327,30 @@ jQuery(document).ready(function ($) {
     /* =================== UI Utils ==================== */
     /* ===================       ==================== */
 
+
+    function fcl_markIncomingLinks() {
+        if (!incoming_links_array && !incoming_links_array.length) return;
+
+        let inc_ids = incoming_links_array.map((el) => {
+            return el['source_id'];
+        }) 
+
+        for (let i = 0; i < cl_list_links.length; i++) {
+            const link = cl_list_links[i];
+            if (link.classList.contains('linkate-link')) {
+                let post_id = link.getAttribute('data-postid');
+
+                let title = $(link).find('.link-title')[0]
+                if (inc_ids.includes(post_id)) {
+                    title.classList.add('incoming-link');
+                } else {
+                    title.classList.remove('incoming-link');
+
+                }
+            }
+        }
+    }
+
     // link counter styles
     function fcl_markNumber(el, count) {
         let num = el.parentElement.querySelector('.link-counter');
@@ -1360,7 +1387,7 @@ jQuery(document).ready(function ($) {
 
         let hide_exist = $('#hide_that_exists').is(':checked');
         let show_exist = $('#show_that_exists').is(':checked');
-        let filter_word = $('#filter_by_title').val().toUpperCase();
+        let filter_word = $('#filter_by_title').val().toLowerCase();
 
         let el, text, contains, hide;
         for (let i = limit - 1; i >= 0; i--) {
@@ -1410,7 +1437,7 @@ jQuery(document).ready(function ($) {
 
         let hide_exist = $('#hide_that_exists').is(':checked');
         let show_exist = $('#show_that_exists').is(':checked');
-        let filter_word = $('#filter_by_title').val().toUpperCase().replace(/Ё/g, 'Е').trim();
+        let filter_word = $('#filter_by_title').val().toLowerCase().replace(/Ё/g, 'Е').trim();
 
         for (let i = list.length - 1; i >= 0; i--) {
             el = list[i];
@@ -1444,7 +1471,8 @@ jQuery(document).ready(function ($) {
 
         hide = !hide_exist && el.querySelector('.link-title').classList.contains(cl_exists_class); // if we checked hide cb and link exists in text
 
-        contains = text.indexOf(filter_word) !== -1; // if we are using quick filtering and found smth       
+        // contains = text.indexOf(filter_word) !== -1; // if we are using quick filtering and found smth       
+        contains = improvedFilterContains(el, filter_word);
 
         hide_not_exist = !show_exist && !el.querySelector('.link-title').classList.contains(cl_exists_class);
 
@@ -1461,6 +1489,41 @@ jQuery(document).ready(function ($) {
         dont_show_cat = !el.classList.contains("link-term") && cat !== "0" && !cat_found;
 
         return hide || !contains || hide_not_exist || dont_show_cat;
+    }
+
+    // Use title, seotitle, multiple words and stemming
+    function improvedFilterContains(el, filter) {
+        // combine all possible words from the link (titles + suggestion?)
+        let h1 = $(el).attr("data-title")
+        let seo = $(el).attr("data-titleseo")
+        let sugg = $(el).attr("data-suggestions")
+
+        let combine = h1;
+        if (seo) combine += ' ' + seo;
+        if (sugg) combine += ' ' + sugg;
+
+        let combinedStemms = textToSetOfStemms(combine);
+        let filterStemms = textToSetOfStemms(filter);
+
+        let contains = true;
+        filterStemms.forEach(stemm => {
+            if (!combinedStemms.includes(stemm) && combinedStemms.join(' ').indexOf(stemm) === -1) {
+                contains = false;
+            }
+        });
+        return contains;
+    }
+
+    function textToSetOfStemms(text) {
+        if (!text) return [];
+        text = text.replaceAll(/[^A-ZА-Я0-9\s]/ig, '').replaceAll(/\s+/g, ' ').toLowerCase().trim().split(/\s/);
+        text = [...new Set(text)]; // removes duplicates
+        for (let i = 0; i < text.length; i++) {
+            const word = text[i];
+            text[i] = fcl_get_stemm(word);
+        }
+        text = [...new Set(text)]; // removes duplicates again
+        return text;
     }
 
     function timeOutLinksChecker(delay) { // wait after input some time, if input repeats - null timer and wait again, then call func
@@ -1538,7 +1601,7 @@ jQuery(document).ready(function ($) {
             'action': 'getLinkateLinks',
             'post_id': this_id,
             'offset': fcl_get_data_offset,
-            'is_term': fcl_is_term()
+            'is_term': fcl_is_term(),
         };
         // show loading css
         $('.lds-ellipsis').removeClass('lds-ellipsis-hide');
@@ -1591,12 +1654,15 @@ jQuery(document).ready(function ($) {
             $.post(ajax_obj.ajaxurl, ajax_data, function (response) {
                 let resp = JSON.parse(response); // All done!
                 // console.log(resp['count']);
+                incoming_links_array = resp['links'];
                 let links_title = 'Входящие ссылки [анкор:url]<ul>';
                 for (var i = resp['links'].length - 1; i >= 0; i--) {
                     links_title += '<li><span class=\'tooltip-ankor-text\'>' + resp['links'][i]['ankor'] + '</span>: <span class=\'tooltip-url\'><a target="_blank" href="' + resp['links'][i]['source_url'] + '">' + resp['links'][i]['source_url'] + '</a></span></li>';
                 }
                 links_title += '</ul>';
                 $('#links-count-targets').html('<div class=\'cherry-adm-tooltip\'>' + resp['count'] + '<div class=\'tooltiptext\'>' + links_title + '</div></div>');
+
+                fcl_markIncomingLinks();
             });
         } else {
             let host = window.location.href.replace(window.location.href.slice(window.location.href.indexOf('/wp-admin/') + 10), 'options-general.php?page=linkate-posts');

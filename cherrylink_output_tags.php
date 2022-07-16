@@ -40,17 +40,20 @@ function linkate_otf_title ($option_key, $result, $ext) {
 function linkate_otf_title_seo ($option_key, $result, $ext) {
 	if (isset($result->manual_title))
 		return $result->manual_title; // return manual title for block links
-    $title = '';
-    if (function_exists('wpseo_init'))
-        $title = linkate_decode_yoast_variables($result->ID);
-    if (function_exists( 'aioseop_init_class' ))
-        $title = get_post_meta( $result->ID, "_aioseop_title", true);
-    if (!$title)
-		$title = $result->post_title;
-	$title = htmlspecialchars($title, ENT_QUOTES);  
-    // $title = linkate_oth_truncate_text($title, $ext);
-    if(defined( 'QTRANSLATE_FILE')) $title = apply_filters('translate_text', $title);
-    return $title;
+    $seotitle = '';
+    $options = get_option($option_key);
+    $seo_meta_source = $options['seo_meta_source'];
+
+    $seotitle = linkate_get_post_seo_title($result, $seo_meta_source);
+
+    if (empty($seotitle)) {
+		$seotitle = $result->post_title;
+    }
+	$seotitle = htmlspecialchars($seotitle, ENT_QUOTES);  
+    if(defined( 'QTRANSLATE_FILE')) { 
+        $seotitle = apply_filters('translate_text', $seotitle); 
+    }
+    return $seotitle;
 }
 
 function linkate_otf_url($option_key, $result, $ext) {
@@ -369,7 +372,7 @@ function linkate_oth_truncate_text($text, $ext) {
 			$textlen = strlen($text);
 			if ($textlen > $length) {
 				$text = substr($text, 0, $length-2);
-				return rtrim($text,".").'&hellip;';
+				return rtrim($text ?? '',".").'&hellip;';
 			} else {
 				return $text;
 			}
@@ -378,7 +381,7 @@ function linkate_oth_truncate_text($text, $ext) {
 			$textlen = mb_strlen($text, $e);
 			if ($textlen > $length) {
 				$text = mb_substr($text, 0, $length-2, $e);
-				return rtrim($text,".").'&hellip;';
+				return rtrim($text ?? '',".").'&hellip;';
 			} else {
 				return $text;
 			}

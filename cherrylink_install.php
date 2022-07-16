@@ -213,7 +213,7 @@ function fill_options($options) {
 	if (!isset($options['skip'])) $options['skip'] = 0;
 	if (!isset($options['age'])) {$options['age']['direction'] = 'none'; $options['age']['length'] = '0'; $options['age']['duration'] = 'month';}
 	if (!isset($options['divider'])) $options['divider'] = '';
-	if (!isset($options['omit_current_post'])) $options['omit_current_post'] = 'true';
+	$options['omit_current_post'] = 'true';
 	if (!isset($options['show_private'])) $options['show_private'] = 'false';
 	if (!isset($options['show_pages'])) $options['show_pages'] = 'false';
 	// show_static is now show_pages
@@ -237,7 +237,7 @@ function fill_options($options) {
 	if (!isset($options['stripcodes'])) $options['stripcodes'] = array(array());
     $options['prefix'] = '<div class="linkate-box-container"><ol id="linkate-links-list">';
 	$options['suffix'] = '</ol></div>';
-	if (!isset($options['output_template'])) $options['output_template'] = '{title}';
+	if (!isset($options['output_template'])) $options['output_template'] = 'h1';
 	if (!isset($options['match_cat'])) $options['match_cat'] = 'false';
 	if (!isset($options['match_tags'])) $options['match_tags'] = 'false';
 	if (!isset($options['match_author'])) $options['match_author'] = 'false';
@@ -285,6 +285,7 @@ function fill_options($options) {
     if (!isset($options['singleword_suggestions'])) $options['singleword_suggestions'] = "true"; // since 1.6.0
     if (!isset($options['debug_enabled'])) $options['debug_enabled'] = "false"; // since 2.0.6
     if (!isset($options['use_stemming'])) $options['use_stemming'] = "false"; // since 2.1.11
+    if (!isset($options['seo_meta_source'])) $options['seo_meta_source'] = "none"; // since 2.3.0
 
 	update_option('linkate-posts', $options);
 	return $options;

@@ -20,7 +20,7 @@ function linkate_ajax_call_reindex() {
 
 	$options = get_option('linkate-posts');
 	// Fill up the options with the values chosen...
-	$options = link_cf_options_from_post($options, array('term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors_src', 'suggestions_donors_join', 'use_stemming'));
+	$options = link_cf_options_from_post($options, array('term_length_limit', 'clean_suggestions_stoplist', 'suggestions_donors_src', 'suggestions_donors_join', 'use_stemming', 'seo_meta_source'));
     update_option('linkate-posts', $options);
 
     $options_meta = get_option('linkate_posts_meta');
@@ -67,6 +67,8 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     $use_stemming = $options['use_stemming'] === "true";
     $stemmer = new Stem\LinguaStemRu();
     $stemmer->enable_stemmer($use_stemming);
+
+    $seo_meta_source = $options['seo_meta_source'];
     
 	$suggestions_donors_src = $options['suggestions_donors_src'];
 	$suggestions_donors_join = $options['suggestions_donors_join'];
@@ -158,7 +160,7 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 	$posts = $wpdb->get_results("SELECT `ID`, `post_title`, `post_content`, `post_type` 
 									FROM $wpdb->posts 
 									WHERE `post_type` not in ('attachment', 'revision', 'nav_menu_item', 'wp_block') 
-									LIMIT $reindex_offset, $batch", ARRAY_A);
+									LIMIT $reindex_offset, $batch", OBJECT);
     reset($posts);
     
     $values_string = '';
@@ -168,8 +170,8 @@ function linkate_posts_save_index_entries ($is_initial = false) {
     $joined_content_for_stopwords = array();
 
 	foreach ($posts as $post) {
-        $postID = $post['ID'];
-        $content_words_list = mb_split("\W+", linkate_sp_mb_clean_words($post['post_content']));
+        $postID = $post->ID;
+        $content_words_list = mb_split("\W+", linkate_sp_mb_clean_words($post->post_content));
         // Combine content for later process
         $joined_content_for_stopwords = array_merge($joined_content_for_stopwords, $content_words_list);
 
@@ -181,13 +183,13 @@ function linkate_posts_save_index_entries ($is_initial = false) {
 			$content = '';
 
 		// Check SEO Fields
-		$seotitle = linkate_get_post_seo_title($postID);
+		$seotitle = linkate_get_post_seo_title($post, $seo_meta_source);
 		
 		// Title for suggestions
-		if (!empty($seotitle) && $seotitle !== $post['post_title']) {
-			$title = $post['post_title'] . " " . $seotitle;
+		if (!empty($seotitle) && $seotitle !== $post->post_title) {
+			$title = $post->post_title . " " . $seotitle;
 		} else {
-			$title = $post['post_title'];
+			$title = $post->post_title;
         }
 
         // convert broken symbols
@@ -323,14 +325,40 @@ function linkate_last_index_overused_words() {
 	wp_die();
 }
 
-// extract from AIOSEO or Yoast
-function linkate_get_post_seo_title ($postID) {
-    $seotitle = '';
-    if (function_exists('wpseo_init')){
-        $seotitle = linkate_decode_yoast_variables($postID);
+// extract from AIOSEO or Yoast or RankMath
+function linkate_get_post_seo_title ($post, $seo_meta_source = 'none') {
+    if (!$seo_meta_source || $seo_meta_source === 'none') {
+        return '';
     }
-    if (function_exists( 'aioseop_init_class' )){
-        $seotitle = get_post_meta( $postID, "_aioseop_title", true);
+    $seotitle = '';
+    switch($seo_meta_source) {
+        case 'yoast':
+            if (function_exists('wpseo_init')){
+                $seotitle = linkate_decode_yoast_variables($post->ID);
+                // TODO: YoastSEO()->meta->for_current_page()->title;
+            }
+            break;
+        case 'aioseo':
+            //All in One SEO Pack 4.0 Before
+            if (!empty(get_post_meta($post->ID, '_aioseop_title', true))) {
+                $seotitle = get_post_meta($post->ID, '_aioseop_title', true);
+            }
+            //All in One SEO 4.0 After
+            if (function_exists( 'aioseo' )){
+                    $seotitle = aioseo()->meta->metaData->getMetaData($post)->title;
+                    if(!empty($seotitle)) {
+                        $seotitle = aioseo()->meta->title->getPostTitle($post->ID);
+                    }
+            }  
+            break;
+        case 'rankmath': 
+            if ( class_exists( 'RankMath' ) ) {
+                $seotitle = RankMath\Post::get_meta( 'title', $post->ID, RankMath\Paper\Paper::get_from_options( "pt_{$post->post_type}_title", $post, '%title% %sep% %sitename%' ) );
+            }
+            break;
+        default:
+            $seotitle = '';
+            break;
     }
     return is_string($seotitle) ? $seotitle : '';
 }

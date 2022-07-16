@@ -89,6 +89,8 @@ function linkate_sp_save_index_entry($postID, $postObj, $updated) {
 		update_option('linkate-posts', $options);
 	}
 
+    $seo_meta_source = $options['seo_meta_source'];
+
 	$suggestions_donors_src = $options['suggestions_donors_src'];
     $suggestions_donors_join = $options['suggestions_donors_join'];
 	$clean_suggestions_stoplist = $options['clean_suggestions_stoplist'];
@@ -108,7 +110,7 @@ function linkate_sp_save_index_entry($postID, $postObj, $updated) {
 	// Seo title is more relevant, usually
 	// Extracting terms from the custom titles, if present
 	// Check SEO Fields
-    $seotitle = linkate_get_post_seo_title($postID);
+    $seotitle = linkate_get_post_seo_title($postObj, $seo_meta_source);
 
     // anti-memory leak
     wp_cache_delete( $postID, 'post_meta' );
@@ -270,8 +272,6 @@ function linkate_sp_delete_index_entry_term($term_id, $term_taxonomy_ID, $taxono
 
 
 function linkate_decode_yoast_variables($post_id, $is_term = false) {
-
-//    $yoast_title = get_post_meta($post_id, '_yoast_wpseo_title', true);
     $string =  WPSEO_Meta::get_value( 'title', $post_id );
     if ($string !== '') {
         $replacer = new WPSEO_Replace_Vars();
@@ -489,7 +489,7 @@ function linkate_scheme_get_add_row_query($str, $post_id, $is_term) {
 }
 
 function linkate_get_term_id_from_slug($url) {
-	$current_url = rtrim($url, "/");
+	$current_url = rtrim($url ?? '', "/");
 	$arr_current_url = explode("/", $current_url);
 	$thecategory = get_category_by_slug( end($arr_current_url) );
 	if (!$thecategory) {
