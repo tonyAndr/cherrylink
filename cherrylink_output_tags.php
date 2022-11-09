@@ -30,7 +30,7 @@ function linkate_otf_postid ($option_key, $result, $ext) {
 function linkate_otf_title ($option_key, $result, $ext) {
 	if (isset($result->manual_title))
 		return $result->manual_title; // return manual title for block links
-    // $value = linkate_oth_truncate_text($result->post_title, $ext);
+
     $value = htmlspecialchars($result->post_title, ENT_QUOTES, 'UTF-8'); // for json
 	$value = apply_filters('the_title', $value, $result->ID);
     if(defined('QTRANSLATE_FILE')) $value = apply_filters('translate_text', $value);
@@ -62,7 +62,6 @@ function linkate_otf_url($option_key, $result, $ext) {
 	$value = get_permalink($result->ID);
 	$value = linkate_unparse_url($value, $url_option);
     return $value;
-	// return linkate_oth_truncate_text($value, $ext);
 }
 
 function linkate_otf_author($option_key, $result, $ext) {
@@ -322,95 +321,6 @@ function linkate_otf_categoryid($option_key, $result, $ext) {
 
 // ****************************** Helper Functions *********************************************
 
-function linkate_oth_truncate_text($text, $ext) {
-	if (!$ext) {
-		return $text;
-	}
-	$s = explode(':', $ext);
-	if (count($s) > 2) {
-		return $text;
-	}
-	if (count($s) == 1) {
-		$s[] = 'wrap';
-	}
-	$length = $s[0];
-	$type = $s[1];
-	switch ($type) {
-	case 'wrap':
-		$length += strlen('<br />');
-		if (!function_exists('mb_detect_encoding')) {
-			return wordwrap($text, $length, '<br />', true);
-		} else {
-			$e = mb_detect_encoding($text);
-			$formatted = '';
-			$position = -1;
-			$prev_position = 0;
-			$last_line = -1;
-			while($position = mb_strpos($text, " ", ++$position, $e)) {
-				if($position > $last_line + $length + 1) {
-					$formatted.= mb_substr($text, $last_line + 1, $prev_position - $last_line - 1, $e).'<br />';
-					$last_line = $prev_position;
-				}
-				$prev_position = $position;
-			}
-			$formatted.= mb_substr($text, $last_line + 1, mb_strlen( $text ), $e);
-			return $formatted;
-		}	
-	case 'chop':
-		if (!function_exists('mb_detect_encoding')) {
-			 return substr($text, 0, $length);
-		} else {
-			$e = mb_detect_encoding($text);
-			return mb_substr($text, 0, $length, $e);
-		}	
-	case 'trim':
-		if (strlen($text) > $length) {
-		} else {
-			return $text;
-		}	
-		if (!function_exists('mb_detect_encoding')) {
-			$textlen = strlen($text);
-			if ($textlen > $length) {
-				$text = substr($text, 0, $length-2);
-				return rtrim($text ?? '',".").'&hellip;';
-			} else {
-				return $text;
-			}
-		} else {
-			$e = mb_detect_encoding($text);
-			$textlen = mb_strlen($text, $e);
-			if ($textlen > $length) {
-				$text = mb_substr($text, 0, $length-2, $e);
-				return rtrim($text ?? '',".").'&hellip;';
-			} else {
-				return $text;
-			}
-		}	
-	case 'snip':
-		if (!function_exists('mb_detect_encoding')) {
-			$textlen = strlen($text);
-			if ($textlen > $length) {
-				$b = floor(($length - 2)/2);
-				$l = $textlen - $b - 1;
-				return substr($text, 0, $b).'&hellip;'.substr($text, $l);
-			} else {
-				return $text;
-			}
-		} else {
-			$e = mb_detect_encoding($text);
-			$textlen = mb_strlen($text, $e);
-			if ($textlen > $length) {
-				$b = floor(($length - 2)/2);
-				$l = $textlen - $b - 1;
-				return mb_substr($text, 0, $b, $e).'&hellip;'.mb_substr($text, $l, 1000, $e);
-			} else {
-				return $text;
-			}
-		}	
-	default:
-		return wordwrap($t, $length, '<br />', true);
-	}
-}	
 	
 function linkate_oth_format_date($date, $fmt, $id) {
 	if (!$fmt) $fmt = get_option('date_format');

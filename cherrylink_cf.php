@@ -338,7 +338,10 @@ function link_cf_where_match_category($post_id) {
 	foreach(get_the_category($post_id) as $cat) {
 		if ($cat->cat_ID) $cat_ids .= $cat->cat_ID . ',';
 	}
-	$cat_ids = rtrim($cat_ids ?? '', ',');
+    if (!isset($cat_ids)) {
+        $cat_ids = '';
+    }
+	$cat_ids = rtrim($cat_ids, ',');
 	$catarray = explode(',', $cat_ids);
 	foreach ( $catarray as $cat ) {
 		$catarray = array_merge($catarray, get_term_children($cat, 'category'));
@@ -427,14 +430,14 @@ function link_cf_where_tag_str($tag_str) {
 	$ids = array();
 	if ($tag_type == 'any') {
 		foreach ($tags as $tag){
-			if (is_term($tag, 'post_tag')) {
+			if (term_exists($tag, 'post_tag')) {
 				$t = get_term_by('name', $tag, 'post_tag');
 				$ids = array_merge($ids, get_objects_in_term($t->term_id, 'post_tag'));
 			}	
 		}	
 	} else {
 		foreach ($tags as $tag){
-			if (is_term($tag, 'post_tag')) {
+			if (term_exists($tag, 'post_tag')) {
 				$t = get_term_by('name', $tag, 'post_tag');
 				if (count($ids) > 0) {
 					$ids = array_intersect($ids, get_objects_in_term($t->term_id, 'post_tag'));
@@ -447,8 +450,8 @@ function link_cf_where_tag_str($tag_str) {
 	if ( is_array($ids) && count($ids) > 0 ) {
 		$ids = array_unique($ids);
 		$out_posts = "'" . implode("', '", $ids) . "'";
-		$sql .= "$wpdb->posts.ID IN ($out_posts)";
-	} else $sql .= "1 = 2";
+		$sql = "$wpdb->posts.ID IN ($out_posts)";
+	} else $sql = "1 = 2";
 	return $sql;
 }
 

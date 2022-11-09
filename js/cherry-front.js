@@ -933,12 +933,16 @@ jQuery(document).ready(function ($) {
     function fcl_fileTypeChecker(url) { // cuz we don't want to count media as int/ext links
         if (url === undefined)
             return true;
-        let prohibited = ['.jpg', '.jpeg', '.tiff', '.bmp', '.psd', '.png', '.gif', '.webp', '.doc', '.docx', '.xlsx', '.xls', '.odt', '.pdf', '.ods', '.odf', '.ppt', '.pptx', '.txt', '.rtf', '.mp3', '.mp4', '.wav', '.avi', '.ogg', '.zip', '.7z', '.tar', '.gz', '.rar', '#'];
+        let prohibited = ['.jpg', '.jpeg', '.tiff', '.bmp', '.psd', '.png', '.gif', '.webp', '.doc', '.docx', '.xlsx', '.xls', '.odt', '.pdf', '.ods', '.odf', '.ppt', '.pptx', '.txt', '.rtf', '.mp3', '.mp4', '.wav', '.avi', '.ogg', '.zip', '.7z', '.tar', '.gz', '.rar'];
 
         for (let i = prohibited.length - 1; i >= 0; i--) {
             if (url.indexOf(prohibited[i]) != -1) {
                 return true;
             }
+        }
+        // omit some navigational links, which starts with #
+        if (url.indexOf('#') === 0) {
+            return true;
         }
         return false;
     }
@@ -1311,7 +1315,7 @@ jQuery(document).ready(function ($) {
     function fcl_removeBadSuggestions(nearest_positions) {
         nearest_positions = nearest_positions.map((v, i) => {
             let item = fcl_getAnkorText(v[0], v[1]);
-            if (item[2].search(/[\.,\/#!$%\^&\*;\":{}=`~()@\+\?\\n\[\]\+]/i) > -1 || item[2].search(/ - /) > -1 || item[2].length <= 3) {
+            if (item[2].search(/[\.,\/#!$%\^&\*;\":{}=`~()@\+\?\n\[\]\+]/i) > -1 || item[2].search(/ - /) > -1 || item[2].length <= 3) {
                 //console.log(item[2]);
                 return false;
             }

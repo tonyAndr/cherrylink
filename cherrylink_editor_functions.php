@@ -442,7 +442,6 @@ function linkate_scheme_get_add_row_query($str, $post_id, $is_term) {
 		// remove some escaping stuff
         $href = trim(str_replace("\"", "", str_replace("\\", "", $href)));
         if (empty($href)) continue; // no href - no need
-        if (strpos($href, '#') !== false) continue; // these are probably our in-page navigational links
 
         $href = linkate_unparse_url($href, "full");
         if (empty($href)) continue; // no href - no need
@@ -451,7 +450,11 @@ function linkate_scheme_get_add_row_query($str, $post_id, $is_term) {
         $ankor = esc_sql(trim($node->textContent));
         $ankor = empty($ankor) ? "_NOT_FOUND_" : $ankor;
         if (strpos($href, $_SERVER['HTTP_HOST']) !== false ) {
-            $target_id = url_to_postid($href); //post_id
+            $target_id = url_to_postid($href); //target_post_id
+            if ((strpos($href, '#') !== false) && ((int)$target_id === (int) $post_id)) { 
+                // target same as post, internal navigation, omit
+                continue;
+            }
             $target_type = 0;
             if ($target_id === 0) { // term_id
                 $target_id = linkate_get_term_id_from_slug($href);
@@ -489,7 +492,10 @@ function linkate_scheme_get_add_row_query($str, $post_id, $is_term) {
 }
 
 function linkate_get_term_id_from_slug($url) {
-	$current_url = rtrim($url ?? '', "/");
+    if (!isset($url)) {
+        $url = ''; 
+    }  
+	$current_url = rtrim($url, "/");
 	$arr_current_url = explode("/", $current_url);
 	$thecategory = get_category_by_slug( end($arr_current_url) );
 	if (!$thecategory) {

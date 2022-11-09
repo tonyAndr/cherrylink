@@ -54,7 +54,8 @@ function link_cf_options_from_post($options, $args) {
 			break;
 		case 'excluded_posts':
 		case 'included_posts':
-			$check = explode(',', rtrim($_POST[$arg] ?? ''));
+            if (!isset($_POST[$arg])) { $_POST[$arg] = ''; }
+			$check = explode(',', rtrim($_POST[$arg]));
 			$ids = array();
 			foreach ($check as $id) {
 				$id = link_cf_check_cardinal($id);

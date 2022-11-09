@@ -424,10 +424,10 @@ function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 				continue; // skip, if not in our list
 		}
 
-		$targets = explode(';', $link['targets']);
-		$target_types = explode(';', $link['target_types']);
-		$ext_links = explode(';', $link['ext_links']);
-		$ankors = explode(';',  $link['ankors']);
+		$targets = isset($link['targets']) ? explode(';', $link['targets']) : [];
+		$target_types = isset($link['target_types']) ? explode(';', $link['target_types']) : [];
+		$ext_links = isset($link['ext_links']) ? explode(';', $link['ext_links']) : [];
+		$ankors = isset($link['ankors']) ? explode(';',  $link['ankors']) : [];
 
 		for ($i=0; $i < sizeof($targets); $i++) {
 			$target_url = '';
