@@ -137,6 +137,9 @@ function link_cf_set_options($option_key, $arg) {
 	$arg['crb_css_tuning'] = @$options['crb_css_tuning'];
 	$arg['crb_css_override'] = @$options['crb_css_override'];
 
+    // So far is used in CRB only to maintain manually established order
+    $arg['ignore_sorting'] = isset($arg['ignore_sorting']) && $arg['ignore_sorting'] !== 'false';
+
 	return $arg;
 }
 

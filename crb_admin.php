@@ -76,15 +76,18 @@ class CL_RB_Admin_Area {
 
                 <div class="spoiler_block">
                             <p>Используйте дополнительные параметры для вывода разных ссылок в блоках:</p>
-                <code>if (function_exists('cherrylink_related_block')) echo cherrylink_related_block(array(<strong>'offset' => 2</strong>,<strong>'num_links' => 3</strong>,<strong>'rel_type' => 'new'</strong> ));</code>
+                <code>if (function_exists('cherrylink_related_block')) echo cherrylink_related_block(array(<strong>'offset' => 2</strong>,<strong>'num_links' => 3</strong>,<strong>'rel_type' => 'new'</strong>,<strong>'ignore_sorting' => 'true'</strong> ));</code>
                 <p>или так:</p>
                 <code>
-                [crb_show_block offset=2 num_links=3 rel_type="new"]</code> - берем свежие записи, перые 2 пропускаем и показываем всего 3 ссылки
-                <ul>
+                [crb_show_block offset=2 num_links=3 rel_type="new" ignore_sorting="true" excluded_cats="142,130"]</code> - берем свежие записи, перые 2 пропускаем и показываем всего 3 ссылки.
+                <p>Возможные параметры:</p>
+                <ol>
                 <li><strong>offset</strong> - отступ от начала, т.е. пропускаем заданное количество ссылок [по умолчанию 0];</li>
                 <li><strong>num_links</strong> - максимальное количество ссылок в блоке (может быть меньше или вообще ничего, если плагин ничего релевантного не нашел, учитывая offset) [если не задано берется из настроек].</li>
                 <li><strong>rel_type</strong> - значения: вывести похожие - <strong>rel</strong>; вывести новые записи - <strong>new</strong> [по умолчанию rel].</li>
-                </ul>
+                <li><strong>ignore_sorting</strong> - отключение сортировки, напр. чтобы сохранить порядок вручную заданных ссылок.</li>
+                <li><strong>excluded_cats</strong> - исключить статьи из рубрик (перечень ID рубрик через запятую).</li>
+                </ol>
                 <p>Пример: чтобы вывести 3 блока и у каждого было по 3 разные ссылки, берем 3 шорткода с такими параметрами:</p>
                 <code>
                 [crb_show_block num_links=3] // берем первые 3 ссылки<br>

@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.3.2
+Version: 2.3.3
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: cherrylink-td
@@ -96,6 +96,7 @@ class LinkatePosts {
 		$is_term = isset($arg_options['is_term']) ? $arg_options['is_term'] : 0;
         $offset = isset($arg_options['offset']) ? $arg_options['offset'] : 0;
         $linkate_posts_current_ID = isset($arg_options['manual_ID']) ? intval($arg_options['manual_ID']) : -1;
+        
 
         // switch output between editors (classic/gutenberg) and related block if empty
         $presentation_mode = (isset($arg_options['mode']) && !empty($arg_options['mode'])) ? $arg_options['mode'] : 'related_block';
@@ -194,12 +195,20 @@ class LinkatePosts {
     
                 $sql .= "WHERE ".implode(' AND ', $where);
                 if ($check_custom) $sql .= " GROUP BY $wpdb->posts.ID";
+
+                // Save original order
+                if ($options['ignore_sorting'] && $ignore_relevance) {
+                    $sql .= " ORDER BY FIND_IN_SET(ID,'".trim($options['included_posts'])."')";
+                }
+
                 if ($ignore_relevance) {
                     $sql .= " LIMIT $limit";
                 } else {
                     // sorting by fulltext match score
                     $sql .= " ORDER BY FIELD(ID, ".implode(",", $rel_ids).") LIMIT $limit";
                 }
+                
+
                 
                 _cherry_debug(__FUNCTION__, $sql, 'wp_posts SQL query');
                 $EXEC_TIME = microtime(true);

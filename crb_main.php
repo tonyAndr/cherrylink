@@ -19,7 +19,7 @@ class CL_Related_Block {
         return $plugin_data['version'];
     }
 
-    static function get_links($offset = false, $num_links = false, $rel_type = false) {
+    static function get_links($offset = false, $num_links = false, $rel_type = false, $ignore_sorting = false, $excluded_cats = false) {
         global $post;
         if ($post) {
             $post_id = $post->ID;
@@ -71,11 +71,18 @@ class CL_Related_Block {
             if ($num_links !== false) {
                 $args .= "&limit_ajax=".$num_of_links."&";
             }
+            if ($ignore_sorting !== false && $ignore_sorting !== "false") {
+                $args .= "&ignore_sorting=true&";
+            }
         } else if (!$included_posts && $show_latest) { // show latest
             $ids = self::get_latest_posts_ids($post_id, $options, $num_of_links);
             $args = "manual_ID=" . $post_id . "&is_term=" . $is_term . "&offset=" . $offset . "&included_posts=" . $ids . "&ignore_relevance=true&";
         } else { // show related links
             $args = "manual_ID=".$post_id."&is_term=".$is_term."&offset=".$offset."&excluded_posts=".$excluded."&limit_ajax=".$num_of_links."&";
+        }
+
+        if ($excluded_cats) {
+            $args .= "&excluded_cats=".$excluded_cats."&";
         }
         
         _cherry_debug(__FUNCTION__, explode("&", $args), 'Аргументы для query');
@@ -184,7 +191,7 @@ class CL_Related_Block {
                     $result->manual_title = $id_titles[$result->ID];
                 $items[] = link_cf_expand_template($result, $item_template, $translations, $option_key);
             }
-            if ($options['sort']['by1'] !== '') $items = link_cf_sort_items($options['sort'], $results, $option_key, $options['group_template'], $items);
+            if ($options['ignore_sorting'] && $options['sort']['by1'] !== '') $items = link_cf_sort_items($options['sort'], $results, $option_key, $options['group_template'], $items);
             $output = $output_template_item_prefix.implode("\n", $items).$output_template_item_suffix;
 
         } else {
@@ -359,10 +366,18 @@ if (!function_exists("cherrylink_related_block")) {
                 array(
                     'offset' => false,
                     'num_links' => false,
-                    'rel_type' => false
+                    'rel_type' => false,
+                    'ignore_sorting' => false,
+                    'excluded_cats' => false
                 ), $atts
             );
-            $output = CL_Related_Block::get_links($short_atts['offset'], $short_atts['num_links'], $short_atts['rel_type']);
+            $output = CL_Related_Block::get_links(
+                $short_atts['offset'], 
+                $short_atts['num_links'], 
+                $short_atts['rel_type'], 
+                $short_atts['ignore_sorting'], 
+                $short_atts['excluded_cats']
+            );
         } 
         $time_elapsed_secs = microtime(true) - $EXEC_TIME;
         _cherry_debug(__FUNCTION__, $output, 'Переменная $output - это выводим на экран CRB MicroTime:'. $time_elapsed_secs);

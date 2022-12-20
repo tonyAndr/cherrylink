@@ -429,52 +429,50 @@ function linkate_queryresult_to_array($links, $from_editor, $source_type) {
 		$ext_links = isset($link['ext_links']) ? explode(';', $link['ext_links']) : [];
 		$ankors = isset($link['ankors']) ? explode(';',  $link['ankors']) : [];
 
-		for ($i=0; $i < sizeof($targets); $i++) {
-			$target_url = '';
-			if (intval($target_types[$i]) === 0) { //post
-				$target_url = get_permalink((int)$targets[$i]);
-			} elseif (intval($target_types[$i]) === 1) {
-				$target_url = get_term_link((int)$targets[$i]);
-			} else {
-				$target_url = $ext_links[$i];
-			}
-			// check POST options
-			$buf_array = array();
-			if (isset($from_editor) && $from_editor == true) {
-			    if ($i > 0)
-			        break;
-				$buf_array[] = $link['count_targets'];
-				$buf_array[] = $link['count_sources'];
-            } else { //from admin panel
-				if ($i === 0 || isset($_POST['duplicate_fields'])) {
-					if (isset($_POST['source_id']))     $buf_array[] = $link['source_id'];
-					if (isset($_POST['source_type']))   $buf_array[] = $source_type == 0 ? $link['post_type'] : $term_type;
-					if (isset($_POST['source_cats']))   $buf_array[] = $source_type == 0 ? implode(", ",$source_categories) : $term_name;
-					if (isset($_POST['source_url']))    $buf_array[] = $source_url;
-					if (isset($_POST['target_url']))    $buf_array[] = $target_url;
-					if (isset($_POST['ankor']))         $buf_array[] = $ankors[$i];
-					if (isset($_POST['count_out']))     $buf_array[] = $link['count_targets'];
-					if (isset($_POST['count_in']))      $buf_array[] = $link['count_sources'];
-					$buf_array[] = intval($target_types[$i]) === 255 ? 1 : 0;
-				} else { // by default, we don't repeat the same data
-					if (isset($_POST['source_id'])) $buf_array[] = '';
-					if (isset($_POST['source_type'])) $buf_array[] = '';
-					if (isset($_POST['source_cats'])) $buf_array[] = '';
-					if (isset($_POST['source_url'])) $buf_array[] = '';
-					if (isset($_POST['target_url'])) $buf_array[] = $target_url;
-					if (isset($_POST['ankor'])) $buf_array[] = $ankors[$i];
-					if (isset($_POST['count_out'])) $buf_array[] = '';
-					if (isset($_POST['count_in'])) $buf_array[] = '';
-					$buf_array[] = intval($target_types[$i]) === 255 ? 1 : 0;;
-				}
+        $buf_array = array();
+        if (isset($from_editor) && $from_editor == true) {
+            $buf_array[] = $link['count_targets'];
+            $buf_array[] = $link['count_sources'];
+            $output_array["\"id_".$link['source_id']."\""] = $buf_array;
+        } else {
+            for ($i=0; $i < sizeof($targets); $i++) {
+                $target_url = '';
+                if (intval($target_types[$i]) === 0) { //post
+                    $target_url = get_permalink((int)$targets[$i]);
+                } elseif (intval($target_types[$i]) === 1) {
+                    $target_url = get_term_link((int)$targets[$i]);
+                } else {
+                    $target_url = $ext_links[$i];
+                }
+                // check POST options
+                $buf_array = array();
+                if ($i === 0 || isset($_POST['duplicate_fields'])) {
+                    if (isset($_POST['source_id']))     $buf_array[] = $link['source_id'];
+                    if (isset($_POST['source_type']))   $buf_array[] = $source_type == 0 ? $link['post_type'] : $term_type;
+                    if (isset($_POST['source_cats']))   $buf_array[] = $source_type == 0 ? implode(", ",$source_categories) : $term_name;
+                    if (isset($_POST['source_url']))    $buf_array[] = $source_url;
+                    if (isset($_POST['target_url']))    $buf_array[] = $target_url;
+                    if (isset($_POST['ankor']))         $buf_array[] = $ankors[$i];
+                    if (isset($_POST['count_out']))     $buf_array[] = $link['count_targets'];
+                    if (isset($_POST['count_in']))      $buf_array[] = $link['count_sources'];
+                    $buf_array[] = intval($target_types[$i]) === 255 ? 1 : 0;
+                } else { // by default, we don't repeat the same data
+                    if (isset($_POST['source_id'])) $buf_array[] = '';
+                    if (isset($_POST['source_type'])) $buf_array[] = '';
+                    if (isset($_POST['source_cats'])) $buf_array[] = '';
+                    if (isset($_POST['source_url'])) $buf_array[] = '';
+                    if (isset($_POST['target_url'])) $buf_array[] = $target_url;
+                    if (isset($_POST['ankor'])) $buf_array[] = $ankors[$i];
+                    if (isset($_POST['count_out'])) $buf_array[] = '';
+                    if (isset($_POST['count_in'])) $buf_array[] = '';
+                    $buf_array[] = intval($target_types[$i]) === 255 ? 1 : 0;
+                }
+    
+                $output_array[] = $buf_array;
+    
             }
-            if (isset($from_editor) && $from_editor) {
-	            $output_array["\"id_".$link['source_id']."\""] = $buf_array;
-            } else {
-	            $output_array[] = $buf_array;
-            }
+        }
 
-		}
 	}
 	return $output_array;
 }
