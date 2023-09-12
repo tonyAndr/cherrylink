@@ -7,14 +7,14 @@
 defined( 'ABSPATH' ) || exit;
 
 add_action ( 'admin_head', 'linkate_send_options_frontend');
-add_action('wp_ajax_getLinkateLinks', 'getLinkateLinks');
+add_action('wp_ajax_get_linkate_links', 'get_linkate_links');
 add_action( 'admin_enqueue_scripts', 'hook_term_edit', 10);
 if (function_exists('register_cherrylink_gutenberg_scripts')) {
     add_action('enqueue_block_editor_assets', 'register_cherrylink_gutenberg_scripts');
 }
 
 // Using linkateposts to get relevant results
-function getLinkateLinks() {
+function get_linkate_links() {
     $data = json_decode(file_get_contents('php://input'), true);
     if (isset($data)) {
         $post_id = $data['post_id'];

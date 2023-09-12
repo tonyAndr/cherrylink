@@ -1602,7 +1602,7 @@ jQuery(document).ready(function ($) {
         // here we get post or taxonomy id
         var this_id = cherrylink_options['post_id'].length === 0 || cherrylink_options['post_id'] == 0 ? window.location.href.match(/tag_ID=(\d+)\&/i)[1] : cherrylink_options['post_id'];
         var ajax_data = {
-            'action': 'getLinkateLinks',
+            'action': 'get_linkate_links',
             'post_id': this_id,
             'offset': fcl_get_data_offset,
             'is_term': fcl_is_term(),
