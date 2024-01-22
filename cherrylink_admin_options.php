@@ -34,63 +34,6 @@ function linkate_posts_options_page(){
 	// add_action('in_admin_footer', 'linkate_posts_admin_footer');
 }
 
-function linkate_posts_license_field() {
-	$options = get_option('linkate-posts');
-	if (isset($_POST['update_license'])) {
-		check_admin_referer('linkate-posts-update-options');
-		// Fill up the options with the values chosen...
-		$options = link_cf_options_from_post($options, array('hash_field'));
-		update_option('linkate-posts', $options);
-		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Обновление ключа</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
-    }
-    if (isset($_POST['remove_license'])) {
-		check_admin_referer('linkate-posts-update-options');
-		// Fill up the options with the values chosen...
-        $options['hash_last_check'] = 0;
-        $options['hash_last_status'] = false;
-        $options['hash_field'] = '';
-        unset($options['activations_left']);
-
-		update_option('linkate-posts', $options);
-		// Show a message to say we've done something
-		echo '<div class="updated settings-error notice"><p>' . __('<b>Ключ сброшен</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
-    }
-
-
-	$info = linkate_checkNeededOption();
-	if ($info) {
-		$license_class = "linkateposts-accessibility-good";
-		$license_header = "<h2>Лицензия активирована!</h2>";
-	} else {
-		$license_class = "linkateposts-accessibility-warning";
-		$license_header = "<h2>Введите действительный ключ лицензии!</h2><p>Для получения ключа посетите страницу плагина: [<strong><a href=\"https://seocherry.ru/dev/cherrylink\">SeoCherry.ru</a></strong>].</p>";
-    }
-
-	?>
-	<div class="<?php echo $license_class;?>">
-		<?php echo $license_header; ?>
-        <?php if ($info): ?>
-        <p>Действует лицензия на текущий домен, ключ скрыт в целях безопасности.</p>
-        <form method="post" action="">
-			<input type="submit" class="button button-cherry" name="remove_license" value="<?php _e('Сбросить лицензию', CHERRYLINK_TEXT_DOMAIN) ?>" />
-			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
-		</form>
-        <?php else: ?>
-		<form method="post" action="">
-			<label for="hash_field"><?php _e('Ваш ключ:', CHERRYLINK_TEXT_DOMAIN) ?></label>
-            <br>
-			<input type="text" name="hash_field" id="hash_field" value="<?php echo htmlspecialchars(stripslashes($options['hash_field'])); ?>">
-            <br>
-			<input type="submit" class="button button-cherry" name="update_license" value="<?php _e('Сохранить', CHERRYLINK_TEXT_DOMAIN) ?>" />
-			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
-		</form>
-        <?php endif; ?>
-	</div>
-	<?php
-
-}
-
 // ========================================================================================= //
 // ============================== CherryLink Settings Pages Callbacks  ============================== //
 // ========================================================================================= //
@@ -100,7 +43,7 @@ function linkate_posts_filter_options_subpage(){
 	if (isset($_POST['update_options'])) {
 		check_admin_referer('linkate-posts-update-options');
 		// Fill up the options with the values chosen...
-		$options = link_cf_options_from_post($options, array('show_customs','excluded_posts', 'included_posts', 'excluded_authors', 'included_authors', 'excluded_cats', 'included_cats', 'tag_str', 'custom', 'limit_ajax', 'show_private', 'show_pages', 'status', 'age', 'omit_current_post', 'match_cat', 'match_tags', 'sort', 'quickfilter_dblclick', 'singleword_suggestions', 'output_template'));
+		$options = link_cf_options_from_post($options, array('show_customs','excluded_posts', 'included_posts', 'excluded_authors', 'included_authors', 'excluded_cats', 'included_cats', 'tag_str', 'custom', 'limit_ajax', 'show_private', 'show_pages', 'status', 'age', 'match_cat', 'match_tags', 'sort', 'quickfilter_dblclick', 'singleword_suggestions', 'output_template', 'consider_max_incoming_links', 'max_incoming_links'));
 		update_option('linkate-posts', $options);
 		// Show a message to say we've done something
 		echo '<div class="updated settings-error notice"><p>' . __('<b>Настройки обновлены.</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
@@ -118,7 +61,6 @@ function linkate_posts_filter_options_subpage(){
                     link_cf_display_output_template($options['output_template']);
                     link_cf_display_limit_ajax($options['limit_ajax']);
                     link_cf_display_show_pages($options['show_pages']);
-                    // link_cf_display_omit_current_post($options['omit_current_post']);
                     link_cf_display_match_cat($options['match_cat']);
                     link_cf_display_status($options['status']);
                     link_cf_display_show_private($options['show_private']);
@@ -126,7 +68,7 @@ function linkate_posts_filter_options_subpage(){
                     link_cf_display_show_custom_posts($options['show_customs']);
                     link_cf_display_quickfilter_dblclick($options['quickfilter_dblclick']);
                     link_cf_display_singleword_suggestions($options['singleword_suggestions']);
-
+                    link_cf_display_max_incoming_links($options['consider_max_incoming_links'], $options['max_incoming_links'])
                     ?>
                 </table>
                 <input type="checkbox"  id="spoiler" />
@@ -338,13 +280,11 @@ function linkate_posts_index_options_subpage(){
 						link_cf_display_clean_suggestions_stoplist($options['clean_suggestions_stoplist']);
 					?>
 				</table>
-                <h3>Полезные советы</h3>
-                <ol style="color:red;">
-                    <li>Если плагин не предлагает ссылок или присутствуют дубликаты - пересоздайте индекс. </li>
-                    <li>"Очистка индекса" очищает только таблицы связанные с плагином. Она не повредит ваши записи и уже вставленные ссылки останутся на месте.</li>
-                    <li>Реиндексация ссылок может занять значительное время, если на сайте тысячи и десятки тысяч публикаций (до нескольких минут), пожалуйста, не обновляйте страницу пока идет процесс.</li>
+                <h3 style="color:grey;">Для справки</h3>
+                <ol style="color:grey;">
+                    <li>Реиндексация ссылок может занять значительное время, если на сайте тысячи и десятки тысяч публикаций (минуты, часы), пожалуйста, не обновляйте страницу пока идет процесс.</li>
+                    <li>Используйте стемминг и стоп-слова для более релевантных результатов, однако это замедлит создание индекса. </li>
                     <li>После добавления/удаления/обновления записей или страниц не нужно каждый раз пересоздавать индекс - это происходит автоматически.</li>
-                    <li style="font-weight:bold">Сайт большой и вы боитесь за сохранность данных? Рекомендую сделать бэкап базы перед любыми действиями.</li>
                 </ol>
       		    <div id="reindex_progress_text"></div>
 			    <progress id="reindex_progress"></progress>

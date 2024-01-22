@@ -111,6 +111,9 @@ function link_cf_set_options($option_key, $arg) {
 	if (!isset($arg['num_terms'])) $arg['num_terms'] = stripslashes(@$options['num_terms']);
 	if (!isset($arg['term_extraction'])) $arg['term_extraction'] = @$options['term_extraction'];
 
+	if (!isset($arg['consider_max_incoming_links'])) $arg['consider_max_incoming_links'] = @$options['consider_max_incoming_links'];
+	if (!isset($arg['max_incoming_links'])) $arg['max_incoming_links'] = @$options['max_incoming_links'];
+
 	// the last options cannot be set via arguments
 	$arg['stripcodes'] = @$options['stripcodes'];
 	$arg['utf8'] = @$options['utf8'];

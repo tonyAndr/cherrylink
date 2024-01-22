@@ -3,7 +3,7 @@
 Plugin Name: CherryLink
 Plugin URI: http://seocherry.ru/dev/cherrylink/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.3.5
+Version: 2.4.0
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: cherrylink-td
@@ -125,6 +125,7 @@ class LinkatePosts {
 			$check_age = ('none' !== $options['age']['direction']);
 			$check_custom = (trim($options['custom']['key']) !== '');
 			$limit = $offset.', '.$options['limit_ajax'];
+            $consider_max_incoming_links = (isset($options['consider_max_incoming_links']) && $options['consider_max_incoming_links'] !== 'false');
 	 		//get the terms to do the matching
 
             list( $contentterms, $titleterms, $tagterms, $suggestions) = linkate_sp_terms_by_freq($postid, $options['num_terms'], $is_term);
@@ -153,7 +154,7 @@ class LinkatePosts {
 				$sql = "SELECT pID FROM (SELECT pID, ";
                 $sql .= link_cf_score_fulltext_match($table_name, $weight_title, $titleterms, $weight_content, $contentterms, $weight_tags, $tagterms, $match_against_title);
                 $sql .= " WHERE " . link_cf_where_fulltext_match($weight_title, $titleterms, $weight_content, $contentterms, $weight_tags, $tagterms, $match_against_title);
-                $sql .= " AND pID <> $postid AND is_term = 0 ORDER BY score DESC LIMIT 0, 10000) as linkate_table";
+                $sql .= " AND pID <> $postid AND is_term = 0 ORDER BY score DESC LIMIT 0, 1000) as linkate_table";
                 _cherry_debug(__FUNCTION__, $sql, 'wp_linkate_posts SQL query');
                 $EXEC_TIME = microtime(true);
                 $rel_ids = $wpdb->get_col($sql);
@@ -231,6 +232,24 @@ class LinkatePosts {
                 }, ARRAY_FILTER_USE_KEY );
     
                 _cherry_debug(__FUNCTION__, count($results), 'После фильтра дублей');
+
+
+                // filter buy max incoming links
+                if ($consider_max_incoming_links && $presentation_mode !== 'related_block') {
+                    $exclude_result = [];
+                    foreach($results as $k => $v) {
+                        $id_to_check = $v->ID;
+                        $in_cnt = intval(get_post_meta($id_to_check, "cherry_income", true));
+                        if ($in_cnt >= intval($options['max_incoming_links'])) {
+                            $exclude_result[] = $k;
+                        }
+                    }
+                    $results = array_filter($results, function ($k) use ($exclude_result) {
+                        return !in_array($k, $exclude_result);
+                    }, ARRAY_FILTER_USE_KEY );
+                    
+                } 
+
             } else {
                 $results = false;  
             }
@@ -403,20 +422,7 @@ function cherrylink_activation_notice(){
 
 if ( is_admin()) {
 	require(dirname(__FILE__).'/cherrylink_admin_options.php');
-
-	if (linkate_callDelay() && linkate_lastStatus()) {
-		$r = true;
-	}
-	if (linkate_callDelay() && !linkate_lastStatus()) {
-		$r = false;
-	}
-	if (!linkate_callDelay()) {
-		$r = linkate_checkNeededOption();
-	}
-	if ($r) {
-        require(WP_PLUGIN_DIR . '/cherrylink/cherrylink_editor_ui.php');
-
-    }
+    require(WP_PLUGIN_DIR . '/cherrylink/cherrylink_editor_ui.php');
 }
 
 function linkate_posts_wp_admin_style() {

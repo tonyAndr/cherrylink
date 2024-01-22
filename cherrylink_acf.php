@@ -426,6 +426,24 @@ function link_cf_display_quickfilter_dblclick($quickfilter_dblclick) {
 	<?php
 }
 
+function link_cf_display_max_incoming_links($consider_max_incoming_links, $max_incoming_links) {
+	?>
+	<tr valign="top">
+		<th scope="row"><label for="max_incoming_links"><?php _e('Максимально число входящих ссылок', CHERRYLINK_TEXT_DOMAIN) ?></label></th>
+		<td>
+            Скрыть?
+			<select name="consider_max_incoming_links" id="consider_max_incoming_links">
+			<option <?php if($consider_max_incoming_links == 'false') { echo 'selected="selected"'; } ?> value="false">Нет</option>
+			<option <?php if($consider_max_incoming_links == 'true') { echo 'selected="selected"'; } ?> value="true">Да</option>
+			</select>
+            Количество ссылок
+            <input name="max_incoming_links" type="number" min="1" id="max_incoming_links" value="<?php echo htmlspecialchars(stripslashes($max_incoming_links)); ?>"  /></td>
+		</td> 
+        <td><?php link_cf_prepare_tooltip("Скрыть статьи, на которые уже указывает выбранное кол-во ссылок и больше."); ?></td>
+	</tr>
+	<?php
+}
+
 function link_cf_display_singleword_suggestions($singleword_suggestions) {
 	?>
     <tr valign="top">
@@ -704,37 +722,22 @@ function link_cf_display_scheme_statistics_options() {
 }
 function link_cf_display_sidebar() {
     $options = get_option('linkate-posts');
-    $actLeft = '';
-    if (isset($options['hash_last_status']) 
-        && $options['hash_last_status'] 
-        && isset($options['activations_left']) 
-        && $options['activations_left'] > 0) {
-        $actLeft = '<hr><p>Оставшееся количество активаций на вашем ключе: <strong>' . $options['activations_left'] . '</strong>.</p>';
-    }
+
 	?>
 	<div class="linkateposts-admin-sidebar">
         <div class="plugin-update-warning"></div>
-        <?php linkate_posts_license_field(); ?>
-        <div class="sb-news">
-            <h2>Появился новый плагин!</h2>
-            <p><a href="https://fdd.tonyandr.com/"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/fdd-icon.png"/></a></p>
-            <p><strong>Files Download Delay</strong> - оберните ссылки на файлы в контейнер с таймером обратного отсчета, добавьте форму для email подписки или дополнительный рекламный блок. <a href="https://fdd.tonyandr.com/" target="_blank">Посмотреть демо</a>.</p>
+        <div class="sb-info">
+            <p><a href="https://wordpress.org/plugins/files-download-delay/"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/fdd-icon.png"/></a></p>
+            <p><strong>Files Download Delay</strong> - оберните ссылки на файлы в контейнер с таймером обратного отсчета, добавьте форму для email подписки или дополнительный рекламный блок. </p>
             <p>Плагин доступен бесплатно <a href="https://wordpress.org/plugins/files-download-delay/" target="_blank">в репозитории WordPress</a>.</p>
         </div>
         <div class="sb-info">
             <h2>Полезное</h2>
             <a href="https://seocherry.ru/dev/cherrylink-manual/" target="_blank"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_2.png"/></a>
-            <a href="https://seocherry.ru/buy-plugin/"  target="_blank"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_3.png"/></a>
-            <p>Справка по поводу <a href="https://seocherry.ru/perenos-licenzii-cherrylink-i-vozvrat-deneg/" target="_blank">переноса лицензии или возврата денежных средств</a>.</p>
-        </div>
-        <div class="sb-info">
-            <h2>Техподдержка</h2>
-            <img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_4.png"/>
-            <p>Если есть вопросы о работе плагина, покупке или баг репорт (найденные ошибки) - пишите в <a href="https://t.me/joinchat/HCjIHgtC9ePAkJOP1V_cPg" target="_blank">телеграм-чат</a> или на почту <strong>mail@seocherry.ru</strong>. </p>
+            <h2>Есть вопрос?</h2>
+            <p>Если есть вопросы о работе плагина - пишите в <a href="https://t.me/joinchat/HCjIHgtC9ePAkJOP1V_cPg" target="_blank">телеграм-чат</a> или на почту <strong>mail@seocherry.ru</strong>. </p> <p>Отвечу по возможности, но разработка и поддержка плагина больше не ведется, поэтому техподдержку тоже не оказываю. </p>
             <p>Другие плагины разработчика можно найти <a href="https://seocherry.ru/buy-plugin/" target="_blank">на этой страничке</a>.</p>
         </div>
-        <?= $actLeft; ?>
-
 	</div>
 	<?php
 }

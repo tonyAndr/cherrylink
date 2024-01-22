@@ -106,6 +106,9 @@ jQuery(document).ready(function ($) {
                         php_execution_time += parseFloat(response.time);
                     }
                     index_offset += index_limit;
+                    if (response.status === 'DONE') {
+                        index_posts_count = 0;
+                    }
                     index_in_progress = false;
                     index_update_progress();
                 } else {
