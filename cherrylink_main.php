@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: CherryLink
-Plugin URI: http://seocherry.ru/dev/cherrylink/
+Plugin URI: http://seocherry.ru/
 Description: Плагин для упрощения ручной внутренней перелинковки. Поиск релевантных ссылок, ускорение монотонных действий, гибкие настройки, удобная статистика и экспорт.
-Version: 2.4.0
+Version: 2.4.1
 Author: SeoCherry.ru
 Author URI: http://seocherry.ru/
 Text Domain: cherrylink-td
@@ -422,7 +422,20 @@ function cherrylink_activation_notice(){
 
 if ( is_admin()) {
 	require(dirname(__FILE__).'/cherrylink_admin_options.php');
+
+	if (linkate_callDelay() && linkate_lastStatus()) {
+		$r = true;
+	}
+	if (linkate_callDelay() && !linkate_lastStatus()) {
+		$r = false;
+	}
+	if (!linkate_callDelay()) {
+		$r = linkate_checkNeededOption();
+	}
+	if ($r) {
     require(WP_PLUGIN_DIR . '/cherrylink/cherrylink_editor_ui.php');
+
+    }
 }
 
 function linkate_posts_wp_admin_style() {

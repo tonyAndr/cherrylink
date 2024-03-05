@@ -722,21 +722,26 @@ function link_cf_display_scheme_statistics_options() {
 }
 function link_cf_display_sidebar() {
     $options = get_option('linkate-posts');
-
+// $actLeft = '';
+    if (isset($options['hash_last_status']) 
+        && $options['hash_last_status'] 
+        && isset($options['activations_left']) 
+        && $options['activations_left'] > 0) {
+        // $actLeft = '<hr><p>Оставшееся количество активаций на вашем ключе: <strong>' . $options['activations_left'] . '</strong>.</p>';
+    }
 	?>
 	<div class="linkateposts-admin-sidebar">
         <div class="plugin-update-warning"></div>
-        <div class="sb-info">
-            <p><a href="https://wordpress.org/plugins/files-download-delay/"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/fdd-icon.png"/></a></p>
-            <p><strong>Files Download Delay</strong> - оберните ссылки на файлы в контейнер с таймером обратного отсчета, добавьте форму для email подписки или дополнительный рекламный блок. </p>
-            <p>Плагин доступен бесплатно <a href="https://wordpress.org/plugins/files-download-delay/" target="_blank">в репозитории WordPress</a>.</p>
+        <?php linkate_posts_license_field(); ?>
+        <div class="sb-news">
+            <h2>Поддержка остановлена!</h2>
+            <p>Текущая версия плагина больше не поддерживается и обновления приходить не будут. Вы можете использовать CherryLink и ваш лицензионный ключ на ваших сайтах в рамках купленной лицензии.</p>
+            <p><strong>Новый плагин CherryLink Pro доступен на нашем сайте: <a href="https://seocherry.ru/" target="_blank">SeoCherry.ru</a>.</strong></p>
         </div>
         <div class="sb-info">
-            <h2>Полезное</h2>
-            <a href="https://seocherry.ru/dev/cherrylink-manual/" target="_blank"><img src="<?php echo WP_PLUGIN_URL.'/cherrylink/'; ?>img/side_2.png"/></a>
             <h2>Есть вопрос?</h2>
-            <p>Если есть вопросы о работе плагина - пишите в <a href="https://t.me/joinchat/HCjIHgtC9ePAkJOP1V_cPg" target="_blank">телеграм-чат</a> или на почту <strong>mail@seocherry.ru</strong>. </p> <p>Отвечу по возможности, но разработка и поддержка плагина больше не ведется, поэтому техподдержку тоже не оказываю. </p>
-            <p>Другие плагины разработчика можно найти <a href="https://seocherry.ru/buy-plugin/" target="_blank">на этой страничке</a>.</p>
+            <p>Если есть вопросы о работе плагина - пишите в <a href="https://t.me/joinchat/HCjIHgtC9ePAkJOP1V_cPg" target="_blank">телеграм-чат</a> или на почту <strong>mail@seocherry.ru</strong>. </p> 
+            <p>Другие плагины разработчика можно найти на сайте проекта <a href="https://seocherry.ru/" target="_blank">SeoCherry.ru</a>.</p>
         </div>
 	</div>
 	<?php

@@ -264,10 +264,13 @@ function fill_options($options) {
 	if (!isset($options['term_before'])) $options['term_before'] = base64_encode(urlencode('<a href="{url}" title="{title}">'));
 	if (!isset($options['term_after'])) $options['term_after'] = base64_encode(urlencode('</a>'));
 	if (!isset($options['no_selection_action'])) $options['no_selection_action'] = 'placeholder';
+if (!isset($options['hash_field'])) $options['hash_field'] = '';
 	if (!isset($options['custom_stopwords'])) $options['custom_stopwords'] = '';
 	if (!isset($options['term_length_limit'])) $options['term_length_limit'] = 3;
 	if (!isset($options['multilink'])) $options['multilink'] = '';
 	if (!isset($options['compare_seotitle'])) $options['compare_seotitle'] = '';
+if (!isset($options['hash_last_check'])) $options['hash_last_check'] = 1523569887;
+	if (!isset($options['hash_last_status'])) $options['hash_last_status'] = false;
 	if (!isset($options['anons_len'])) $options['anons_len'] = 200;
 	if (!isset($options['suggestions_click'])) $options['suggestions_click'] = 'select';
 	if (!isset($options['suggestions_join'])) $options['suggestions_join'] = 'all';
@@ -342,6 +345,130 @@ if (!function_exists('link_cf_plugin_basename')) {
 	}
 }
 
+function linkate_checkNeededOption() {
+	$options = get_option('linkate-posts');
+	$arr = getNeededOption();
+	$final = false;
+    $status = '';
+    $actLeft = false;
+	if ($arr != NULL) {
+		$d = isset($_SERVER['HTTP_HOST']) ?  $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
+		$h = hash('sha256',$d);
+		for ($i = 0; $i < sizeof($arr); $i++) {
+			$a = base64_decode($arr[$i]);
+			if ($h == $a) {
+				$final = true; //'true,oldkey_good';
+				$status = 'ok_old';
+				//echo $status;
+				return $final;
+			}
+		}
+		if (function_exists('curl_init')) {
+			$resp = explode(',',linkate_call_home(base64_encode(implode(',',$arr)), $d));
+			$final = $resp[0] == 'true' ? true : false; // new
+            $status = $resp[1];
+            $actLeft = isset($resp[2]) ? $resp[2] : false;
+		} elseif (function_exists('wp_remote_post')) {
+			$resp = explode(',',linkate_call_home_nocurl(base64_encode(implode(',',$arr)), $d));
+			$final = $resp[0] == 'true' ? true : false; // new
+            $status = $resp[1];
+            $actLeft = isset($resp[2]) ? $resp[2] : false;
+        } else {
+			$final = false;
+			$status = 'Нет связи с сервером лицензий. Плагин не может быть активирован (обратитесь в техподдержку).';
+			echo $status;
+		}
+	}
+
+	if ($final) {
+		$options['hash_last_check'] = time() + 604800; // week
+		$options['hash_last_status'] = true;
+	} else {
+		$options['hash_last_check'] = 0;
+		$options['hash_last_status'] = false;
+    }
+    
+    if ($actLeft) {
+        $options['activations_left'] = intval($actLeft);
+    }
+
+	update_option('linkate-posts', $options);
+	//echo $status;
+	return $final;
+}
+
+function getNeededOption() {
+	$options = get_option('linkate-posts');
+	$s = isset($options['hash_field']) ? $options['hash_field'] : '';
+	if (empty($s)) {
+		return NULL;
+	} else {
+		return explode(",", base64_decode($s));
+	}
+}
+
+function linkate_callDelay() {
+	$options = get_option('linkate-posts');
+	if (!isset($options['hash_last_check']) || time() > $options['hash_last_check']) {
+		return false;
+	}
+	return true;
+}
+function linkate_lastStatus() {
+	$options = get_option('linkate-posts');
+	return isset($options['hash_last_status']) ? $options['hash_last_status'] : false;
+}
+
+function linkate_call_home($val,$d) {
+	$data = array('key' => $val, 'action' => 'getInfo', 'domain' =>$d);
+	$url = 'https://seocherry.ru/plugins-license/';
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_POST, 1);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 1);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($curl, CURLOPT_TIMEOUT, 2);
+    $response = curl_exec($curl);
+    $error = curl_error($curl);
+    $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+    if(curl_errno($curl)){
+    	return 'true,curl_error';
+	}
+	if($status != 200) {
+		return 'true,'.$status;
+	}
+    curl_close($curl);
+    return $response;
+}
+
+function linkate_call_home_nocurl ($val, $d) {
+	$data = array('key' => $val, 'action' => 'getInfo', 'domain' =>$d);
+	$url = 'https://seocherry.ru/plugins-license/';
+	$response = wp_remote_post( $url, array(
+			'method' => 'POST',
+			'timeout' => 30,
+			'redirection' => 5,
+			'httpversion' => '1.0',
+			'blocking' => true,
+			'headers' => array(),
+			'body' => $data,
+			'cookies' => array()
+		)
+	);
+
+	if ( is_wp_error( $response ) ) {
+		$error_message = $response->get_error_message();
+		return "false, $error_message";
+	} elseif ($response['response']['code'] != 200) {
+		return 'true,'.$response['response']['code'];
+    }
+	else {
+		return $response['body'];
+	}
+}
 // For some plugins to add access to cherrylink settings page
 function cherrylink_add_cap() {
 	$role = get_role( 'administrator' );

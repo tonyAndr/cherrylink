@@ -34,6 +34,63 @@ function linkate_posts_options_page(){
 	// add_action('in_admin_footer', 'linkate_posts_admin_footer');
 }
 
+function linkate_posts_license_field() {
+	$options = get_option('linkate-posts');
+	if (isset($_POST['update_license'])) {
+		check_admin_referer('linkate-posts-update-options');
+		// Fill up the options with the values chosen...
+		$options = link_cf_options_from_post($options, array('hash_field'));
+		update_option('linkate-posts', $options);
+		// Show a message to say we've done something
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Обновление ключа</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
+    }
+    if (isset($_POST['remove_license'])) {
+		check_admin_referer('linkate-posts-update-options');
+		// Fill up the options with the values chosen...
+        $options['hash_last_check'] = 0;
+        $options['hash_last_status'] = false;
+        $options['hash_field'] = '';
+        unset($options['activations_left']);
+
+		update_option('linkate-posts', $options);
+		// Show a message to say we've done something
+		echo '<div class="updated settings-error notice"><p>' . __('<b>Ключ сброшен</b>', CHERRYLINK_TEXT_DOMAIN) . '</p></div>';
+    }
+
+
+	$info = linkate_checkNeededOption();
+	if ($info) {
+		$license_class = "linkateposts-accessibility-good";
+		$license_header = "<h2>Лицензия активирована!</h2>";
+	} else {
+		$license_class = "linkateposts-accessibility-warning";
+		$license_header = "<h2>Введите действительный ключ лицензии!</h2><p>Для получения ключа посетите страницу плагина: [<strong><a href=\"https://seocherry.ru/dev/cherrylink\">SeoCherry.ru</a></strong>].</p>";
+    }
+
+	?>
+	<div class="<?php echo $license_class;?>">
+		<?php echo $license_header; ?>
+        <?php if ($info): ?>
+        <p>Действует лицензия на текущий домен, ключ скрыт в целях безопасности.</p>
+        <form method="post" action="">
+			<input type="submit" class="button button-cherry" name="remove_license" value="<?php _e('Сбросить лицензию', CHERRYLINK_TEXT_DOMAIN) ?>" />
+			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
+		</form>
+        <?php else: ?>
+		<form method="post" action="">
+			<label for="hash_field"><?php _e('Ваш ключ:', CHERRYLINK_TEXT_DOMAIN) ?></label>
+            <br>
+			<input type="text" name="hash_field" id="hash_field" value="<?php echo htmlspecialchars(stripslashes($options['hash_field'])); ?>">
+            <br>
+			<input type="submit" class="button button-cherry" name="update_license" value="<?php _e('Сохранить', CHERRYLINK_TEXT_DOMAIN) ?>" />
+			<?php if (function_exists('wp_nonce_field')) wp_nonce_field('linkate-posts-update-options'); ?>
+		</form>
+        <?php endif; ?>
+	</div>
+	<?php
+
+}
+
 // ========================================================================================= //
 // ============================== CherryLink Settings Pages Callbacks  ============================== //
 // ========================================================================================= //
@@ -461,7 +518,7 @@ function linkate_posts_accessibility_options_subpage(){
         <div class="cherry-settings-export-container">
             <div>
                 <h2>Экспорт настроек плагина</h2>
-                <p>Для переноса настроек между сайтами, скачайте файл настроек и импортируйте его на другом сайте. </p><p><strong>Внимание!</strong> Формат настроек в файле не совместим с закодированными настройками из версий младше 1.4.9. Для переноса с более младших версий, сначала обновите плагин на сайте-доноре, затем экспортируйте их в файл.</p>
+                <p>Для переноса настроек между сайтами, скачайте файл настроек и импортируйте его на другом сайте. </p>
                 <a class="button button-download" href="<?php echo WP_PLUGIN_URL.'/cherrylink/export_options.txt'; ?>" download>Скачать файл настроек</a>
             </div>
             <div>	
